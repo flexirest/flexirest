@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 class MappingExampleBase
-  include ActiveRestClient::Mapping
+  include Flexirest::Mapping
 end
 
 class MappingExample < MappingExampleBase
@@ -12,7 +12,7 @@ class MappingExample < MappingExampleBase
   delete :test_delete, "/delete", tag:5
 end
 
-describe ActiveRestClient::Mapping do
+describe Flexirest::Mapping do
   it "should support methods for get/put/post/delete for mapping" do
     expect(EmptyExample).to respond_to(:get)
     expect(EmptyExample).to respond_to(:put)

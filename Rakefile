@@ -5,7 +5,7 @@ RSpec::Core::RakeTask.new('spec')
 task :console do
   require 'irb'
   require 'irb/completion'
-  require 'active_rest_client'
+  require 'flexirest'
   ARGV.clear
   IRB.start
 end

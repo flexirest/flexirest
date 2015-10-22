@@ -1,10 +1,10 @@
-module ActiveRestClient
+module Flexirest
   class Instrumentation < ActiveSupport::LogSubscriber
     def request_call(event)
       self.class.time_spent += event.duration
       self.class.calls_made += 1
-      name = '%s (%.1fms)' % [ActiveRestClient::NAME, event.duration]
-      ActiveRestClient::Logger.debug "  \033[1;4;32m#{name}\033[0m #{event.payload[:name]}"
+      name = '%s (%.1fms)' % [Flexirest::NAME, event.duration]
+      Flexirest::Logger.debug "  \033[1;4;32m#{name}\033[0m #{event.payload[:name]}"
     end
 
     def self.time_spent=(value)
@@ -29,7 +29,7 @@ module ActiveRestClient
     end
 
     def logger
-      ActiveRestClient::Logger
+      Flexirest::Logger
     end
   end
 
@@ -40,23 +40,23 @@ module ActiveRestClient
 
     def append_info_to_payload(payload)
       super
-      payload[:active_rest_client_time_spent] = ActiveRestClient::Instrumentation.time_spent
-      payload[:active_rest_client_calls_made] = ActiveRestClient::Instrumentation.calls_made
+      payload[:flexirest_time_spent] = Flexirest::Instrumentation.time_spent
+      payload[:flexirest_calls_made] = Flexirest::Instrumentation.calls_made
     end
 
     module ClassMethods
       def log_process_action(payload)
-        messages, time_spent, calls_made = super, payload[:active_rest_client_time_spent], payload[:active_rest_client_calls_made]
-        messages << ("#{ActiveRestClient::NAME}: %.1fms for %d calls" % [time_spent.to_f, calls_made]) if calls_made
-        ActiveRestClient::Instrumentation.reset
+        messages, time_spent, calls_made = super, payload[:flexirest_time_spent], payload[:flexirest_calls_made]
+        messages << ("#{Flexirest::NAME}: %.1fms for %d calls" % [time_spent.to_f, calls_made]) if calls_made
+        Flexirest::Instrumentation.reset
         messages
       end
     end
   end
 end
 
-ActiveRestClient::Instrumentation.attach_to :active_rest_client
+Flexirest::Instrumentation.attach_to :flexirest
 
 ActiveSupport.on_load(:action_controller) do
-  include ActiveRestClient::ControllerInstrumentation
+  include Flexirest::ControllerInstrumentation
 end

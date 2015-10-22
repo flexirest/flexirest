@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-class EmptyExample < ActiveRestClient::Base
+class EmptyExample < Flexirest::Base
   whiny_missing true
 end
 
@@ -12,7 +12,7 @@ class TranslatorExample
   end
 end
 
-class AlteringClientExample < ActiveRestClient::Base
+class AlteringClientExample < Flexirest::Base
   translator TranslatorExample
   base_url "http://www.example.com"
 
@@ -22,7 +22,7 @@ class AlteringClientExample < ActiveRestClient::Base
   get :find, "/find/:id"
 end
 
-class RecordResponseExample < ActiveRestClient::Base
+class RecordResponseExample < Flexirest::Base
   base_url "http://www.example.com"
 
   record_response do |url, response|
@@ -32,18 +32,18 @@ class RecordResponseExample < ActiveRestClient::Base
   get :all, "/all"
 end
 
-class NonHostnameBaseUrlExample < ActiveRestClient::Base
+class NonHostnameBaseUrlExample < Flexirest::Base
   base_url "http://www.example.com/v1/"
   get :all, "/all"
 end
 
-describe ActiveRestClient::Base do
+describe Flexirest::Base do
   it 'should instantiate a new descendant' do
     expect{EmptyExample.new}.to_not raise_error
   end
 
   it "should not instantiate a new base class" do
-    expect{ActiveRestClient::Base.new}.to raise_error(Exception)
+    expect{Flexirest::Base.new}.to raise_error(Exception)
   end
 
   it "should save attributes passed in constructor" do
@@ -124,19 +124,19 @@ describe ActiveRestClient::Base do
   end
 
   it "should save the base URL for the API server" do
-    class BaseExample < ActiveRestClient::Base
+    class BaseExample < Flexirest::Base
       base_url "https://www.example.com/api/v1"
     end
     expect(BaseExample.base_url).to eq("https://www.example.com/api/v1")
   end
 
   it "should allow changing the base_url while running" do
-    class OutsideBaseExample < ActiveRestClient::Base ; end
+    class OutsideBaseExample < Flexirest::Base ; end
 
-    ActiveRestClient::Base.base_url = "https://www.example.com/api/v1"
+    Flexirest::Base.base_url = "https://www.example.com/api/v1"
     expect(OutsideBaseExample.base_url).to eq("https://www.example.com/api/v1")
 
-    ActiveRestClient::Base.base_url = "https://www.example.com/api/v2"
+    Flexirest::Base.base_url = "https://www.example.com/api/v2"
     expect(OutsideBaseExample.base_url).to eq("https://www.example.com/api/v2")
   end
 
@@ -159,20 +159,20 @@ describe ActiveRestClient::Base do
   end
 
   it "should raise an exception for missing attributes if whiny_missing is enabled" do
-    expect{EmptyExample.new.first_name}.to raise_error(ActiveRestClient::NoAttributeException)
+    expect{EmptyExample.new.first_name}.to raise_error(Flexirest::NoAttributeException)
   end
 
   it "should be able to lazy instantiate an object from a prefixed lazy_ method call" do
-    expect_any_instance_of(ActiveRestClient::Connection).to receive(:get).with('/find/1', anything).and_return(::FaradayResponseMock.new(OpenStruct.new(status:200, response_headers:{}, body:"{\"first_name\":\"Billy\"}")))
+    expect_any_instance_of(Flexirest::Connection).to receive(:get).with('/find/1', anything).and_return(::FaradayResponseMock.new(OpenStruct.new(status:200, response_headers:{}, body:"{\"first_name\":\"Billy\"}")))
     example = AlteringClientExample.lazy_find(1)
-    expect(example).to be_an_instance_of(ActiveRestClient::LazyLoader)
+    expect(example).to be_an_instance_of(Flexirest::LazyLoader)
     expect(example.first_name).to eq("Billy")
   end
 
   it "should be able to lazy instantiate an object from a prefixed lazy_ method call from an instance" do
-    expect_any_instance_of(ActiveRestClient::Connection).to receive(:get).with('/find/1', anything).and_return(::FaradayResponseMock.new(OpenStruct.new(status:200, response_headers:{}, body:"{\"first_name\":\"Billy\"}")))
+    expect_any_instance_of(Flexirest::Connection).to receive(:get).with('/find/1', anything).and_return(::FaradayResponseMock.new(OpenStruct.new(status:200, response_headers:{}, body:"{\"first_name\":\"Billy\"}")))
     example = AlteringClientExample.new.lazy_find(1)
-    expect(example).to be_an_instance_of(ActiveRestClient::LazyLoader)
+    expect(example).to be_an_instance_of(Flexirest::LazyLoader)
     expect(example.first_name).to eq("Billy")
   end
 
@@ -219,11 +219,11 @@ describe ActiveRestClient::Base do
 
   context "accepts a Translator to reformat JSON" do
     it "should log a deprecation warning when using a translator" do
-      expect(ActiveRestClient::Logger).to receive(:warn) do |message|
+      expect(Flexirest::Logger).to receive(:warn) do |message|
         expect(message).to start_with("DEPRECATION")
       end
       Proc.new do
-        class DummyExample < ActiveRestClient::Base
+        class DummyExample < Flexirest::Base
           translator TranslatorExample
         end
       end.call
@@ -253,35 +253,35 @@ describe ActiveRestClient::Base do
 
   context "directly call a URL, rather than via a mapped method" do
     it "should be able to directly call a URL" do
-      expect_any_instance_of(ActiveRestClient::Request).to receive(:do_request).with(any_args).and_return(::FaradayResponseMock.new(OpenStruct.new(status:200, response_headers:{}, body:"{\"first_name\":\"Billy\"}")))
+      expect_any_instance_of(Flexirest::Request).to receive(:do_request).with(any_args).and_return(::FaradayResponseMock.new(OpenStruct.new(status:200, response_headers:{}, body:"{\"first_name\":\"Billy\"}")))
       EmptyExample._request("http://api.example.com/")
     end
 
     it "runs filters as usual" do
-      expect_any_instance_of(ActiveRestClient::Request).to receive(:do_request).with(any_args).and_return(::FaradayResponseMock.new(OpenStruct.new(status:200, response_headers:{}, body:"{\"first_name\":\"Billy\"}")))
+      expect_any_instance_of(Flexirest::Request).to receive(:do_request).with(any_args).and_return(::FaradayResponseMock.new(OpenStruct.new(status:200, response_headers:{}, body:"{\"first_name\":\"Billy\"}")))
       expect(EmptyExample).to receive(:_filter_request).with(any_args).exactly(2).times
       EmptyExample._request("http://api.example.com/")
     end
 
     it "should make an HTTP request" do
-      expect_any_instance_of(ActiveRestClient::Connection).to receive(:get).with(any_args).and_return(::FaradayResponseMock.new(OpenStruct.new(status:200, response_headers:{}, body:"{\"first_name\":\"Billy\"}")))
+      expect_any_instance_of(Flexirest::Connection).to receive(:get).with(any_args).and_return(::FaradayResponseMock.new(OpenStruct.new(status:200, response_headers:{}, body:"{\"first_name\":\"Billy\"}")))
       EmptyExample._request("http://api.example.com/")
     end
 
     it "should make an HTTP request including the path in the base_url" do
-      expect_any_instance_of(ActiveRestClient::Connection).to receive(:get).with('/v1/all', anything).and_return(::FaradayResponseMock.new(OpenStruct.new(status:200, response_headers:{}, body:"{\"first_name\":\"Billy\"}")))
+      expect_any_instance_of(Flexirest::Connection).to receive(:get).with('/v1/all', anything).and_return(::FaradayResponseMock.new(OpenStruct.new(status:200, response_headers:{}, body:"{\"first_name\":\"Billy\"}")))
       NonHostnameBaseUrlExample.all
     end
 
     it "should map the response from the directly called URL in the normal way" do
-      expect_any_instance_of(ActiveRestClient::Request).to receive(:do_request).with(any_args).and_return(::FaradayResponseMock.new(OpenStruct.new(status:200, response_headers:{}, body:"{\"first_name\":\"Billy\"}")))
+      expect_any_instance_of(Flexirest::Request).to receive(:do_request).with(any_args).and_return(::FaradayResponseMock.new(OpenStruct.new(status:200, response_headers:{}, body:"{\"first_name\":\"Billy\"}")))
       example = EmptyExample._request("http://api.example.com/")
       expect(example.first_name).to eq("Billy")
     end
 
     it "should be able to pass the plain response from the directly called URL bypassing JSON loading" do
       response_body = "This is another non-JSON string"
-      expect_any_instance_of(ActiveRestClient::Connection).to receive(:post).with(any_args).and_return(::FaradayResponseMock.new(OpenStruct.new(status:200, response_headers:{}, body:response_body)))
+      expect_any_instance_of(Flexirest::Connection).to receive(:post).with(any_args).and_return(::FaradayResponseMock.new(OpenStruct.new(status:200, response_headers:{}, body:response_body)))
       expect(EmptyExample._plain_request("http://api.example.com/", :post, {id:1234})).to eq(response_body)
     end
 
@@ -291,7 +291,7 @@ describe ActiveRestClient::Base do
         response = ::FaradayResponseMock.new(
           OpenStruct.new(status:200, response_headers:{}, body:response_body),
           false)
-        expect_any_instance_of(ActiveRestClient::Connection).to receive(:post).with(any_args).and_return(response)
+        expect_any_instance_of(Flexirest::Connection).to receive(:post).with(any_args).and_return(response)
         result = EmptyExample._plain_request("http://api.example.com/", :post, {id:1234})
 
         expect(result).to eq(nil)
@@ -307,7 +307,7 @@ describe ActiveRestClient::Base do
       begin
         response = "This is a non-JSON string"
         other_response = "This is another non-JSON string"
-        allow_any_instance_of(ActiveRestClient::Connection).to receive(:get) do |instance, url, others|
+        allow_any_instance_of(Flexirest::Connection).to receive(:get) do |instance, url, others|
           if url == "/?test=1"
             ::FaradayResponseMock.new(OpenStruct.new(status:200, response_headers:{}, body:response))
           else
@@ -325,19 +325,19 @@ describe ActiveRestClient::Base do
     end
 
     it "should be able to lazy load a direct URL request" do
-      expect_any_instance_of(ActiveRestClient::Request).to receive(:do_request).with(any_args).and_return(::FaradayResponseMock.new(OpenStruct.new(status:200, response_headers:{}, body:"{\"first_name\":\"Billy\"}")))
+      expect_any_instance_of(Flexirest::Request).to receive(:do_request).with(any_args).and_return(::FaradayResponseMock.new(OpenStruct.new(status:200, response_headers:{}, body:"{\"first_name\":\"Billy\"}")))
       example = EmptyExample._lazy_request("http://api.example.com/")
-      expect(example).to be_an_instance_of(ActiveRestClient::LazyLoader)
+      expect(example).to be_an_instance_of(Flexirest::LazyLoader)
       expect(example.first_name).to eq("Billy")
     end
 
     it "should be able to specify a method and parameters for the call" do
-      expect_any_instance_of(ActiveRestClient::Connection).to receive(:post).with(any_args).and_return(::FaradayResponseMock.new(OpenStruct.new(status:200, response_headers:{}, body:"{\"first_name\":\"Billy\"}")))
+      expect_any_instance_of(Flexirest::Connection).to receive(:post).with(any_args).and_return(::FaradayResponseMock.new(OpenStruct.new(status:200, response_headers:{}, body:"{\"first_name\":\"Billy\"}")))
       EmptyExample._request("http://api.example.com/", :post, {id:1234})
     end
 
     it "should be able to use mapped methods to create a request to pass in to _lazy_request" do
-      expect_any_instance_of(ActiveRestClient::Connection).to receive(:get).with('/find/1', anything).and_return(::FaradayResponseMock.new(OpenStruct.new(status:200, response_headers:{}, body:"{\"first_name\":\"Billy\"}")))
+      expect_any_instance_of(Flexirest::Connection).to receive(:get).with('/find/1', anything).and_return(::FaradayResponseMock.new(OpenStruct.new(status:200, response_headers:{}, body:"{\"first_name\":\"Billy\"}")))
       request = AlteringClientExample._request_for(:find, :id => 1)
       example = AlteringClientExample._lazy_request(request)
       expect(example.first_name).to eq("Billy")
@@ -346,7 +346,7 @@ describe ActiveRestClient::Base do
 
   context "Recording a response" do
     it "calls back to the record_response callback with the url and response body" do
-      expect_any_instance_of(ActiveRestClient::Connection).to receive(:get).with(any_args).and_return(::FaradayResponseMock.new(OpenStruct.new(status:200, response_headers:{}, body:"Hello world")))
+      expect_any_instance_of(Flexirest::Connection).to receive(:get).with(any_args).and_return(::FaradayResponseMock.new(OpenStruct.new(status:200, response_headers:{}, body:"Hello world")))
       expect{RecordResponseExample.all}.to raise_error(Exception, "/all|Hello world")
     end
   end

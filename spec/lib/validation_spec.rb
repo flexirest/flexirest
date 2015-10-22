@@ -1,8 +1,8 @@
 require 'spec_helper'
 
-describe "ActiveRestClient::Validation" do
+describe "Flexirest::Validation" do
   class SimpleValidationExample < OpenStruct
-    include ActiveRestClient::Validation
+    include Flexirest::Validation
     validates :first_name, presence:true
     validates :password, length:{within:6..12}
     validates :post_code, length:{minimum:6, maximum:8}
@@ -77,7 +77,7 @@ describe "ActiveRestClient::Validation" do
 
   it "should be invalid when a block adds an error" do
     class ValidationExample1 < OpenStruct
-      include ActiveRestClient::Validation
+      include Flexirest::Validation
       validates :first_name do |object, name, value|
         object._errors[name] << "must be over 4 chars long" if value.length <= 4
       end
@@ -89,7 +89,7 @@ describe "ActiveRestClient::Validation" do
 
   it "should be valid when a block doesn't add an error" do
     class ValidationExample2 < OpenStruct
-      include ActiveRestClient::Validation
+      include Flexirest::Validation
       validates :first_name do |object, name, value|
         object._errors[name] << "must be over 4 chars long" if value.length <= 4
       end
@@ -100,7 +100,7 @@ describe "ActiveRestClient::Validation" do
   end
 
   it "should call valid? before making a request" do
-    class ValidationExample3 < ActiveRestClient::Base
+    class ValidationExample3 < Flexirest::Base
       whiny_missing true
       post :create, '/'
       validates :name, presence:true
@@ -108,6 +108,6 @@ describe "ActiveRestClient::Validation" do
 
     expect_any_instance_of(ValidationExample3).to receive(:valid?)
     object = ValidationExample3.new
-    expect { object.create }.to raise_exception(ActiveRestClient::ValidationFailedException)
+    expect { object.create }.to raise_exception(Flexirest::ValidationFailedException)
   end
 end

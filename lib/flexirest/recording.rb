@@ -1,4 +1,4 @@
-module ActiveRestClient
+module Flexirest
   module Recording
     module ClassMethods
       @record_response = nil

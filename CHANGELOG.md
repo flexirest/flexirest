@@ -8,7 +8,7 @@ Features:
 
 Bugfixes:
 
-- In order to allow JRuby to work with ActiveRestClient, the hard-coded dependency on Patron has been removed.
+- In order to allow JRuby to work with Flexirest, the hard-coded dependency on Patron has been removed.
 
 ## 1.1.10 - 1.1.12
 

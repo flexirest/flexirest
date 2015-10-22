@@ -1,7 +1,7 @@
 require 'spec_helper'
 
-describe ActiveRestClient::HeadersList do
-  let(:headers_list) { ActiveRestClient::HeadersList.new }
+describe Flexirest::HeadersList do
+  let(:headers_list) { Flexirest::HeadersList.new }
 
   it "should remember stored headers" do
     url = "http://www.google.com"

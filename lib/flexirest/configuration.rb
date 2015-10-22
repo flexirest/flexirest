@@ -1,6 +1,6 @@
 require 'cgi'
 
-module ActiveRestClient
+module Flexirest
   module Configuration
     module ClassMethods
       @@base_url = nil
@@ -25,7 +25,7 @@ module ActiveRestClient
       end
 
       def base_url=(value)
-        ActiveRestClient::Logger.info "\033[1;4;32m#{name}\033[0m Base URL set to be #{value}"
+        Flexirest::Logger.info "\033[1;4;32m#{name}\033[0m Base URL set to be #{value}"
         value = value.gsub(/\/+$/, '')
         @@base_url = value
       end
@@ -44,7 +44,7 @@ module ActiveRestClient
       end
 
       def username=(value)
-        ActiveRestClient::Logger.info "\033[1;4;32m#{name}\033[0m Username set to be #{value}"
+        Flexirest::Logger.info "\033[1;4;32m#{name}\033[0m Username set to be #{value}"
         value = CGI::escape(value) if value.present? && !value.include?("%")
         @@username = value
       end
@@ -63,7 +63,7 @@ module ActiveRestClient
       end
 
       def password=(value)
-        ActiveRestClient::Logger.info "\033[1;4;32m#{name}\033[0m Password set..."
+        Flexirest::Logger.info "\033[1;4;32m#{name}\033[0m Password set..."
         value = CGI::escape(value) if value.present? && !value.include?("%")
         @@password = value
       end
@@ -81,12 +81,12 @@ module ActiveRestClient
       end
 
       def request_body_type=(value)
-        ActiveRestClient::Logger.info "\033[1;4;32m#{name}\033[0m Request Body Type set to be #{value}"
+        Flexirest::Logger.info "\033[1;4;32m#{name}\033[0m Request Body Type set to be #{value}"
         @@request_body_type = value
       end
 
       def adapter=(adapter)
-        ActiveRestClient::Logger.info "\033[1;4;32m#{name}\033[0m Adapter set to be #{adapter}"
+        Flexirest::Logger.info "\033[1;4;32m#{name}\033[0m Adapter set to be #{adapter}"
         @adapter = adapter
       end
 
@@ -158,7 +158,7 @@ module ActiveRestClient
       end
 
       def translator(value = nil)
-        ActiveRestClient::Logger.warn("DEPRECATION: The translator functionality of ActiveRestClient has been replaced with proxy functionality, see https://github.com/whichdigital/active-rest-client#proxying-apis for more information") unless value.nil?
+        Flexirest::Logger.warn("DEPRECATION: The translator functionality of Flexirest has been replaced with proxy functionality, see https://github.com/whichdigital/active-rest-client#proxying-apis for more information") unless value.nil?
         value ? @translator = value : @translator || nil
       end
 
@@ -193,7 +193,7 @@ module ActiveRestClient
             faraday.options['open_timeout'] = 10
           end
 
-          faraday.headers['User-Agent'] = "ActiveRestClient/#{ActiveRestClient::VERSION}"
+          faraday.headers['User-Agent'] = "Flexirest/#{Flexirest::VERSION}"
           faraday.headers['Connection'] = "Keep-Alive"
           faraday.headers['Accept']     = "application/json"
         end

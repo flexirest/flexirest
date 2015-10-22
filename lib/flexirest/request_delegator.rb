@@ -1,4 +1,4 @@
-module ActiveRestClient
+module Flexirest
   class RequestDelegator < Delegator
     def initialize(obj)
       super

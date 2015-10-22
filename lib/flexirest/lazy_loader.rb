@@ -1,4 +1,4 @@
-module ActiveRestClient
+module Flexirest
   class LazyLoader
     def initialize(request, params = nil)
       @request = request

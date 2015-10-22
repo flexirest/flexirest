@@ -1,13 +1,13 @@
 require 'active_support/hash_with_indifferent_access'
 
-module ActiveRestClient
+module Flexirest
   class LazyAssociationLoader
     include Enumerable
 
     def initialize(name, value, request, options = {})
       @name = name
       class_to_map = request.method[:options][:lazy][name] rescue nil
-      @request = class_to_map.nil? ? request : ActiveRestClient::Request.new(class_to_map._mapped_method(:find), class_to_map.new, options)
+      @request = class_to_map.nil? ? request : Flexirest::Request.new(class_to_map._mapped_method(:find), class_to_map.new, options)
       @object = nil
       @options = options
       if value.is_a? Array
@@ -85,7 +85,7 @@ module ActiveRestClient
         method[:method] = :get
         method[:options][:url] = @url
         method[:options][:overridden_name] = @options[:overridden_name]
-        request = ActiveRestClient::Request.new(method, @request.object)
+        request = Flexirest::Request.new(method, @request.object)
         request.url = request.forced_url = @url
         @object = request.call
       end

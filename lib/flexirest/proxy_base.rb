@@ -1,6 +1,6 @@
 require "uri"
 
-module ActiveRestClient
+module Flexirest
   class ProxyBase
     cattr_accessor :mappings, :request, :original_handler
     cattr_accessor :original_body, :original_get_params, :original_post_params, :original_url

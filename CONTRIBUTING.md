@@ -1,19 +1,19 @@
-# ActiveRestClient (ARC) Contributing Guide
+# Flexirest (ARC) Contributing Guide
 
 ## Introduction
 
 This project was built at Which? Ltd in the UK, but was released as open source in 2014 under the MIT Licence.
 
-We're happy to receive contributions from the community for features and bugfixes and hopefully this guide helps new developers to the project to understand how to get started with the internals of ActiveRestClient.
+We're happy to receive contributions from the community for features and bugfixes and hopefully this guide helps new developers to the project to understand how to get started with the internals of Flexirest.
 
 ## Overview
 
-![Component Overview Diagram](https://raw.githubusercontent.com/whichdigital/active-rest-client/master/doc/ActiveRestClient%20Internals.png)
+![Component Overview Diagram](https://raw.githubusercontent.com/whichdigital/active-rest-client/master/doc/Flexirest%20Internals.png)
 
 ## Components
 
 ### Base
-The main class in ARC is `ActiveRestClient::Base`.  This includes a number of modules to provide a basic object ready to inherit from to form your own API classes.
+The main class in ARC is `Flexirest::Base`.  This includes a number of modules to provide a basic object ready to inherit from to form your own API classes.
 
 **Configuration** includes all of the functionality for class and library level configuration (base_url, verbose logging, request format, etc).
 
@@ -37,7 +37,7 @@ The principle is that ARC keeps a cached `Connection` to each unique API server 
 
 ### Request
 
-`ActiveRestClient::Base` instantiates a new `ActiveRestClient::Request` object for each request, and it's up to this object to format the request body, make the request, parse the response, etc.
+`Flexirest::Base` instantiates a new `Flexirest::Request` object for each request, and it's up to this object to format the request body, make the request, parse the response, etc.
 
 ### HeaderList
 
@@ -45,7 +45,7 @@ A `Request` has a list of headers associated, but if the same header is set with
 
 ### Lazy *
 
-`LazyLoader` is a simple proxy class that takes an `ActiveRestClient::Request` object, has a `method_missing` and `respond_to` pair that when called actually calls `#request` on the request object to make the API call.  This is useful if you want to prepare an API object that doesn't make the call unless it's needed (i.e. like ActiveRecord scopes don't execute if they're used within a cached fragment).
+`LazyLoader` is a simple proxy class that takes an `Flexirest::Request` object, has a `method_missing` and `respond_to` pair that when called actually calls `#request` on the request object to make the API call.  This is useful if you want to prepare an API object that doesn't make the call unless it's needed (i.e. like ActiveRecord scopes don't execute if they're used within a cached fragment).
 
 `LazyAssociationLoader` is a completely different beast.  This is used in HAL responses where the association 
 

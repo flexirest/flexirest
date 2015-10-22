@@ -1,4 +1,4 @@
-module ActiveRestClient
+module Flexirest
   module Validation
     module ClassMethods
       def validates(field_name, options={}, &block)

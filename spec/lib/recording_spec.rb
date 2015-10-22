@@ -1,9 +1,9 @@
 require 'spec_helper'
 
-describe ActiveRestClient::Recording do
+describe Flexirest::Recording do
   it "can confirm if a recording callback is set" do
     class MyObject1
-      include ActiveRestClient::Recording
+      include Flexirest::Recording
     end
     expect(MyObject1.record_response?).to be_falsey
     MyObject1.record_response do
@@ -14,7 +14,7 @@ describe ActiveRestClient::Recording do
 
   it "remembers a block given to it to later be called back" do
     class MyObject2
-      include ActiveRestClient::Recording
+      include Flexirest::Recording
     end
     MyObject2.record_response do
       puts "Hello world"
@@ -24,7 +24,7 @@ describe ActiveRestClient::Recording do
 
   it "calls back to the block if record_response is given a url and response" do
     class MyObject3
-      include ActiveRestClient::Recording
+      include Flexirest::Recording
     end
     MyObject3.record_response do |url, response|
       raise Exception.new("#{url}|#{response}")

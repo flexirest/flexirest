@@ -1,4 +1,4 @@
-module ActiveRestClient
+module Flexirest
   module Mapping
     module ClassMethods
       def get(name, url, options = {})
@@ -41,7 +41,7 @@ module ActiveRestClient
         end
         request = Request.new(mapped, self, options)
         if lazy_load? || lazy_forced
-          ActiveRestClient::LazyLoader.new(request)
+          Flexirest::LazyLoader.new(request)
         else
           request.call
         end

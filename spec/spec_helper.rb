@@ -1,6 +1,6 @@
 require 'rspec'
 require 'simplecov'
-require 'active_rest_client'
+require 'flexirest'
 require "ostruct"
 require 'webmock/rspec'
 
@@ -56,7 +56,7 @@ class TestCacheStore
   end
 end
 
-class FaradayResponseMock < ::ActiveRestClient::FaradayResponseProxy
+class FaradayResponseMock < ::Flexirest::FaradayResponseProxy
   # The FaradayResponseMock is setup to automatically resolve all calls by default.
   # By setting auto_resolve to false it allows the spec to control when the response
   # is resolved, which simulates what it is like when inside a Faraday in_parallel block.

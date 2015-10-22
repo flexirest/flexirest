@@ -1,12 +1,12 @@
 require 'spec_helper'
 
-describe ActiveRestClient::Connection do
+describe Flexirest::Connection do
   before do
-    @connection = ActiveRestClient::Connection.new("http://www.example.com")
+    @connection = Flexirest::Connection.new("http://www.example.com")
   end
 
   after do
-    ActiveRestClient::Base._reset_configuration!
+    Flexirest::Base._reset_configuration!
     @connection.reconnect
   end
 
@@ -19,7 +19,7 @@ describe ActiveRestClient::Connection do
   end
 
   it "should set a user agent for the session" do
-    expect(@connection.headers["User-Agent"]).to match(/^ActiveRestClient\/[0-9.]+$/)
+    expect(@connection.headers["User-Agent"]).to match(/^Flexirest\/[0-9.]+$/)
   end
 
   it "should try to Keep-Alive session connections" do
@@ -54,8 +54,8 @@ describe ActiveRestClient::Connection do
     before do
       @default_headers = { "User-Agent" => "Custom" }
 
-      ActiveRestClient::Base.faraday_config do |faraday|
-        faraday.adapter ActiveRestClient::Base.adapter
+      Flexirest::Base.faraday_config do |faraday|
+        faraday.adapter Flexirest::Base.adapter
         faraday.headers.update(@default_headers)
       end
       @connection.reconnect
@@ -101,7 +101,7 @@ describe ActiveRestClient::Connection do
   context 'with api auth signing requests' do
     before(:each) do
       # Need to still call this to load the api_auth library so tests work
-      ActiveRestClient::Base.api_auth_credentials('id123', 'secret123')
+      Flexirest::Base.api_auth_credentials('id123', 'secret123')
 
       @options = {
         :api_auth => {
@@ -112,8 +112,8 @@ describe ActiveRestClient::Connection do
 
       @default_headers = {'Date' => 'Sat, 14 Mar 2015 15:13:24 GMT'}
 
-      ActiveRestClient::Base.faraday_config do |faraday|
-        faraday.adapter ActiveRestClient::Base.adapter
+      Flexirest::Base.faraday_config do |faraday|
+        faraday.adapter Flexirest::Base.adapter
         faraday.headers.update(@default_headers)
       end
       @connection.reconnect
@@ -139,12 +139,12 @@ describe ActiveRestClient::Connection do
 
   it "should retry once in the event of a connection failed" do
     stub_request(:get, "www.example.com/foo").to_raise(Faraday::Error::ConnectionFailed.new("Foo"))
-    expect { @connection.get("/foo") }.to raise_error(ActiveRestClient::ConnectionFailedException)
+    expect { @connection.get("/foo") }.to raise_error(Flexirest::ConnectionFailedException)
   end
 
   it "should raise an exception on timeout" do
     stub_request(:get, "www.example.com/foo").to_timeout
-    expect { @connection.get("/foo") }.to raise_error(ActiveRestClient::TimeoutException)
+    expect { @connection.get("/foo") }.to raise_error(Flexirest::TimeoutException)
   end
 
   it "should raise an exception on timeout" do
@@ -152,7 +152,7 @@ describe ActiveRestClient::Connection do
     begin
       @connection.get("foo")
       fail
-    rescue ActiveRestClient::TimeoutException => timeout
+    rescue Flexirest::TimeoutException => timeout
       expect(timeout.message).to eq("Timed out getting http://www.example.com/foo")
     end
   end

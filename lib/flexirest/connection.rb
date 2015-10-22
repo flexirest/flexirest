@@ -1,6 +1,6 @@
 require 'faraday'
 
-module ActiveRestClient
+module Flexirest
 
   class TimeoutException < StandardError ; end
   class ConnectionFailedException < StandardError ; end
@@ -24,13 +24,13 @@ module ActiveRestClient
     def make_safe_request(path, &block)
       block.call
     rescue Faraday::Error::TimeoutError
-      raise ActiveRestClient::TimeoutException.new("Timed out getting #{full_url(path)}")
+      raise Flexirest::TimeoutException.new("Timed out getting #{full_url(path)}")
     rescue Faraday::Error::ConnectionFailed
       begin
         reconnect
         block.call
       rescue Faraday::Error::ConnectionFailed
-        raise ActiveRestClient::ConnectionFailedException.new("Unable to connect to #{full_url(path)}")
+        raise Flexirest::ConnectionFailedException.new("Unable to connect to #{full_url(path)}")
       end
     end
 
@@ -79,7 +79,7 @@ module ActiveRestClient
     private
 
     def new_session
-      Faraday.new({url: @base_url}, &ActiveRestClient::Base.faraday_config)
+      Faraday.new({url: @base_url}, &Flexirest::Base.faraday_config)
     end
 
     def full_url(path)

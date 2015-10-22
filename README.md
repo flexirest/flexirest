@@ -1,11 +1,11 @@
-# ActiveRestClient
+# Flexirest
 
-[![Build Status](https://travis-ci.org/whichdigital/active-rest-client.svg?branch=master)](https://travis-ci.org/whichdigital/active-rest-client)
-[![Coverage Status](https://coveralls.io/repos/whichdigital/active-rest-client/badge.png)](https://coveralls.io/r/whichdigital/active-rest-client)
-[![Code Climate](https://codeclimate.com/github/whichdigital/active-rest-client.png)](https://codeclimate.com/github/whichdigital/active-rest-client)
-[![Gem Version](https://badge.fury.io/rb/active_rest_client.png)](http://badge.fury.io/rb/active_rest_client)
-[![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/whichdigital/active-rest-client.svg)](http://isitmaintained.com/project/whichdigital/active-rest-client "Average time to resolve an issue")
-[![Percentage of issues still open](http://isitmaintained.com/badge/open/whichdigital/active-rest-client.svg)](http://isitmaintained.com/project/whichdigital/active-rest-client "Percentage of issues still open")
+[![Build Status](https://travis-ci.org/andyjeffries/flexirest.svg?branch=master)](https://travis-ci.org/andyjeffries/flexirest)
+[![Coverage Status](https://coveralls.io/repos/andyjeffries/flexirest/badge.png)](https://coveralls.io/r/andyjeffries/flexirest)
+[![Code Climate](https://codeclimate.com/github/andyjeffries/flexirest.png)](https://codeclimate.com/github/andyjeffries/flexirest)
+[![Gem Version](https://badge.fury.io/rb/flexirest.png)](http://badge.fury.io/rb/flexirest)
+[![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/andyjeffries/flexirest.svg)](http://isitmaintained.com/project/andyjeffries/flexirest "Average time to resolve an issue")
+[![Percentage of issues still open](http://isitmaintained.com/badge/open/andyjeffries/flexirest.svg)](http://isitmaintained.com/project/andyjeffries/flexirest "Percentage of issues still open")
 
 This gem is for accessing REST services in an ActiveRecord style.  ActiveResource already exists for this, but it doesn't work where the resource naming doesn't follow Rails conventions, it doesn't have in-built caching and it's not as flexible in general.
 
@@ -14,7 +14,7 @@ This gem is for accessing REST services in an ActiveRecord style.  ActiveResourc
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'active_rest_client'
+gem 'flexirest'
 ```
 
 And then execute:
@@ -23,7 +23,7 @@ And then execute:
 
 Or install it yourself as:
 
-    $ gem install active_rest_client
+    $ gem install flexirest
 
 ## Usage
 
@@ -37,7 +37,7 @@ MyApp::Application.configure do
 end
 
 # app/models/person.rb
-class Person < ActiveRestClient::Base
+class Person < Flexirest::Base
   base_url Rails.application.config.api_server_url
 
   get :all, "/people"
@@ -50,7 +50,7 @@ end
 Note I've specified the base_url in the class above.  This is useful where you want to be explicit or use different APIs for some classes and be explicit. If you have one server that's generally used, you can set it once with a simple line in a `config/initializer/{something}.rb` file:
 
 ```ruby
-ActiveRestClient::Base.base_url = "https://www.example.com/api/v1"
+Flexirest::Base.base_url = "https://www.example.com/api/v1"
 ```
 
 Any `base_url` settings in specific classes override this declared default. You can then use your new class like this:
@@ -127,23 +127,23 @@ puts @person.to_json
 
 ### Faraday Configuration
 
-ActiveRestClient uses Faraday to allow switching HTTP backends, the default is to just use Faraday's default. To change the used backend just set it in the class by setting `adapter` to a Faraday supported adapter symbol.
+Flexirest uses Faraday to allow switching HTTP backends, the default is to just use Faraday's default. To change the used backend just set it in the class by setting `adapter` to a Faraday supported adapter symbol.
 
 ```ruby
-ActiveRestClient::Base.adapter = :net_http
+Flexirest::Base.adapter = :net_http
 # or ...
-ActiveRestClient::Base.adapter = :patron
+Flexirest::Base.adapter = :patron
 ```
 
 In versions before 1.2.0 the adapter was hardcoded to `:patron`, so if you want to ensure it still uses Patron, you should set this setting.
 
-If you want more control you can pass a **complete** configuration block ("complete" means that the block does not *override* [the default configuration](https://github.com/whichdigital/active-rest-client/blob/5b1953d89e26c02ca74f74464ccb7cd4c9439dcc/lib/active_rest_client/configuration.rb#L184-L201), but rather *replaces* it). For available config variables look into the Faraday documentation.
+If you want more control you can pass a **complete** configuration block ("complete" means that the block does not *override* [the default configuration](https://github.com/andyjeffries/flexirest/blob/5b1953d89e26c02ca74f74464ccb7cd4c9439dcc/lib/flexirest/configuration.rb#L184-L201), but rather *replaces* it). For available config variables look into the Faraday documentation.
 
 ```ruby
-ActiveRestClient::Base.faraday_config do |faraday|
+Flexirest::Base.faraday_config do |faraday|
   faraday.adapter(:net_http)
   faraday.options.timeout       = 10
-  faraday.headers['User-Agent'] = "ActiveRestClient/#{ActiveRestClient::VERSION}"
+  faraday.headers['User-Agent'] = "Flexirest/#{Flexirest::VERSION}"
 end
 ```
 ### Associations
@@ -155,19 +155,19 @@ There are two types of association.  One assumes when you call a method you actu
 If the call would return a single instance or a list of instances that should be considered another object, you can also specify this when mapping the method using the `:has_one` or `:has_many` options respectively.  It doesn't call anything on that object except for instantiate it, but it does let you have objects of a different class to the one you initially called.
 
 ```ruby
-class Expense < ActiveRestClient::Base
+class Expense < Flexirest::Base
   def inc_vat
     ex_vat * 1.20
   end
 end
 
-class Address < ActiveRestClient::Base
+class Address < Flexirest::Base
   def full_string
     return "#{self.street}, #{self.city}, #{self.region}, #{self.country}"
   end
 end
 
-class Person < ActiveRestClient::Base
+class Person < Flexirest::Base
   get :find, "/people/:id", :has_many => {:expenses => Expense}, :has_one => {:address => Address}
 end
 
@@ -193,7 +193,7 @@ The difference between the last 3 examples is that a key of `url` or `href` sign
 It is required that the URL is a complete URL including a protocol starting with "http".  To configure this use code like:
 
 ```ruby
-class Person < ActiveRestClient::Base
+class Person < Flexirest::Base
   get :find, "/people/:id", :lazy => [:orders, :refunds]
 end
 ```
@@ -232,7 +232,7 @@ It's common to have resources that are logically children of other resources. Fo
 In these cases, your child class will contain the following:
 
 ```ruby
-class Ad < ActiveRestClient::Base
+class Ad < Flexirest::Base
   post :create, "/magazines/:magazine_id/ads"
   get :all, "/magazines/:magazine_id/ads"
 end
@@ -250,11 +250,11 @@ Add.create(magazine_id: 1, title: "My Add Title")
 OK, so let's say you have an API for getting articles.  Each article has a property called `title` (which is a string) and a property `images` which includes a list of URIs.  Following this URI would take you to a image API that returns the image's `filename` and `filesize`.  We'll also assume this is a HAL compliant API. We would declare our two models (one for articles and one for images) like the following:
 
 ```ruby
-class Article < ActiveRestClient::Base
+class Article < Flexirest::Base
   get :find, '/articles/:id', has_many:{:images => Image} # ,lazy:[:images] isn't needed as we're using HAL
 end
 
-class Image < ActiveRestClient::Base
+class Image < Flexirest::Base
   # You may have mappings here
 
   def nice_size
@@ -289,7 +289,7 @@ When it comes time to use it, you would do something like this:
 
 ```ruby
 @article = Article.find(1)
-@article.images.is_a?(ActiveRestClient::LazyAssociationLoader)
+@article.images.is_a?(Flexirest::LazyAssociationLoader)
 @article.images.size == 2
 @article.images.each do |image|
   puts image.inspect
@@ -318,13 +318,13 @@ puts @image.nice_size
 Expires and ETag based caching is enabled by default, but with a simple line in the application.rb/production.rb you can disable it:
 
 ```ruby
-ActiveRestClient::Base.perform_caching = false
+Flexirest::Base.perform_caching = false
 ```
 
 or you can disable it per classes with:
 
 ```ruby
-class Person < ActiveRestClient::Base
+class Person < Flexirest::Base
   perform_caching false
 end
 ```
@@ -332,7 +332,7 @@ end
 If Rails is defined, it will default to using Rails.cache as the cache store, if not, you'll need to configure one with a `ActiveSupport::Cache::Store` compatible object using:
 
 ```ruby
-ActiveRestClient::Base.cache_store = Redis::Store.new("redis://localhost:6379/0/cache")
+Flexirest::Base.cache_store = Redis::Store.new("redis://localhost:6379/0/cache")
 ```
 
 ### Using filters
@@ -344,7 +344,7 @@ The filter is passed the name of the method (e.g. `:save`) and an object (a requ
 ```ruby
 require 'secure_random'
 
-class Person < ActiveRestClient::Base
+class Person < Flexirest::Base
   before_request do |name, request|
     if request.post? || name == :save
       id = request.post_params.delete(:id)
@@ -387,7 +387,7 @@ end
 If you need to, you can create a custom parent class with a `before_request` filter and all children will inherit this filter.
 
 ```ruby
-class MyProject::Base < ActiveRestClient::Base
+class MyProject::Base < Flexirest::Base
   before_request do |name, request|
     request.get_params[:api_key] = "1234567890-1234567890"
   end
@@ -401,7 +401,7 @@ end
 After filters work in exactly the same way:
 
 ```ruby
-class Person < ActiveRestClient::Base
+class Person < Flexirest::Base
   after_request :fix_empty_content
 
   private
@@ -416,14 +416,14 @@ end
 
 ### Lazy Loading
 
-ActiveRestClient supports lazy loading (delaying the actual API call until the response is actually used, so that views can be cached without still causing API calls).
+Flexirest supports lazy loading (delaying the actual API call until the response is actually used, so that views can be cached without still causing API calls).
 
 **Note: Currently this isn't enabled by default, but this is likely to change in the future to make lazy loading the default.**
 
 To enable it, simply call the lazy_load! method in your class definition:
 
 ```ruby
-class Article < ActiveRestClient::Base
+class Article < Flexirest::Base
   lazy_load!
 end
 ```
@@ -450,7 +450,7 @@ This will return an array of the named method for each object or the response fr
 You can authenticate with Basic authentication by putting the username and password in to the `base_url` or by setting them within the specific model:
 
 ```ruby
-class Person < ActiveRestClient::Base
+class Person < Flexirest::Base
   username 'api'
   password 'eb693ec-8252c-d6301-02fd0-d0fb7-c3485'
 
@@ -467,12 +467,12 @@ require 'api-auth'
 
 @access_id = '123456'
 @secret_key = 'abcdef'
-ActiveRestClient::Base.api_auth_credentials(@access_id, @secret_key)
+Flexirest::Base.api_auth_credentials(@access_id, @secret_key)
 ```
 
 You can also specify different credentials for different models just like configuring base_url
 ```ruby
-class Person < ActiveRestClient::Base
+class Person < Flexirest::Base
   api_auth_credentials('123456', 'abcdef')
 end
 ```
@@ -481,10 +481,10 @@ For more information on how to generate an access id and secret key please read 
 
 ### Body Types
 
-By default ActiveRestClient puts the body in to normal CGI parameters in K=V&K2=V2 format.  However, if you want to use JSON for your PUT/POST requests, you can use either (the other option, the default, is `:form_encoded`):
+By default Flexirest puts the body in to normal CGI parameters in K=V&K2=V2 format.  However, if you want to use JSON for your PUT/POST requests, you can use either (the other option, the default, is `:form_encoded`):
 
 ```ruby
-class Person < ActiveRestClient::Base
+class Person < Flexirest::Base
   request_body_type :json
   # ...
 end
@@ -493,7 +493,7 @@ end
 or
 
 ```ruby
-ActiveRestClient::Base.request_body_type = :json
+Flexirest::Base.request_body_type = :json
 ```
 
 This will also set the header `Content-Type` to `application/x-www-form-urlencoded` by default or `application/json; charset=utf-8` when `:json`. You can override this using the filter `before_request`.
@@ -501,7 +501,7 @@ This will also set the header `Content-Type` to `application/x-www-form-urlencod
 If you have an API that is inconsistent in its body type requirements, you can also specify it on the individual method mapping:
 
 ```ruby
-class Person < ActiveRestClient::Base
+class Person < Flexirest::Base
   request_body_type :form_encoded # This is the default, but just for demo purposes
 
   get :all, '/people', request_body_type: :json
@@ -513,12 +513,12 @@ end
 Sometimes you know you will need to make a bunch of requests and you don't want to wait for one to finish to start the next. When using parallel requests there is the potential to finish many requests all at the same time taking only as long as the single longest request. To use parallel requests you will need to set Active-Rest-Client to use a Faraday adapter that supports parallel requests [(such as Typhoeus)](https://github.com/lostisland/faraday/wiki/Parallel-requests).
 ```ruby
 # Set adapter to Typhoeus to use parallel requests
-ActiveRestClient::Base.adapter = :typhoeus
+Flexirest::Base.adapter = :typhoeus
 ```
 
 Now you just need to get ahold of the connection that is going to make the requests by specifying the same host that the models will be using. When inside the `in_parallel` block call request methods as usual and access the results after the `in_parallel` block ends.
 ```ruby
-ActiveRestClient::ConnectionManager.in_parallel('https://www.example.com') do
+Flexirest::ConnectionManager.in_parallel('https://www.example.com') do
     @person = Person.find(1234)
     @employers = Employer.all
 
@@ -535,7 +535,7 @@ puts @employers.size #=> 7
 There are times when an API hasn't been developed yet, so you want to fake the API call response.  To do this, you can simply pass a `fake` option when mapping the call containing the response.
 
 ```ruby
-class Person < ActiveRestClient::Base
+class Person < Flexirest::Base
   get :all, '/people', fake: [{first_name:"Johnny"}, {first_name:"Bob"}]
 end
 ```
@@ -543,7 +543,7 @@ end
 You may want to run a proc when faking data (to put information from the parameters in to the response or return different responses depending on the parameters).  To do this just pass a proc to :fake:
 
 ```ruby
-class Person < ActiveRestClient::Base
+class Person < Flexirest::Base
   get :all, '/people', fake: ->(request) { {result: request.get_params[:id]} }
 end
 ```
@@ -553,11 +553,11 @@ end
 Sometimes you have have a URL that you just want to force through, but have the response handled in the same way as normal objects or you want to have the filters run (say for authentication).  The easiest way to do that is to call `_request` on the class:
 
 ```ruby
-class Person < ActiveRestClient::Base
+class Person < Flexirest::Base
 end
 
 people = Person._request('http://api.example.com/v1/people') # Defaults to get with no parameters
-# people is a normal ActiveRestClient object, implementing iteration, HAL loading, etc.
+# people is a normal Flexirest object, implementing iteration, HAL loading, etc.
 
 Person._request('http://api.example.com/v1/people', :post, {id:1234,name:"John"}) # Post with parameters
 ```
@@ -568,7 +568,7 @@ If you want to use a lazy loaded request instead (so it will create an object th
 @person = Person._lazy_request(Person._request_for(:find, 1234))
 ```
 
-This initially creates an ActiveRestClient::Request object as if you'd called `Person.find(1234)` which is then passed in to the `_lazy_request` method to return an object that will call the request if any properties are actually used.  This may be useful at some point, but it's actually easier to just prefix the `find` method call with `lazy_` like:
+This initially creates an Flexirest::Request object as if you'd called `Person.find(1234)` which is then passed in to the `_lazy_request` method to return an object that will call the request if any properties are actually used.  This may be useful at some point, but it's actually easier to just prefix the `find` method call with `lazy_` like:
 
 ```ruby
 @person = Person.lazy_find(1234)
@@ -578,14 +578,14 @@ Doing this will try to find a literally mapped method called "lazy_find" and if 
 
 ### Plain Requests
 
-If you are already using ActiveRestClient but then want to simply call a normal URL and receive the resulting content as a string (i.e. not going through JSON parsing or instantiating in to an ActiveRestClient::Base descendent) you can use code like this:
+If you are already using Flexirest but then want to simply call a normal URL and receive the resulting content as a string (i.e. not going through JSON parsing or instantiating in to an Flexirest::Base descendent) you can use code like this:
 
 ```ruby
-class Person < ActiveRestClient::Base
+class Person < Flexirest::Base
 end
 
 people = Person._plain_request('http://api.example.com/v1/people') # Defaults to get with no parameters
-# people is a normal ActiveRestClient object, implementing iteration, HAL loading, etc.
+# people is a normal Flexirest object, implementing iteration, HAL loading, etc.
 
 Person._plain_request('http://api.example.com/v1/people', :post, {id:1234,name:"John"}) # Post with parameters
 ```
@@ -594,10 +594,10 @@ The parameters are the same as for `_request`, but it does no parsing on the res
 
 ### Proxying APIs
 
-Sometimes you may be working with an old API that returns JSON in a less than ideal format or the URL or parameters required have changed.  In this case you can define a descendent of `ActiveRestClient::ProxyBase`, pass it to your model as the proxy and have it rework URLs/parameters on the way out and the response on the way back in (already converted to a Ruby hash/array). By default any non-proxied URLs are just passed through to the underlying connection layer. For example:
+Sometimes you may be working with an old API that returns JSON in a less than ideal format or the URL or parameters required have changed.  In this case you can define a descendent of `Flexirest::ProxyBase`, pass it to your model as the proxy and have it rework URLs/parameters on the way out and the response on the way back in (already converted to a Ruby hash/array). By default any non-proxied URLs are just passed through to the underlying connection layer. For example:
 
 ```ruby
-class ArticleProxy < ActiveRestClient::ProxyBase
+class ArticleProxy < Flexirest::ProxyBase
   get "/all" do
     url "/all_people" # Equiv to url.gsub!("/all", "/all_people") if you wanted to keep params
     response = passthrough
@@ -608,7 +608,7 @@ class ArticleProxy < ActiveRestClient::ProxyBase
   end
 end
 
-class Article < ActiveRestClient::Base
+class Article < Flexirest::Base
   proxy ArticleProxy
   base_url "http://www.example.com"
 
@@ -677,7 +677,7 @@ class ArticleTranslator
   end
 end
 
-class Article < ActiveRestClient::Base
+class Article < Flexirest::Base
   translator ArticleTranslator
   base_url "http://www.example.com"
 
@@ -693,7 +693,7 @@ Article.all.first_name == "Billy"
 If you want to specify default parameters you shouldn't use a path like:
 
 ```ruby
-class Person < ActiveRestClient::Base
+class Person < Flexirest::Base
   get :all, '/people?all=true' # THIS IS WRONG!!!
 end
 ```
@@ -701,7 +701,7 @@ end
 You should use a defaults option to specify the defaults, then they will be correctly overwritten when making the request
 
 ```ruby
-class Person < ActiveRestClient::Base
+class Person < Flexirest::Base
   get :all, '/people', :defaults => {:active => true}
 end
 
@@ -710,24 +710,24 @@ end
 
 ### HTTP/Parse Error Handling
 
-Sometimes the backend server may respond with a non-200/304 header, in which case the code will raise an `ActiveRestClient::HTTPClientException` for 4xx errors or an `ActiveRestClient::HTTPServerException` for 5xx errors.  These both have a `status` accessor and a `result` accessor (for getting access to the parsed body):
+Sometimes the backend server may respond with a non-200/304 header, in which case the code will raise an `Flexirest::HTTPClientException` for 4xx errors or an `Flexirest::HTTPServerException` for 5xx errors.  These both have a `status` accessor and a `result` accessor (for getting access to the parsed body):
 
 ```ruby
 begin
   Person.all
-rescue ActiveRestClient::HTTPClientException, ActiveRestClient::HTTPServerException => e
+rescue Flexirest::HTTPClientException, Flexirest::HTTPServerException => e
   Rails.logger.error("API returned #{e.status} : #{e.result.message}")
 end
 ```
 
-If the response is unparsable (e.g. not in the desired content type), then it will raise an `ActiveRestClient::ResponseParseException` which has a `status` accessor for the HTTP status code and a `body` accessor for the unparsed response body.
+If the response is unparsable (e.g. not in the desired content type), then it will raise an `Flexirest::ResponseParseException` which has a `status` accessor for the HTTP status code and a `body` accessor for the unparsed response body.
 
 ### Validation
 
 You can create validations on your objects just like Rails' built in ActiveModel validations.  For example:
 
 ```ruby
-class Person < ActiveRestClient::Base
+class Person < Flexirest::Base
   validates :first_name, presence:true
   validates :password, length:{within:6..12}
   validates :post_code, length:{minimum:6, maximum:8}
@@ -750,11 +750,11 @@ Validations are run when calling `valid?` or when calling any API on an instance
 You can turn on verbose debugging to see what is sent to the API server and what is returned in one of these two ways:
 
 ```ruby
-class Article < ActiveRestClient::Base
+class Article < Flexirest::Base
   verbose true
 end
 
-class Person < ActiveRestClient::Base
+class Person < Flexirest::Base
   verbose!
 end
 ```
@@ -764,7 +764,7 @@ By default verbose logging isn't enabled, so it's up to the developer to enable 
 If you prefer to record the output of an API call in a more automated fashion you can use a callback called `record_response` like this:
 
 ```ruby
-class Article < ActiveRestClient::Base
+class Article < Flexirest::Base
   record_response do |url, response|
     File.open(url.parameterize, "w") do |f|
       f << response.body
@@ -777,7 +777,7 @@ end
 
 ### XML Responses
 
-ActiveRestClient uses Crack to allow parsing of XML responses.  For example, given an XML response of (with a content type of `application/xml` or `text/xml`):
+Flexirest uses Crack to allow parsing of XML responses.  For example, given an XML response of (with a content type of `application/xml` or `text/xml`):
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
@@ -813,7 +813,7 @@ ActiveRestClient uses Crack to allow parsing of XML responses.  For example, giv
 You can use:
 
 ```ruby
-class Feed < ActiveRestClient::Base
+class Feed < Flexirest::Base
   base_url "http://www.example.com/v1/"
   get :atom, "/atom"
 end
@@ -830,7 +830,7 @@ end
 If your XML object comes back with a root node and you'd like to ignore it, you can define the mapping as:
 
 ```ruby
-class Feed < ActiveRestClient::Base
+class Feed < Flexirest::Base
   get :atom, "/atom", ignore_xml_root: "feed"
 end
 ```

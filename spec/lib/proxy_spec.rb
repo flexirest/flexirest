@@ -1,7 +1,7 @@
 require 'spec_helper'
 require 'active_support/core_ext/hash'
 
-class ProxyExample < ActiveRestClient::ProxyBase
+class ProxyExample < Flexirest::ProxyBase
   get "/all" do
     url.gsub!("/all", "/getAll")
     passthrough
@@ -68,7 +68,7 @@ class ProxyExample < ActiveRestClient::ProxyBase
   end
 end
 
-class ProxyClientExample < ActiveRestClient::Base
+class ProxyClientExample < Flexirest::Base
   proxy ProxyExample
   base_url "http://www.example.com"
 
@@ -86,51 +86,51 @@ class ProxyClientExample < ActiveRestClient::Base
   get :hal_test, "/hal_test/:id"
 end
 
-describe ActiveRestClient::Base do
+describe Flexirest::Base do
   it "allows the URL to be changed" do
-    expect_any_instance_of(ActiveRestClient::Connection).to receive(:get).with("/getAll?id=1", instance_of(Hash)).and_return(OpenStruct.new(body:"{\"result\":true}", status:200, headers:{}))
+    expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/getAll?id=1", instance_of(Hash)).and_return(OpenStruct.new(body:"{\"result\":true}", status:200, headers:{}))
     ProxyClientExample.all(id:1)
   end
 
   it "allows the URL to be replaced" do
-    expect_any_instance_of(ActiveRestClient::Connection).to receive(:get).with("/new", instance_of(Hash)).and_return(OpenStruct.new(body:"{\"result\":true}", status:200, headers:{}))
+    expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/new", instance_of(Hash)).and_return(OpenStruct.new(body:"{\"result\":true}", status:200, headers:{}))
     ProxyClientExample.old
   end
 
   it "has access to the GET params and allow them to be changed/removed/added" do
-    expect_any_instance_of(ActiveRestClient::Connection).to receive(:get).with("/list?age=12&first_name=John", instance_of(Hash)).and_return(OpenStruct.new(body:"{\"result\":true}", status:200, headers:{}))
+    expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/list?age=12&first_name=John", instance_of(Hash)).and_return(OpenStruct.new(body:"{\"result\":true}", status:200, headers:{}))
     ProxyClientExample.list(fname:"John", lname:"Smith")
   end
 
   it "has access to the POST params and allow them to be changed/removed/added" do
-    expect_any_instance_of(ActiveRestClient::Connection).to receive(:post).with("/create", {age:12, first_name:"John"}.to_query, instance_of(Hash)).and_return(OpenStruct.new(body:"{\"result\":true}", status:200, headers:{}))
+    expect_any_instance_of(Flexirest::Connection).to receive(:post).with("/create", {age:12, first_name:"John"}.to_query, instance_of(Hash)).and_return(OpenStruct.new(body:"{\"result\":true}", status:200, headers:{}))
     ProxyClientExample.create(fname:"John", lname:"Smith")
   end
 
   it "has access to raw body content for requests" do
-    expect_any_instance_of(ActiveRestClient::Connection).to receive(:put).with("/update", "MY-BODY-CONTENT", instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"result\":true}", status:200, response_headers:{})))
+    expect_any_instance_of(Flexirest::Connection).to receive(:put).with("/update", "MY-BODY-CONTENT", instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"result\":true}", status:200, response_headers:{})))
     ProxyClientExample.update(fname:"John", lname:"Smith")
   end
 
   it "handles DELETE requests" do
-    expect_any_instance_of(ActiveRestClient::Connection).to receive(:delete).with("/remove", instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"result\":true}", status:200, response_headers:{})))
+    expect_any_instance_of(Flexirest::Connection).to receive(:delete).with("/remove", instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"result\":true}", status:200, response_headers:{})))
     ProxyClientExample.remove
   end
 
   it "can return fake JSON data and have this parsed in the normal way" do
-    expect_any_instance_of(ActiveRestClient::Connection).not_to receive(:get).with("/fake", instance_of(Hash))
+    expect_any_instance_of(Flexirest::Connection).not_to receive(:get).with("/fake", instance_of(Hash))
     ret = ProxyClientExample.fake
     expect(ret.id).to eq(1234)
   end
 
   it "can intercept the response and parse the response, alter it and pass it on during the request" do
-    expect_any_instance_of(ActiveRestClient::Connection).to receive(:get).with("/change-format", instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"fname\":\"Billy\"}", status:200, response_headers:{})))
+    expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/change-format", instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"fname\":\"Billy\"}", status:200, response_headers:{})))
     ret = ProxyClientExample.change_format
     expect(ret.first_name).to eq("Billy")
   end
 
   it "can intercept XML responses, parse the response, alter it and pass it on during the request" do
-    expect_any_instance_of(ActiveRestClient::Connection).to receive(:get).with("/change-xml-format",
+    expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/change-xml-format",
       instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(
       body:"<?xml version=\"1.0\" encoding=\"UTF-8\"?><object><fname>Billy</fname></object>",
       status:200,
@@ -140,20 +140,20 @@ describe ActiveRestClient::Base do
   end
 
   it 'skips the altering of the response body when there is none' do
-    allow_any_instance_of(ActiveRestClient::Connection).to receive(:get).with('/change-format', instance_of(Hash))
+    allow_any_instance_of(Flexirest::Connection).to receive(:get).with('/change-format', instance_of(Hash))
       .and_return(double(body: '', status: 200, headers: {}))
     result = ProxyClientExample.change_format
     expect(result._attributes).to be_empty
   end
 
   it "can continue with the request in the normal way, passing it on to the server" do
-    expect_any_instance_of(ActiveRestClient::Connection).to receive(:get).with("/not_proxied?id=1", instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"result\":true}", status:200, response_headers:{})))
+    expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/not_proxied?id=1", instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"result\":true}", status:200, response_headers:{})))
     ProxyClientExample.not_proxied(id:1)
   end
 
   it "caches responses in the standard way" do
 
-     cached_response = ActiveRestClient::CachedResponse.new(
+     cached_response = Flexirest::CachedResponse.new(
         status:200,
         result:@cached_object,
         etag:@etag)
@@ -163,7 +163,7 @@ describe ActiveRestClient::Base do
     ProxyClientExample.perform_caching true
     allow(ProxyClientExample).to receive(:cache_store).and_return(cache_store)
     expiry = 10.minutes.from_now.rfc2822
-    expect_any_instance_of(ActiveRestClient::Connection).to receive(:put).with("/update", "MY-BODY-CONTENT", instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"result\":true}", status:200, response_headers:{"Expires" => expiry, "ETag" => "123456"})))
+    expect_any_instance_of(Flexirest::Connection).to receive(:put).with("/update", "MY-BODY-CONTENT", instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"result\":true}", status:200, response_headers:{"Expires" => expiry, "ETag" => "123456"})))
     expect(ProxyClientExample.cache_store).to receive(:write) do |key, object, options|
       expect(key).to eq("ProxyClientExample:/update")
       expect(object).to be_an_instance_of(String)
@@ -181,8 +181,8 @@ describe ActiveRestClient::Base do
   end
 
   it "can force the URL from a filter without it being passed through URL replacement" do
-    expect_any_instance_of(ActiveRestClient::Connection).to receive(:get).with("/hal_test/1", instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"result\":true}", status:200, response_headers:{})))
-    expect_any_instance_of(ActiveRestClient::Connection).to receive(:get).with("/this/is/a/test", instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"result\":true}", status:200, response_headers:{})))
+    expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/hal_test/1", instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"result\":true}", status:200, response_headers:{})))
+    expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/this/is/a/test", instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"result\":true}", status:200, response_headers:{})))
     expect(ProxyClientExample.hal_test(id:1).test.result).to eq(true)
   end
 

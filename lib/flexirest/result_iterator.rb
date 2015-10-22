@@ -1,4 +1,4 @@
-module ActiveRestClient
+module Flexirest
   class ResultIterator
     include Enumerable
 

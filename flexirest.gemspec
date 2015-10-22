@@ -1,11 +1,11 @@
 # coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'active_rest_client/version'
+require 'flexirest/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = "active_rest_client"
-  spec.version       = ActiveRestClient::VERSION
+  spec.name          = "flexirest"
+  spec.version       = Flexirest::VERSION
   spec.platform      = Gem::Platform::RUBY
   spec.authors       = ["Which Ltd", "Andy Jeffries"]
   spec.email         = ["swlicensing@which.co.uk", "andy@andyjeffries.co.uk"]

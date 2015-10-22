@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 class RequestFilteringExample
-  include ActiveRestClient::RequestFiltering
+  include Flexirest::RequestFiltering
 
   before_request do |name, request|
     request.get_params[:filter1] = "Hello"
@@ -41,8 +41,8 @@ class SubClassedRequestFilteringExample < RequestFilteringExample
   end
 end
 
-describe ActiveRestClient::RequestFiltering do
-  let(:request) { OpenStruct.new(get_params:{}, post_params:{}, url:"http://www.example.com", headers:ActiveRestClient::HeadersList.new) }
+describe Flexirest::RequestFiltering do
+  let(:request) { OpenStruct.new(get_params:{}, post_params:{}, url:"http://www.example.com", headers:Flexirest::HeadersList.new) }
   let(:response) { OpenStruct.new(body:"") }
 
   it "should call through to adjust the parameters" do

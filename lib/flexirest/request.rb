@@ -3,7 +3,7 @@ require "multi_json"
 require 'crack'
 require 'crack/xml'
 
-module ActiveRestClient
+module Flexirest
 
   class Request
     attr_accessor :post_params, :get_params, :url, :path, :headers, :method, :object, :body, :forced_url, :original_url
@@ -15,7 +15,7 @@ module ActiveRestClient
       @method[:options][:has_one] ||= {}
       @overridden_name             = @method[:options][:overridden_name]
       @object                     = object
-      @response_delegate          = ActiveRestClient::RequestDelegator.new(nil)
+      @response_delegate          = Flexirest::RequestDelegator.new(nil)
       @params                     = params
       @headers                    = HeadersList.new
     end
@@ -132,7 +132,7 @@ module ActiveRestClient
       @instrumentation_name = "#{class_name}##{@method[:name]}"
       result = nil
       cached = nil
-      ActiveSupport::Notifications.instrument("request_call.active_rest_client", :name => @instrumentation_name) do
+      ActiveSupport::Notifications.instrument("request_call.flexirest", :name => @instrumentation_name) do
         @explicit_parameters = explicit_parameters
         @body = nil
         prepare_params
@@ -141,7 +141,7 @@ module ActiveRestClient
           if fake.respond_to?(:call)
             fake = fake.call(self)
           end
-          ActiveRestClient::Logger.debug "  \033[1;4;32m#{ActiveRestClient::NAME}\033[0m #{@instrumentation_name} - Faked response found"
+          Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest::NAME}\033[0m #{@instrumentation_name} - Faked response found"
           content_type = @method[:options][:fake_content_type] || "application/json"
           return handle_response(OpenStruct.new(status:200, body:fake, response_headers:{"X-ARC-Faked-Response" => "true", "Content-Type" => content_type}))
         end
@@ -156,10 +156,10 @@ module ActiveRestClient
         cached = original_object_class.read_cached_response(self)
         if cached
           if cached.expires && cached.expires > Time.now
-            ActiveRestClient::Logger.debug "  \033[1;4;32m#{ActiveRestClient::NAME}\033[0m #{@instrumentation_name} - Absolutely cached copy found"
+            Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest::NAME}\033[0m #{@instrumentation_name} - Absolutely cached copy found"
             return handle_cached_response(cached)
           elsif cached.etag.to_s != "" #present? isn't working for some reason
-            ActiveRestClient::Logger.debug "  \033[1;4;32m#{ActiveRestClient::NAME}\033[0m #{@instrumentation_name} - Etag cached copy found with etag #{cached.etag}"
+            Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest::NAME}\033[0m #{@instrumentation_name} - Etag cached copy found with etag #{cached.etag}"
             etag = cached.etag
           end
         end
@@ -178,12 +178,12 @@ module ActiveRestClient
         # Otherwise this callback is called after the parallel request block ends.
         response.on_complete do |response_env|
           if verbose?
-            ActiveRestClient::Logger.debug "  Response"
-            ActiveRestClient::Logger.debug "  << Status : #{response_env.status}"
+            Flexirest::Logger.debug "  Response"
+            Flexirest::Logger.debug "  << Status : #{response_env.status}"
             response_env.response_headers.each do |k,v|
-              ActiveRestClient::Logger.debug "  << #{k} : #{v}"
+              Flexirest::Logger.debug "  << #{k} : #{v}"
             end
-            ActiveRestClient::Logger.debug "  << Body:\n#{response_env.body}"
+            Flexirest::Logger.debug "  << Body:\n#{response_env.body}"
           end
 
           if object_is_class? && @object.record_response?
@@ -270,7 +270,7 @@ module ActiveRestClient
       if @method[:options][:url] || @forced_url
         @url = @method[:options][:url] || @method[:url]
         @url = @forced_url if @forced_url
-        if connection = ActiveRestClient::ConnectionManager.find_connection_for_url(@url)
+        if connection = Flexirest::ConnectionManager.find_connection_for_url(@url)
           @url = @url.slice(connection.base_url.length, 255)
         else
           parts = @url.match(%r{^(https?://[a-z\d\.:-]+?)(/.*)}).to_a
@@ -282,7 +282,7 @@ module ActiveRestClient
             _, @base_url, @url = parts
           end
           base_url.gsub!(%r{//(.)}, "//#{username}:#{password}@\\1") if username && !base_url[%r{//[^/]*:[^/]*@}]
-          connection = ActiveRestClient::ConnectionManager.get_connection(@base_url)
+          connection = Flexirest::ConnectionManager.get_connection(@base_url)
         end
       else
         parts = @url.match(%r{^(https?://[a-z\d\.:-]+?)(/.*)}).to_a
@@ -293,18 +293,18 @@ module ActiveRestClient
           base_url = @base_url
         end
         base_url.gsub!(%r{//(.)}, "//#{username}:#{password}@\\1") if username && !base_url[%r{//[^/]*:[^/]*@}]
-        connection = ActiveRestClient::ConnectionManager.get_connection(base_url)
+        connection = Flexirest::ConnectionManager.get_connection(base_url)
       end
-      ActiveRestClient::Logger.info "  \033[1;4;32m#{ActiveRestClient::NAME}\033[0m #{@instrumentation_name} - Requesting #{connection.base_url}#{@url}"
+      Flexirest::Logger.info "  \033[1;4;32m#{Flexirest::NAME}\033[0m #{@instrumentation_name} - Requesting #{connection.base_url}#{@url}"
 
       if verbose?
-        ActiveRestClient::Logger.debug "ActiveRestClient Verbose Log:"
-        ActiveRestClient::Logger.debug "  Request"
-        ActiveRestClient::Logger.debug "  >> #{http_method.upcase} #{@url} HTTP/1.1"
+        Flexirest::Logger.debug "Flexirest Verbose Log:"
+        Flexirest::Logger.debug "  Request"
+        Flexirest::Logger.debug "  >> #{http_method.upcase} #{@url} HTTP/1.1"
         http_headers.each do |k,v|
-          ActiveRestClient::Logger.debug "  >> #{k} : #{v}"
+          Flexirest::Logger.debug "  >> #{k} : #{v}"
         end
-        ActiveRestClient::Logger.debug "  >> Body:\n#{@body}"
+        Flexirest::Logger.debug "  >> Body:\n#{@body}"
       end
 
       request_options = {:headers => http_headers}
@@ -332,7 +332,7 @@ module ActiveRestClient
     end
 
     def handle_cached_response(cached)
-      if cached.result.is_a? ActiveRestClient::ResultIterator
+      if cached.result.is_a? Flexirest::ResultIterator
         cached.result
       else
         if object_is_class?
@@ -349,7 +349,7 @@ module ActiveRestClient
       status = @response.status || 200
 
       if cached && response.status == 304
-        ActiveRestClient::Logger.debug "  \033[1;4;32m#{ActiveRestClient::NAME}\033[0m #{@instrumentation_name}" +
+        Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest::NAME}\033[0m #{@instrumentation_name}" +
           ' - Etag copy is the same as the server'
         return handle_cached_response(cached)
       end
@@ -359,9 +359,9 @@ module ActiveRestClient
           return @response = response.body
         elsif is_json_response? || is_xml_response?
           if @response.respond_to?(:proxied) && @response.proxied
-            ActiveRestClient::Logger.debug "  \033[1;4;32m#{ActiveRestClient::NAME}\033[0m #{@instrumentation_name} - Response was proxied, unable to determine size"
+            Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest::NAME}\033[0m #{@instrumentation_name} - Response was proxied, unable to determine size"
           else
-            ActiveRestClient::Logger.debug "  \033[1;4;32m#{ActiveRestClient::NAME}\033[0m #{@instrumentation_name} - Response received #{@response.body.size} bytes"
+            Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest::NAME}\033[0m #{@instrumentation_name} - Response received #{@response.body.size} bytes"
           end
           result = generate_new_object(ignore_xml_root: @method[:options][:ignore_xml_root])
         else
@@ -414,11 +414,11 @@ module ActiveRestClient
         k = k.to_sym
         overridden_name = select_name(k, overridden_name)
         if @method[:options][:lazy].include?(k)
-          object._attributes[k] = ActiveRestClient::LazyAssociationLoader.new(overridden_name, v, self, overridden_name:(overridden_name))
+          object._attributes[k] = Flexirest::LazyAssociationLoader.new(overridden_name, v, self, overridden_name:(overridden_name))
         elsif v.is_a? Hash
           object._attributes[k] = new_object(v, overridden_name )
         elsif v.is_a? Array
-          object._attributes[k] = ActiveRestClient::ResultIterator.new
+          object._attributes[k] = Flexirest::ResultIterator.new
           v.each do |item|
             if item.is_a? Hash
               object._attributes[k] << new_object(item, overridden_name)
@@ -461,13 +461,13 @@ module ActiveRestClient
       if attributes["_links"]
         attributes["_links"].each do |key, value|
           if value.is_a?(Array)
-            object._attributes[key.to_sym] ||= ActiveRestClient::ResultIterator.new
+            object._attributes[key.to_sym] ||= Flexirest::ResultIterator.new
             value.each do |element|
               begin
                 embedded_version = attributes["_embedded"][key].detect{|embed| embed["_links"]["self"]["href"] == element["href"]}
                 object._attributes[key.to_sym] << new_object(embedded_version, key)
               rescue NoMethodError
-                object._attributes[key.to_sym] << ActiveRestClient::LazyAssociationLoader.new(key, element, self)
+                object._attributes[key.to_sym] << Flexirest::LazyAssociationLoader.new(key, element, self)
               end
             end
           else
@@ -475,7 +475,7 @@ module ActiveRestClient
               embedded_version = attributes["_embedded"][key]
               object._attributes[key.to_sym] = new_object(embedded_version, key)
             rescue NoMethodError
-              object._attributes[key.to_sym] = ActiveRestClient::LazyAssociationLoader.new(key, value, self)
+              object._attributes[key.to_sym] = Flexirest::LazyAssociationLoader.new(key, value, self)
             end
           end
         end
@@ -525,7 +525,7 @@ module ActiveRestClient
         body
       end
       if body.is_a? Array
-        result = ActiveRestClient::ResultIterator.new(@response)
+        result = Flexirest::ResultIterator.new(@response)
         body.each do |json_object|
           result << new_object(json_object, @overridden_name)
         end

@@ -1,41 +1,41 @@
 require 'spec_helper'
 
-class MonthExample < ActiveRestClient::Base
+class MonthExample < Flexirest::Base
   base_url "http://www.example.com"
 
   get :find, "/month/:id", fake:"{\"name\":\"january\"}"
 end
 
-class YearExample < ActiveRestClient::Base
+class YearExample < Flexirest::Base
   base_url "http://www.example.com"
 
   get :find, "/year/:id", lazy: { months: MonthExample }, fake: "{\"months\": [\"http://www.example.com/months/1\"] }"
 end
 
-describe ActiveRestClient::LazyAssociationLoader do
+describe Flexirest::LazyAssociationLoader do
   let(:url1) { "http://www.example.com/some/url" }
   let(:url2) { "http://www.example.com/some/other" }
   let(:calling_object) { o = double("Object").as_null_object }
-  let(:request) { ActiveRestClient::Request.new({:method => :get, url:"http://api.example.com/v1/foo"}, calling_object) }
+  let(:request) { Flexirest::Request.new({:method => :get, url:"http://api.example.com/v1/foo"}, calling_object) }
 
   it "should raise an exception if you initialize it with a value that is not a string, hash or array" do
     expect do
-      ActiveRestClient::LazyAssociationLoader.new(:person, OpenStruct.new, nil)
-    end.to raise_error(ActiveRestClient::InvalidLazyAssociationContentException)
+      Flexirest::LazyAssociationLoader.new(:person, OpenStruct.new, nil)
+    end.to raise_error(Flexirest::InvalidLazyAssociationContentException)
   end
 
   it "should store a URL passed as a string to the new object during creation" do
-    loader = ActiveRestClient::LazyAssociationLoader.new(:person, url1, nil)
+    loader = Flexirest::LazyAssociationLoader.new(:person, url1, nil)
     expect(loader.instance_variable_get(:@url)).to eq(url1)
   end
 
   it "should store a URL from a hash passed to the new object during creation" do
-    loader = ActiveRestClient::LazyAssociationLoader.new(:person, {"url" => url1}, nil)
+    loader = Flexirest::LazyAssociationLoader.new(:person, {"url" => url1}, nil)
     expect(loader.instance_variable_get(:@url)).to eq(url1)
   end
 
   it "should store a list of URLs from an array passed to the new object during creation" do
-    loader = ActiveRestClient::LazyAssociationLoader.new(:person, [url1, url2], nil)
+    loader = Flexirest::LazyAssociationLoader.new(:person, [url1, url2], nil)
     array = loader.instance_variable_get(:@subloaders)
     expect(array[0].instance_variable_get(:@url)).to eq(url1)
     expect(array[1].instance_variable_get(:@url)).to eq(url2)
@@ -43,14 +43,14 @@ describe ActiveRestClient::LazyAssociationLoader do
   end
 
   it "should store a hash of URLs from a hash passed to the new object during creation" do
-    loader = ActiveRestClient::LazyAssociationLoader.new(:person, {"main" => url1, "thumb" => url2}, request)
+    loader = Flexirest::LazyAssociationLoader.new(:person, {"main" => url1, "thumb" => url2}, request)
     expect(loader.main.instance_variable_get(:@url)).to eq(url1)
     expect(loader.thumb.instance_variable_get(:@url)).to eq(url2)
     expect(loader.size).to eq(2)
   end
 
   it "should still be able to iterate over a hash of URLs from a hash passed to the new object during creation" do
-    loader = ActiveRestClient::LazyAssociationLoader.new(:person, {"main" => url1, "thumb" => url2}, request)
+    loader = Flexirest::LazyAssociationLoader.new(:person, {"main" => url1, "thumb" => url2}, request)
     output = []
     loader.each do |k, v|
       output << v.instance_variable_get(:@url)
@@ -62,19 +62,19 @@ describe ActiveRestClient::LazyAssociationLoader do
   end
 
   it "should be able to list the keys from a hash passed to the new object during creation" do
-    loader = ActiveRestClient::LazyAssociationLoader.new(:person, {"main" => url1, "thumb" => url2}, request)
+    loader = Flexirest::LazyAssociationLoader.new(:person, {"main" => url1, "thumb" => url2}, request)
     expect(loader.keys[0]).to eq(:main)
     expect(loader.keys[1]).to eq(:thumb)
     expect(loader.keys.size).to eq(2)
   end
 
   it "should report the size of a list of stored URLs" do
-    loader = ActiveRestClient::LazyAssociationLoader.new(:person, [url1, url2], nil)
+    loader = Flexirest::LazyAssociationLoader.new(:person, [url1, url2], nil)
     expect(loader.size).to eq(2)
   end
 
   it "should respond to each and iterate through the list of stored URLs" do
-    loader = ActiveRestClient::LazyAssociationLoader.new(:person, [url1, url2], nil)
+    loader = Flexirest::LazyAssociationLoader.new(:person, [url1, url2], nil)
     output = []
     loader.each do |o|
       output << o.instance_variable_get(:@url)
@@ -86,10 +86,10 @@ describe ActiveRestClient::LazyAssociationLoader do
   end
 
   it "should return a LazyAssociationLoader for each stored URL in a list" do
-    loader = ActiveRestClient::LazyAssociationLoader.new(:person, [url1, url2], nil)
+    loader = Flexirest::LazyAssociationLoader.new(:person, [url1, url2], nil)
     output = []
     loader.each do |o|
-      expect(o).to be_an_instance_of(ActiveRestClient::LazyAssociationLoader)
+      expect(o).to be_an_instance_of(Flexirest::LazyAssociationLoader)
     end
   end
 
@@ -99,13 +99,13 @@ describe ActiveRestClient::LazyAssociationLoader do
     allow(request).to receive(:method).and_return(method_data)
     expect(request).to receive(:object).with(any_args).and_return(Array.new)
     expect(request).to receive(:call).with(any_args).and_return("")
-    expect(ActiveRestClient::Request).to receive(:new).with(any_args).and_return(request)
-    loader = ActiveRestClient::LazyAssociationLoader.new(:person, url1, request)
+    expect(Flexirest::Request).to receive(:new).with(any_args).and_return(request)
+    loader = Flexirest::LazyAssociationLoader.new(:person, url1, request)
     loader.length
   end
 
   it "should proxy methods to the underlying object if the request has been made" do
-    loader = ActiveRestClient::LazyAssociationLoader.new(:person, url1, request)
+    loader = Flexirest::LazyAssociationLoader.new(:person, url1, request)
     object = double("Object")
     expect(object).to receive(:length).and_return(1)
     loader.instance_variable_set(:@object, object)
@@ -113,8 +113,8 @@ describe ActiveRestClient::LazyAssociationLoader do
   end
 
   it "should be able to iterate underlying object if it's an array" do
-    loader = ActiveRestClient::LazyAssociationLoader.new(:person, url1, request)
-    expect_any_instance_of(ActiveRestClient::Request).to receive(:call).with(any_args).and_return([1,2,3])
+    loader = Flexirest::LazyAssociationLoader.new(:person, url1, request)
+    expect_any_instance_of(Flexirest::Request).to receive(:call).with(any_args).and_return([1,2,3])
     test = []
     loader.each do |item|
       test << item
@@ -123,8 +123,8 @@ describe ActiveRestClient::LazyAssociationLoader do
   end
 
   it "should be able to return the size of the underlying object if it's an array" do
-    loader = ActiveRestClient::LazyAssociationLoader.new(:person, url1, request)
-    expect_any_instance_of(ActiveRestClient::Request).to receive(:call).with(any_args).and_return([1,2,3])
+    loader = Flexirest::LazyAssociationLoader.new(:person, url1, request)
+    expect_any_instance_of(Flexirest::Request).to receive(:call).with(any_args).and_return([1,2,3])
     expect(loader.size).to eq(3)
   end
 

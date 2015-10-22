@@ -1,12 +1,12 @@
 require 'spec_helper'
 
-describe ActiveRestClient::Configuration do
+describe Flexirest::Configuration do
   before :each do
     Object.send(:remove_const, :ConfigurationExample) if defined?(ConfigurationExample)
-    ActiveRestClient::Base._reset_configuration!
+    Flexirest::Base._reset_configuration!
 
     class ConfigurationExample
-      include ActiveRestClient::Configuration
+      include Flexirest::Configuration
       base_url "http://www.example.com"
       username "john"
       password "smith"
@@ -14,13 +14,13 @@ describe ActiveRestClient::Configuration do
     end
 
     class ConfigurationExampleBare
-      include ActiveRestClient::Configuration
+      include Flexirest::Configuration
     end
   end
 
   it "should default to non-whiny missing methods" do
     class UnusuedConfigurationExample1
-      include ActiveRestClient::Configuration
+      include Flexirest::Configuration
     end
     expect(UnusuedConfigurationExample1.whiny_missing).to be_falsey
   end
@@ -35,25 +35,25 @@ describe ActiveRestClient::Configuration do
   end
 
   it "should remember the set base_url on a class, overriding a general one" do
-    ActiveRestClient::Base.base_url = "http://general.example.com"
+    Flexirest::Base.base_url = "http://general.example.com"
     expect(ConfigurationExample.base_url).to eq("http://www.example.com")
   end
 
   it "should remove a trailing slash from a globally configured base_url" do
-    ActiveRestClient::Base.base_url = "http://general.example.com/"
+    Flexirest::Base.base_url = "http://general.example.com/"
     expect(ConfigurationExample.base_url).to eq("http://www.example.com")
-    ActiveRestClient::Base.base_url = ""
+    Flexirest::Base.base_url = ""
   end
 
   it "should remember the set base_url on the base class if a more specific one hasn't been set" do
-    ActiveRestClient::Base.base_url = "http://general.example.com"
+    Flexirest::Base.base_url = "http://general.example.com"
     expect(ConfigurationExampleBare.base_url).to eq("http://general.example.com")
-    ActiveRestClient::Base.base_url = ""
+    Flexirest::Base.base_url = ""
   end
 
   it "should remove a trailing slash from a specific class configured base_url" do
     class ConfigurationExample2
-      include ActiveRestClient::Configuration
+      include Flexirest::Configuration
       base_url "http://specific.example.com/"
     end
     expect(ConfigurationExample2.base_url).to eq("http://specific.example.com")
@@ -64,21 +64,21 @@ describe ActiveRestClient::Configuration do
   end
 
   it "should remember the set username on a class, overriding a general one" do
-    ActiveRestClient::Base.username = "bill"
+    Flexirest::Base.username = "bill"
     expect(ConfigurationExample.username).to eq("john")
-    ActiveRestClient::Base.username = nil
+    Flexirest::Base.username = nil
   end
 
   it "should escape the username" do
-    ActiveRestClient::Base.username = "bill@example.com"
-    expect(ActiveRestClient::Base.username).to eq("bill%40example.com")
-    ActiveRestClient::Base.username = nil
+    Flexirest::Base.username = "bill@example.com"
+    expect(Flexirest::Base.username).to eq("bill%40example.com")
+    Flexirest::Base.username = nil
   end
 
   it "should not doubly escape the username" do
-    ActiveRestClient::Base.username = "bill%40example.com"
-    expect(ActiveRestClient::Base.username).to_not eq("bill%2540example.com")
-    ActiveRestClient::Base.username = nil
+    Flexirest::Base.username = "bill%40example.com"
+    expect(Flexirest::Base.username).to_not eq("bill%2540example.com")
+    Flexirest::Base.username = nil
   end
 
   it "should remember the set password" do
@@ -86,25 +86,25 @@ describe ActiveRestClient::Configuration do
   end
 
   it "should remember the set password on a class, overriding a general one" do
-    ActiveRestClient::Base.password = "bloggs"
+    Flexirest::Base.password = "bloggs"
     expect(ConfigurationExample.password).to eq("smith")
-    ActiveRestClient::Base.password = nil
+    Flexirest::Base.password = nil
   end
 
   it "should escape the password" do
-    ActiveRestClient::Base.password = "something@else"
-    expect(ActiveRestClient::Base.password).to eq("something%40else")
-    ActiveRestClient::Base.password = nil
+    Flexirest::Base.password = "something@else"
+    expect(Flexirest::Base.password).to eq("something%40else")
+    Flexirest::Base.password = nil
   end
 
   it "should not doubly escape the password" do
-    ActiveRestClient::Base.password = "something%40else"
-    expect(ActiveRestClient::Base.password).to_not eq("something%2540else")
-    ActiveRestClient::Base.password = nil
+    Flexirest::Base.password = "something%40else"
+    expect(Flexirest::Base.password).to_not eq("something%2540else")
+    Flexirest::Base.password = nil
   end
 
   it "should default to a form_encoded request_body_type" do
-    expect(ActiveRestClient::Base.request_body_type).to eq(:form_encoded)
+    expect(Flexirest::Base.request_body_type).to eq(:form_encoded)
   end
 
   it "should remember the request_body_type" do
@@ -112,21 +112,21 @@ describe ActiveRestClient::Configuration do
   end
 
   it "should remember the set base_url on a class, overriding a general one" do
-    ActiveRestClient::Base.request_body_type = :unknown
-    expect(ActiveRestClient::Base.request_body_type).to eq(:unknown)
+    Flexirest::Base.request_body_type = :unknown
+    expect(Flexirest::Base.request_body_type).to eq(:unknown)
     expect(ConfigurationExample.request_body_type).to eq(:json)
   end
 
   it "should default to non-lazy loading" do
     class LazyLoadingConfigurationExample1
-      include ActiveRestClient::Configuration
+      include Flexirest::Configuration
     end
     expect(LazyLoadingConfigurationExample1.lazy_load?).to be_falsey
   end
 
   it "should be able to switch on lazy loading" do
     class LazyLoadingConfigurationExample2
-      include ActiveRestClient::Configuration
+      include Flexirest::Configuration
       lazy_load!
     end
     expect(LazyLoadingConfigurationExample2.lazy_load?).to be_truthy
@@ -135,7 +135,7 @@ describe ActiveRestClient::Configuration do
   describe 'api auth' do
     context 'default' do
       it "should be false using_api_auth?" do
-        expect(ActiveRestClient::Base.using_api_auth?).to be_falsey
+        expect(Flexirest::Base.using_api_auth?).to be_falsey
       end
     end
 
@@ -175,18 +175,18 @@ describe ActiveRestClient::Configuration do
 
   it "should default to non-verbose loggingg" do
     class VerboseConfigurationExample1
-      include ActiveRestClient::Configuration
+      include Flexirest::Configuration
     end
     expect(VerboseConfigurationExample1.verbose).to be_falsey
   end
 
   it "should be able to switch on verbose logging" do
     class VerboseConfigurationExample2
-      include ActiveRestClient::Configuration
+      include Flexirest::Configuration
       verbose!
     end
     class VerboseConfigurationExample3
-      include ActiveRestClient::Configuration
+      include Flexirest::Configuration
       verbose true
     end
     expect(VerboseConfigurationExample2.verbose).to be_truthy

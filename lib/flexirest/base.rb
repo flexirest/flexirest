@@ -1,4 +1,4 @@
-module ActiveRestClient
+module Flexirest
   class Base
     include Mapping
     include Configuration
@@ -20,7 +20,7 @@ module ActiveRestClient
       @attributes = {}
       @dirty_attributes = Set.new
 
-      raise Exception.new("Cannot instantiate Base class") if self.class.name == "ActiveRestClient::Base"
+      raise Exception.new("Cannot instantiate Base class") if self.class.name == "Flexirest::Base"
 
       attrs.each do |attribute_name, attribute_value|
         attribute_name = attribute_name.to_sym
@@ -65,11 +65,11 @@ module ActiveRestClient
     end
 
     def self._lazy_request(request, method = :get, params = nil)
-      ActiveRestClient::LazyLoader.new(prepare_direct_request(request, method), params)
+      Flexirest::LazyLoader.new(prepare_direct_request(request, method), params)
     end
 
     def self.prepare_direct_request(request, method, options={})
-      unless request.is_a? ActiveRestClient::Request
+      unless request.is_a? Flexirest::Request
         options[:plain] ||= false
         mapped = {url:"DIRECT-CALLED-#{request}", method:method, options:{url:request, plain:options[:plain]}}
 
@@ -132,7 +132,7 @@ module ActiveRestClient
           if name[/^lazy_/] && mapped = self.class._mapped_method(name_sym)
             raise ValidationFailedException.new unless valid?
             request = Request.new(mapped, self, args.first)
-            ActiveRestClient::LazyLoader.new(request)
+            Flexirest::LazyLoader.new(request)
           elsif mapped = self.class._mapped_method(name_sym)
             raise ValidationFailedException.new unless valid?
             request = Request.new(mapped, self, args.first)
@@ -153,7 +153,7 @@ module ActiveRestClient
     def to_hash
       output = {}
       @attributes.each do |key, value|
-        if value.is_a? ActiveRestClient::Base
+        if value.is_a? Flexirest::Base
           output[key.to_s] = value.to_hash
         elsif value.is_a? Array
           output[key.to_s] = value.map(&:to_hash)

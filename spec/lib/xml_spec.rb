@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-class XmlResponseExample < ActiveRestClient::Base
+class XmlResponseExample < Flexirest::Base
   base_url "http://www.example.com/v1/"
   get :root, "/root", ignore_xml_root: "feed", fake_content_type: "application/xml", fake: %Q{
     <?xml version="1.0" encoding="utf-8"?>
@@ -58,7 +58,7 @@ describe XmlResponseExample do
 
   it "each entry item has a title" do
     @atom = XmlResponseExample.atom
-    expect(@atom.feed.entry.class).to eq(ActiveRestClient::ResultIterator)
+    expect(@atom.feed.entry.class).to eq(Flexirest::ResultIterator)
   end
 
   it "provides a list of entry items" do

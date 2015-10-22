@@ -1,4 +1,4 @@
-module ActiveRestClient
+module Flexirest
   module RequestFiltering
     module ClassMethods
       def before_request(method_name = nil, &block)
