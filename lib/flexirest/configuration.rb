@@ -158,7 +158,7 @@ module Flexirest
       end
 
       def translator(value = nil)
-        Flexirest::Logger.warn("DEPRECATION: The translator functionality of Flexirest has been replaced with proxy functionality, see https://github.com/whichdigital/active-rest-client#proxying-apis for more information") unless value.nil?
+        Flexirest::Logger.warn("DEPRECATION: The translator functionality of Flexirest has been replaced with proxy functionality, see https://github.com/andyjeffries/flexirest#proxying-apis for more information") unless value.nil?
         value ? @translator = value : @translator || nil
       end
 

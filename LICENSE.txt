@@ -1,4 +1,4 @@
-Copyright (c) 2013 Which? Ltd
+Code originally copyright (c) 2013 Which? Ltd, released with an MIT License and now this fork is released under the same licence by Andy Jeffries.
 
 MIT License
 

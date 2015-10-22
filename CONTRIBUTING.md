@@ -2,13 +2,13 @@
 
 ## Introduction
 
-This project was built at Which? Ltd in the UK, but was released as open source in 2014 under the MIT Licence.
+This project was built at Which? Ltd in the UK as ActiveRestClient, but was released as open source in 2014 under the MIT Licence.  This is Andy Jeffries' fork of the project as the original seems not to be maintained by Which? and there's been no communication back about the project.
 
 We're happy to receive contributions from the community for features and bugfixes and hopefully this guide helps new developers to the project to understand how to get started with the internals of Flexirest.
 
 ## Overview
 
-![Component Overview Diagram](https://raw.githubusercontent.com/whichdigital/active-rest-client/master/doc/Flexirest%20Internals.png)
+![Component Overview Diagram](https://raw.githubusercontent.com/andyjeffries/flexirest/master/doc/Flexirest%20Internals.png)
 
 ## Components
 
@@ -47,7 +47,7 @@ A `Request` has a list of headers associated, but if the same header is set with
 
 `LazyLoader` is a simple proxy class that takes an `Flexirest::Request` object, has a `method_missing` and `respond_to` pair that when called actually calls `#request` on the request object to make the API call.  This is useful if you want to prepare an API object that doesn't make the call unless it's needed (i.e. like ActiveRecord scopes don't execute if they're used within a cached fragment).
 
-`LazyAssociationLoader` is a completely different beast.  This is used in HAL responses where the association 
+`LazyAssociationLoader` is a completely different beast.  This is used in HAL responses where the association
 
 ### ProxyBase
 

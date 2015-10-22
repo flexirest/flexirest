@@ -7,11 +7,11 @@ Gem::Specification.new do |spec|
   spec.name          = "flexirest"
   spec.version       = Flexirest::VERSION
   spec.platform      = Gem::Platform::RUBY
-  spec.authors       = ["Which Ltd", "Andy Jeffries"]
-  spec.email         = ["swlicensing@which.co.uk", "andy@andyjeffries.co.uk"]
-  spec.description   = %q{Accessing REST services in an ActiveRecord style}
-  spec.summary       = %q{This gem is for accessing REST services in an ActiveRecord style.  ActiveResource already exists for this, but it doesn't work where the resource naming doesn't follow Rails conventions, it doesn't have in-built caching and it's not as flexible in general.}
-  spec.homepage      = "http://whichdigital.github.io/"
+  spec.authors       = ["Andy Jeffries"]
+  spec.email         = ["andy@andyjeffries.co.uk"]
+  spec.description   = %q{Accessing REST services in a flexible way}
+  spec.summary       = %q{This gem is for accessing REST services in a flexible way.  ActiveResource already exists for this, but it doesn't work where the resource naming doesn't follow Rails conventions, it doesn't have in-built caching and it's not as flexible in general.}
+  spec.homepage      = "https://andyjeffries.co.uk/"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files`.split($/)
