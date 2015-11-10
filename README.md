@@ -241,8 +241,8 @@ end
 You can then access Ads by specifying their magazine IDs:
 
 ```ruby
-Add.all(magazine_id: 1)
-Add.create(magazine_id: 1, title: "My Add Title")
+Ad.all(magazine_id: 1)
+Ad.create(magazine_id: 1, title: "My Add Title")
 ```
 
 #### Combined Example
