@@ -43,7 +43,16 @@ module Flexirest
             end
           elsif type == :numericality
             numeric = (true if Float(value) rescue false)
-            @errors[validation[:field_name]] << "must be numeric" unless numeric
+            if !numeric
+              @errors[validation[:field_name]] << "must be numeric"
+            else
+              if options[:minimum]
+                @errors[validation[:field_name]] << "must be at least #{options[:minimum]}" unless value.to_f >= options[:minimum]
+              end
+              if options[:maximum]
+                @errors[validation[:field_name]] << "must be no more than #{options[:minimum]}" unless value.to_f <= options[:maximum]
+              end
+            end
           elsif type == :minimum && !value.nil?
             @errors[validation[:field_name]] << "must be at least #{options}" unless value.to_f >= options.to_f
           elsif type == :maximum && !value.nil?
