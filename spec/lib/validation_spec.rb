@@ -31,6 +31,20 @@ describe "Flexirest::Validation" do
       expect(a._errors[:first_name].size).to eq(1)
     end
 
+    it "should be invalid if a required value is present but is an empty array" do
+      a = SimpleValidationExample.new
+      a.first_name = []
+      a.valid?
+      expect(a._errors[:first_name].size).to eq(1)
+    end
+
+    it "should be invalid if a required value is present but is an empty hash" do
+      a = SimpleValidationExample.new
+      a.first_name = {}
+      a.valid?
+      expect(a._errors[:first_name].size).to eq(1)
+    end
+
     it "should be valid if a required value is present" do
       a = SimpleValidationExample.new
       a.first_name = "John"
