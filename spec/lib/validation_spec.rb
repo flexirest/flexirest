@@ -206,6 +206,14 @@ describe "Flexirest::Validation" do
     end    
   end
 
+  describe "#full_error_messages" do
+    it "should return an array of strings that combines the attribute name and the error message" do
+      a = SimpleValidationExample.new(age:"Bob", suffix: "Baz")
+      a.valid?
+      expect(a.full_error_messages).to include("age must be numeric")
+      expect(a.full_error_messages).to include("suffix must be included in Dr., Mr., Mrs., Ms.")
+    end
+  end
 
   it "should call valid? before making a request" do
     class ValidationExample3 < Flexirest::Base

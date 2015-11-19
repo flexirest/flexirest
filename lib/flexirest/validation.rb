@@ -60,7 +60,7 @@ module Flexirest
           elsif type == :maximum && !value.nil?
             @errors[validation[:field_name]] << "must be no more than #{options}" unless value.to_f <= options.to_f
           elsif type == :inclusion
-            @errors[validation[:field_name]] << "must be included in #{options[:in]}" unless options[:in].include?(value)
+            @errors[validation[:field_name]] << "must be included in #{options[:in].join(", ")}" unless options[:in].include?(value)
           end
         end
         if validation[:block]
@@ -68,6 +68,13 @@ module Flexirest
         end
       end
       @errors.empty?
+    end
+
+    def full_error_messages
+      return "" unless _errors.present?
+      _errors.reduce([]) do |memo, (field, errors)|
+        memo << "#{field.to_s} #{errors.join(' and ')}"
+      end      
     end
 
     def _errors
