@@ -728,10 +728,13 @@ You can create validations on your objects just like Rails' built in ActiveModel
 
 ```ruby
 class Person < Flexirest::Base
-  validates :first_name, presence:true
-  validates :password, length:{within:6..12}
-  validates :post_code, length:{minimum:6, maximum:8}
-  validates :salary, numericality:true, minimum:20_000, maximum:50_000
+  validates :first_name, presence: true #ensures that the value is present and not blank
+  validates :last_name, presence: true #ensures that the value is non-nil only
+  validates :password, length: {within:6..12}
+  validates :post_code, length: {minimum:6, maximum:8}
+  validates :salary, numericality: true, minimum: 20_000, maximum: 50_000
+  validates :age, numericality: { minumum: 18, maximum: 65 }
+  validates :suffix, inclusion: { in: %w{Dr. Mr. Mrs. Ms.}}
 
   validates :first_name do |object, name, value|
     object.errors[name] << "must be over 4 chars long" if value.length <= 4
@@ -744,6 +747,8 @@ end
 Note the block based validation is responsible for adding errors to `object.errors[name]` (and this will automatically be ready for `<<` inserting into).
 
 Validations are run when calling `valid?` or when calling any API on an instance (and then only if it is `valid?` will the API go on to be called).
+
+`full_error_messages` returns an array of attributes with their associated error messages, i.e. `["age must be at least 18"]`
 
 ### Debugging
 
