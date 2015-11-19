@@ -27,6 +27,10 @@ module Flexirest
             elsif value.blank?
               @errors[validation[:field_name]] << "must be present"
             end
+          elsif type == :existence
+            if value.nil?
+              @errors[validation[:field_name]] << "must be not be nil"
+            end            
           elsif type == :length
             if options[:within]
               @errors[validation[:field_name]] << "must be within range #{options[:within]}" unless options[:within].include?(value.to_s.length )

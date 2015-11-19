@@ -37,22 +37,27 @@ describe "Flexirest::Validation" do
     end    
   end
 
-  it "should be invalid if a length is below the minimum" do
-    a = SimpleValidationExample.new(post_code:"12345")
-    a.valid?
-    expect(a._errors[:post_code].size).to eq(1)
-  end
+  context "when validating existence" do
+    it "should be invalid if a required value isn't present" do
+      a = SimpleValidationExample.new
+      a.last_name = nil
+      a.valid?
+      expect(a._errors[:last_name].size).to eq(1)
+    end
 
-  it "should be valid if a length is above or equal to the minimum and below the maximum" do
-    a = SimpleValidationExample.new(post_code:"123456")
-    a.valid?
-    expect(a._errors[:post_code].size).to eq(0)
-  end
+    it "should be valid if a required value is present but blank" do
+      a = SimpleValidationExample.new
+      a.last_name = ""
+      a.valid?
+      expect(a._errors[:last_name]).to be_empty
+    end
 
-  it "should be invalid if a length is above the maximum" do
-    a = SimpleValidationExample.new(post_code:"123456789")
-    a.valid?
-    expect(a._errors[:post_code].size).to eq(1)
+    it "should be valid if a required value is present" do
+      a = SimpleValidationExample.new
+      a.last_name = "John"
+      a.valid?
+      expect(a._errors[:last_name]).to be_empty
+    end 
   end
 
   it "should be able to validate that a field is numeric" do
