@@ -24,6 +24,8 @@ module Flexirest
           if type == :presence
             if value.nil?
               @errors[validation[:field_name]] << "must be present"
+            elsif value.blank?
+              @errors[validation[:field_name]] << "must be present"
             end
           elsif type == :length
             if options[:within]

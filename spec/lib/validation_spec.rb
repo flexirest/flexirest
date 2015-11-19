@@ -13,30 +13,28 @@ describe "Flexirest::Validation" do
     expect(SimpleValidationExample._validations.size).to eq(4)
   end
 
-  it "should be invalid if a required value isn't present" do
-    a = SimpleValidationExample.new
-    a.first_name = nil
-    a.valid?
-    expect(a._errors[:first_name].size).to eq(1)
-  end
+  context "when validating presence" do
 
-  it "should be valid if a required value is present" do
-    a = SimpleValidationExample.new
-    a.first_name = "John"
-    a.valid?
-    expect(a._errors[:first_name]).to be_empty
-  end
+    it "should be invalid if a required value isn't present" do
+      a = SimpleValidationExample.new
+      a.first_name = nil
+      a.valid?
+      expect(a._errors[:first_name].size).to eq(1)
+    end
 
-  it "should be invalid if a length within value is outside the range" do
-    a = SimpleValidationExample.new(password:"12345")
-    a.valid?
-    expect(a._errors[:password].size).to eq(1)
-  end
+    it "should be invalid if a required value is present but blank" do
+      a = SimpleValidationExample.new
+      a.first_name = ""
+      a.valid?
+      expect(a._errors[:first_name].size).to eq(1)
+    end
 
-  it "should be valid if a length within value is inside the range" do
-    a = SimpleValidationExample.new(password:"123456")
-    a.valid?
-    expect(a._errors[:password].size).to eq(0)
+    it "should be valid if a required value is present" do
+      a = SimpleValidationExample.new
+      a.first_name = "John"
+      a.valid?
+      expect(a._errors[:first_name]).to be_empty
+    end    
   end
 
   it "should be invalid if a length is below the minimum" do
