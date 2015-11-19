@@ -9,10 +9,11 @@ describe "Flexirest::Validation" do
     validates :post_code, length: { minimum: 6, maximum: 8 }
     validates :salary, numericality: true, minimum: 20_000, maximum: 50_000
     validates :age, numericality: { minimum: 18, maximum: 65 }
+    validates :suffix, inclusion: { in: %w{Dr. Mr. Mrs. Ms.}}
   end
 
   it "should be able to register a validation" do
-    expect(SimpleValidationExample._validations.size).to eq(6)
+    expect(SimpleValidationExample._validations.size).to eq(7)
   end
 
   context "when validating presence" do
@@ -130,7 +131,7 @@ describe "Flexirest::Validation" do
       end      
 
       it "should be valid that a numeric field is above or equal to a minimum" do
-        a = SimpleValidationExample.new(salary:30_00)
+        a = SimpleValidationExample.new(salary:30_000)
         a.valid?
         expect(a._errors[:salary].size).to eq(0)
       end 
@@ -165,17 +166,46 @@ describe "Flexirest::Validation" do
     end
   end
 
-  it "should be valid when a block doesn't add an error" do
-    class ValidationExample2 < OpenStruct
-      include Flexirest::Validation
-      validates :first_name do |object, name, value|
-        object._errors[name] << "must be over 4 chars long" if value.length <= 4
-      end
+  context "when validating inclusion" do
+    it "should be invalid if the value is not contained in the list" do
+      a = SimpleValidationExample.new(suffix: "Baz")
+      a.valid?
+      expect(a._errors[:suffix].size).to be > 0      
     end
-    a = ValidationExample2.new(first_name:"Johnny")
-    a.valid?
-    expect(a._errors[:first_name]).to be_empty
+
+    it "should be valid if the value is contained in the list" do
+      a = SimpleValidationExample.new(suffix: "Dr.")
+      a.valid?
+      expect(a._errors[:suffix].size).to eq(0)       
+    end
   end
+
+  context "when passing a block" do
+    it "should be invalid when a block adds an error" do
+      class ValidationExample1 < OpenStruct
+        include Flexirest::Validation
+        validates :first_name do |object, name, value|
+          object._errors[name] << "must be over 4 chars long" if value.length <= 4
+        end
+      end
+      a = ValidationExample1.new(first_name:"John")
+      a.valid?
+      expect(a._errors[:first_name].size).to eq(1)
+    end
+
+    it "should be valid when a block doesn't add an error" do
+      class ValidationExample2 < OpenStruct
+        include Flexirest::Validation
+        validates :first_name do |object, name, value|
+          object._errors[name] << "must be over 4 chars long" if value.length <= 4
+        end
+      end
+      a = ValidationExample2.new(first_name:"Johnny")
+      a.valid?
+      expect(a._errors[:first_name]).to be_empty
+    end    
+  end
+
 
   it "should call valid? before making a request" do
     class ValidationExample3 < Flexirest::Base

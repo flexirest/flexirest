@@ -46,17 +46,21 @@ module Flexirest
             if !numeric
               @errors[validation[:field_name]] << "must be numeric"
             else
-              if options[:minimum]
-                @errors[validation[:field_name]] << "must be at least #{options[:minimum]}" unless value.to_f >= options[:minimum]
-              end
-              if options[:maximum]
-                @errors[validation[:field_name]] << "must be no more than #{options[:minimum]}" unless value.to_f <= options[:maximum]
+              if options.is_a?(Hash)
+                if options[:minimum]
+                  @errors[validation[:field_name]] << "must be at least #{options[:minimum]}" unless value.to_f >= options[:minimum]
+                end
+                if options[:maximum]
+                  @errors[validation[:field_name]] << "must be no more than #{options[:minimum]}" unless value.to_f <= options[:maximum]
+                end
               end
             end
           elsif type == :minimum && !value.nil?
             @errors[validation[:field_name]] << "must be at least #{options}" unless value.to_f >= options.to_f
           elsif type == :maximum && !value.nil?
             @errors[validation[:field_name]] << "must be no more than #{options}" unless value.to_f <= options.to_f
+          elsif type == :inclusion
+            @errors[validation[:field_name]] << "must be included in #{options[:in]}" unless options[:in].include?(value)
           end
         end
         if validation[:block]
