@@ -24,7 +24,13 @@ module Flexirest
           if type == :presence
             if value.nil?
               @errors[validation[:field_name]] << "must be present"
+            elsif value.blank?
+              @errors[validation[:field_name]] << "must be present"
             end
+          elsif type == :existence
+            if value.nil?
+              @errors[validation[:field_name]] << "must be not be nil"
+            end            
           elsif type == :length
             if options[:within]
               @errors[validation[:field_name]] << "must be within range #{options[:within]}" unless options[:within].include?(value.to_s.length )
@@ -37,11 +43,24 @@ module Flexirest
             end
           elsif type == :numericality
             numeric = (true if Float(value) rescue false)
-            @errors[validation[:field_name]] << "must be numeric" unless numeric
+            if !numeric
+              @errors[validation[:field_name]] << "must be numeric"
+            else
+              if options.is_a?(Hash)
+                if options[:minimum]
+                  @errors[validation[:field_name]] << "must be at least #{options[:minimum]}" unless value.to_f >= options[:minimum]
+                end
+                if options[:maximum]
+                  @errors[validation[:field_name]] << "must be no more than #{options[:minimum]}" unless value.to_f <= options[:maximum]
+                end
+              end
+            end
           elsif type == :minimum && !value.nil?
             @errors[validation[:field_name]] << "must be at least #{options}" unless value.to_f >= options.to_f
           elsif type == :maximum && !value.nil?
             @errors[validation[:field_name]] << "must be no more than #{options}" unless value.to_f <= options.to_f
+          elsif type == :inclusion
+            @errors[validation[:field_name]] << "must be included in #{options[:in].join(", ")}" unless options[:in].include?(value)
           end
         end
         if validation[:block]
@@ -49,6 +68,13 @@ module Flexirest
         end
       end
       @errors.empty?
+    end
+
+    def full_error_messages
+      return "" unless _errors.present?
+      _errors.reduce([]) do |memo, (field, errors)|
+        memo << "#{field.to_s} #{errors.join(' and ')}"
+      end      
     end
 
     def _errors
