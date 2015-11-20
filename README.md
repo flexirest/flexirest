@@ -729,7 +729,7 @@ You can create validations on your objects just like Rails' built in ActiveModel
 ```ruby
 class Person < Flexirest::Base
   validates :first_name, presence: true #ensures that the value is present and not blank
-  validates :last_name, presence: true #ensures that the value is non-nil only
+  validates :last_name, existence: true #ensures that the value is non-nil only
   validates :password, length: {within:6..12}
   validates :post_code, length: {minimum:6, maximum:8}
   validates :salary, numericality: true, minimum: 20_000, maximum: 50_000
