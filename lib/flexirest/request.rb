@@ -225,6 +225,20 @@ module Flexirest
         @post_params = default_params.merge(params || {})
         @get_params = {}
       end
+
+      if @method[:options][:requires]
+        requires = @method[:options][:requires].dup
+        merged_params = @get_params.merge(@post_params || {})
+        missing = []
+        requires.each do |key|
+          if merged_params[key.to_sym].blank? && ![true, false].include?(merged_params[key.to_sym])
+            missing << key
+          end
+        end
+        if missing.any?
+          raise Flexirest::MissingParametersException.new("The following parameters weren't specifed: #{missing.join(", ")}")
+        end
+      end
     end
 
     def prepare_url
@@ -547,6 +561,7 @@ module Flexirest
   class RequestException < StandardError ; end
 
   class InvalidRequestException < RequestException ; end
+  class MissingParametersException < RequestException ; end
   class ResponseParseException < RequestException
     attr_accessor :status, :body
     def initialize(options)

@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.2.2
+
+Features:
+
+- Adds `existence`, `numericality`, `presence` and `inclusion` validations (thanks Tom Hoen)
+- Adds `full_error_messages` method (thanks Tom Hoen)
+- Adds `requires` options to the method mapping
+
+## 1.2.1
+
+**Forked Which's ActiveRestClient to be Flexirest**
+
 ## 1.2.0
 
 Features:

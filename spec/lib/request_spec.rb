@@ -37,6 +37,7 @@ describe Flexirest::Request do
       get :fake, "/fake", fake:"{\"result\":true, \"list\":[1,2,3,{\"test\":true}], \"child\":{\"grandchild\":{\"test\":true}}}"
       get :fake_proc, "/fake", fake:->(request) { "{\"result\":#{request.get_params[:id]}}" }
       get :defaults, "/defaults", defaults:{overwrite:"no", persist:"yes"}
+      get :requires, "/requires", requires:[:name, :age]
     end
 
     class AuthenticatedExampleClient < Flexirest::Base
@@ -111,6 +112,24 @@ describe Flexirest::Request do
   it "should pass through get parameters, using defaults specified" do
     expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/defaults?overwrite=yes&persist=yes", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:'{"result":true}', response_headers:{})))
     ExampleClient.defaults overwrite:"yes"
+  end
+
+  it "should ensure any required parameters are specified" do
+    expect_any_instance_of(Flexirest::Connection).to_not receive(:get)
+    expect{ExampleClient.requires}.to raise_error(Flexirest::MissingParametersException)
+    expect{ExampleClient.requires name: "John"}.to raise_error(Flexirest::MissingParametersException)
+    expect{ExampleClient.requires age: 21}.to raise_error(Flexirest::MissingParametersException)
+    expect{ExampleClient.requires name: nil, age: nil}.to raise_error(Flexirest::MissingParametersException)
+  end
+
+  it "should makes the request if all required parameters are specified" do
+    expect_any_instance_of(Flexirest::Connection).to receive(:get).and_return(::FaradayResponseMock.new(OpenStruct.new(body:'{"result":true}', response_headers:{})))
+    expect{ExampleClient.requires name: "John", age: 21}.not_to raise_error
+  end
+
+  it "should makes the request if all required parameters are specified, even if boolean" do
+    expect_any_instance_of(Flexirest::Connection).to receive(:get).and_return(::FaradayResponseMock.new(OpenStruct.new(body:'{"result":true}', response_headers:{})))
+    expect{ExampleClient.requires name: true, age: false}.not_to raise_error
   end
 
   it "should pass through url parameters" do

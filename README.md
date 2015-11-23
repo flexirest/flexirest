@@ -708,6 +708,19 @@ end
 @people = Person.all(active:false)
 ```
 
+### Required Parameters
+
+If you want to specify that certain parameters are required for a specific call, you can specify them like:
+
+```ruby
+class Person < Flexirest::Base
+  get :all, '/people', :requires => [:active]
+end
+
+@people = Person.all # raises Flexirest::MissingParametersException
+@people = Person.all(active:false)
+```
+
 ### HTTP/Parse Error Handling
 
 Sometimes the backend server may respond with a non-200/304 header, in which case the code will raise an `Flexirest::HTTPClientException` for 4xx errors or an `Flexirest::HTTPServerException` for 5xx errors.  These both have a `status` accessor and a `result` accessor (for getting access to the parsed body):
