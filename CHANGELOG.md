@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.2.4 / 1.2.3
+
+Bugfixes:
+
+- Allows setting of base_url, username, password and request_body_type in a project-specific base class, then using that default in subclasses.
+- 1.2.3 was pushed without a successful Travis build
+
 ## 1.2.2
 
 Features:

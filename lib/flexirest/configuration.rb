@@ -186,6 +186,7 @@ module Flexirest
         @base_url             = nil
         @@base_url            = nil
         @request_body_type    = nil
+        @@request_body_type   = nil
         @whiny_missing        = nil
         @lazy_load            = false
         @faraday_config       = default_faraday_config
