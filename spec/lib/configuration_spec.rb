@@ -3,6 +3,7 @@ require 'spec_helper'
 describe Flexirest::Configuration do
   before :each do
     Object.send(:remove_const, :ConfigurationExample) if defined?(ConfigurationExample)
+    Object.send(:remove_const, :SubConfigurationExample) if defined?(SubConfigurationExample)
     Flexirest::Base._reset_configuration!
 
     class ConfigurationExample
@@ -11,6 +12,9 @@ describe Flexirest::Configuration do
       username "john"
       password "smith"
       request_body_type :json
+    end
+
+    class SubConfigurationExample < ConfigurationExample
     end
 
     class ConfigurationExampleBare
@@ -37,6 +41,10 @@ describe Flexirest::Configuration do
   it "should remember the set base_url on a class, overriding a general one" do
     Flexirest::Base.base_url = "http://general.example.com"
     expect(ConfigurationExample.base_url).to eq("http://www.example.com")
+  end
+
+  it "should remember the set base_url on a class, overriding a general one" do
+    expect(SubConfigurationExample.base_url).to eq("http://www.example.com")
   end
 
   it "should remove a trailing slash from a globally configured base_url" do
@@ -69,6 +77,10 @@ describe Flexirest::Configuration do
     Flexirest::Base.username = nil
   end
 
+  it "should remember the set username on a class, overriding a general one" do
+    expect(SubConfigurationExample.username).to eq("john")
+  end
+
   it "should escape the username" do
     Flexirest::Base.username = "bill@example.com"
     expect(Flexirest::Base.username).to eq("bill%40example.com")
@@ -91,6 +103,10 @@ describe Flexirest::Configuration do
     Flexirest::Base.password = nil
   end
 
+  it "should remember the set password on a class, overriding a general one" do
+    expect(SubConfigurationExample.password).to eq("smith")
+  end
+
   it "should escape the password" do
     Flexirest::Base.password = "something@else"
     expect(Flexirest::Base.password).to eq("something%40else")
@@ -111,10 +127,14 @@ describe Flexirest::Configuration do
     expect(ConfigurationExample.request_body_type).to eq(:json)
   end
 
-  it "should remember the set base_url on a class, overriding a general one" do
+  it "should remember the set request_body_type on a class, overriding a general one" do
     Flexirest::Base.request_body_type = :unknown
     expect(Flexirest::Base.request_body_type).to eq(:unknown)
     expect(ConfigurationExample.request_body_type).to eq(:json)
+  end
+
+  it "should remember the set username on a class, overriding a general one" do
+    expect(SubConfigurationExample.request_body_type).to eq(:json)
   end
 
   it "should default to non-lazy loading" do

@@ -13,11 +13,15 @@ module Flexirest
 
       def base_url(value = nil)
         if value.nil?
-          if @base_url.nil?
+          value = if @base_url.nil?
             @@base_url
           else
             @base_url
           end
+          if value.nil? && superclass.respond_to?(:base_url)
+            value = superclass.base_url
+          end
+          value
         else
           value = value.gsub(/\/$/, '')
           @base_url = value
@@ -32,11 +36,15 @@ module Flexirest
 
       def username(value = nil)
         if value.nil?
-          if @username.nil?
+          value = if @username.nil?
             @@username
           else
             @username
           end
+          if value.nil? && superclass.respond_to?(:username)
+            value = superclass.username
+          end
+          value
         else
           value = CGI::escape(value) if value.present? && !value.include?("%")
           @username = value
@@ -51,11 +59,15 @@ module Flexirest
 
       def password(value = nil)
         if value.nil?
-          if @password.nil?
+          value = if @password.nil?
             @@password
           else
             @password
           end
+          if value.nil? && superclass.respond_to?(:password)
+            value = superclass.password
+          end
+          value
         else
           value = CGI::escape(value) if value.present? && !value.include?("%")
           @password = value
@@ -71,7 +83,11 @@ module Flexirest
       def request_body_type(value = nil)
         if value.nil?
           if @request_body_type.nil?
-            @@request_body_type
+            if value.nil? && superclass.respond_to?(:request_body_type)
+              superclass.request_body_type
+            else
+              @@request_body_type || :form_encoded
+            end
           else
             @request_body_type
           end
@@ -170,7 +186,6 @@ module Flexirest
         @base_url             = nil
         @@base_url            = nil
         @request_body_type    = nil
-        @@request_body_type   = :form_encoded
         @whiny_missing        = nil
         @lazy_load            = false
         @faraday_config       = default_faraday_config
