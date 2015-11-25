@@ -5,6 +5,7 @@
 Bugfixes:
 
 - Allows setting of base_url, username, password and request_body_type in a project-specific base class, then using that default in subclasses.
+- Strings of four digits in the response are no longer treated as (invalid) dates (thanks Tom Hoen)
 - 1.2.3 was pushed without a successful Travis build
 
 ## 1.2.2
