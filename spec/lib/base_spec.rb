@@ -94,6 +94,11 @@ describe Flexirest::Base do
     expect(client["test"]).to eq(d)
   end
 
+  it "should allow strings of 4 digits and not intepret them as dates" do
+    client = EmptyExample.new(:test => "2015")
+    expect(client["test"]).to be_an_instance_of(String)
+  end
+
   it "should store attributes set using missing method names and mark them as dirty" do
     client = EmptyExample.new()
     client.test = "Something"
