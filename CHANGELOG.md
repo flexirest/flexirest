@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.5
+
+Bugfixes:
+
+- Fixes case when "Rails" exists but doesn't declare a ".cache" method
+
 ## 1.2.4 / 1.2.3
 
 Bugfixes:
