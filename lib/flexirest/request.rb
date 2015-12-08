@@ -221,7 +221,6 @@ module Flexirest
       prepare_request_body
       self.original_url = self.url
       http_headers = {}
-      http_headers["If-None-Match"] = etag if etag
       http_headers["Accept"] = "application/hal+json, application/json;q=0.5"
       headers.each do |key,value|
         value = value.join(",") if value.is_a?(Array)
