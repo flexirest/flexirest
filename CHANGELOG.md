@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.7
+
+Features:
+
+- Adds a per request `timeout` option, for individually slow calls
+
 ## 1.2.5/1.2.6
 
 Bugfixes:

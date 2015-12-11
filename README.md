@@ -548,6 +548,16 @@ class Person < Flexirest::Base
 end
 ```
 
+### Per-request Timeouts
+
+There are times when an API is generally quick, but one call is very intensive.  You don't want to set a global timeout in the Faraday configuration block, you just want to increase the timeout for this single call. To do this, you can simply pass a `timeout` option when mapping the call containing the response (in seconds).
+
+```ruby
+class Person < Flexirest::Base
+  get :all, '/people', timeout: 5
+end
+```
+
 ### Raw Requests
 
 Sometimes you have have a URL that you just want to force through, but have the response handled in the same way as normal objects or you want to have the filters run (say for authentication).  The easiest way to do that is to call `_request` on the class:

@@ -38,6 +38,7 @@ module Flexirest
       set_defaults(options)
       make_safe_request(path) do
         @session.get(path) do |req|
+          set_per_request_timeout(req, options) if options[:timeout]
           req.headers = req.headers.merge(options[:headers])
           sign_request(req, options[:api_auth])
         end
@@ -48,6 +49,7 @@ module Flexirest
       set_defaults(options)
       make_safe_request(path) do
         @session.put(path) do |req|
+          set_per_request_timeout(req, options) if options[:timeout]
           req.headers = req.headers.merge(options[:headers])
           req.body = data
           sign_request(req, options[:api_auth])
@@ -59,6 +61,7 @@ module Flexirest
       set_defaults(options)
       make_safe_request(path) do
         @session.post(path) do |req|
+          set_per_request_timeout(req, options) if options[:timeout]
           req.headers = req.headers.merge(options[:headers])
           req.body = data
           sign_request(req, options[:api_auth])
@@ -70,6 +73,7 @@ module Flexirest
       set_defaults(options)
       make_safe_request(path) do
         @session.delete(path) do |req|
+          set_per_request_timeout(req, options) if options[:timeout]
           req.headers = req.headers.merge(options[:headers])
           sign_request(req, options[:api_auth])
         end
@@ -77,6 +81,11 @@ module Flexirest
     end
 
     private
+
+    def set_per_request_timeout(req, options)
+      req.options.timeout = options[:timeout].to_i
+      req.options.open_timeout = options[:timeout].to_i
+    end
 
     def new_session
       Faraday.new({url: @base_url}, &Flexirest::Base.faraday_config)

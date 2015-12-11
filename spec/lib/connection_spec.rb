@@ -98,6 +98,15 @@ describe Flexirest::Connection do
     end
   end
 
+  context 'with custom timeouts' do
+    it 'should set a custom timeout' do
+      stub_request(:get, "www.example.com/foo")
+        .to_return(body: "{result:true}")
+      expect_any_instance_of(Flexirest::Connection).to receive(:set_per_request_timeout)
+      @connection.get("/foo", {:timeout => "5"})
+    end
+  end
+
   context 'with api auth signing requests' do
     before(:each) do
       # Need to still call this to load the api_auth library so tests work
