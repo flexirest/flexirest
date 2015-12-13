@@ -760,14 +760,14 @@ class Person < Flexirest::Base
   validates :suffix, inclusion: { in: %w{Dr. Mr. Mrs. Ms.}}
 
   validates :first_name do |object, name, value|
-    object.errors[name] << "must be over 4 chars long" if value.length <= 4
+    object._errors[name] << "must be over 4 chars long" if value.length <= 4
   end
 
   get :index, '/'
 end
 ```
 
-Note the block based validation is responsible for adding errors to `object.errors[name]` (and this will automatically be ready for `<<` inserting into).
+Note: the block based validation is responsible for adding errors to `object._errors[name]` (and this will automatically be ready for `<<` inserting into).
 
 Validations are run when calling `valid?` or when calling any API on an instance (and then only if it is `valid?` will the API go on to be called).
 
