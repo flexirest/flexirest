@@ -117,13 +117,6 @@ module Flexirest
       "#<#{self.class} #{inspection}>"
     end
 
-    def prepare_request(method_name)
-      mapped = self.class._mapped_method(method_name.to_sym)
-      request = Request.new(mapped, self, nil)
-      request.prepare_request
-      request
-    end
-
     def method_missing(name, *args)
       if name.to_s[-1,1] == "="
         name = name.to_s.chop.to_sym

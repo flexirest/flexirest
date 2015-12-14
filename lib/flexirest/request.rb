@@ -207,27 +207,6 @@ module Flexirest
       end
     end
 
-    def prepare_request
-      @explicit_parameters = nil
-      @body = nil
-      prepare_params
-      prepare_url
-      if object_is_class?
-        @object.send(:_filter_request, :before, @method[:name], self)
-      else
-        @object.class.send(:_filter_request, :before, @method[:name], self)
-      end
-      append_get_parameters
-      prepare_request_body
-      self.original_url = self.url
-      http_headers = {}
-      http_headers["Accept"] = "application/hal+json, application/json;q=0.5"
-      headers.each do |key,value|
-        value = value.join(",") if value.is_a?(Array)
-        http_headers[key] = value
-      end
-    end
-
     def prepare_params
       params = @params || @object._attributes rescue {}
       if params.is_a?(String) || params.is_a?(Fixnum)
