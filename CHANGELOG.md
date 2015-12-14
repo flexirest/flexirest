@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.8
+
+Bugfixes:
+
+- There was a strange problem with Flexirest defining methods on `Class` rather than on the specific class (which only presents itself when another class in the application is making use of `method_missing`).
+
 ## 1.2.7
 
 Features:
@@ -10,13 +16,13 @@ Features:
 
 Bugfixes:
 
-- Fixes case when "Rails" exists but doesn't declare a ".cache" method
+- Fixes case when `Rails` exists but doesn't declare a `.cache` method
 
 ## 1.2.4 / 1.2.3
 
 Bugfixes:
 
-- Allows setting of base_url, username, password and request_body_type in a project-specific base class, then using that default in subclasses.
+- Allows setting of `base_url`, `username`, `password` and `request_body_type` in a project-specific base class, then using that default in subclasses.
 - Strings of four digits in the response are no longer treated as (invalid) dates (thanks Tom Hoen)
 - 1.2.3 was pushed without a successful Travis build
 

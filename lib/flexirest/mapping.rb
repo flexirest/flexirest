@@ -24,10 +24,10 @@ module Flexirest
       def _map_call(name, details)
         _calls[name] = {name:name}.merge(details)
         _calls["lazy_#{name}".to_sym] = {name:name}.merge(details)
-        self.class.send(:define_method, name) do |options={}|
+        (class << self; self; end).send(:define_method, name) do |options={}|
           _call(name, options)
         end
-        self.class.send(:define_method, "lazy_#{name}".to_sym) do |options={}|
+        (class << self; self; end).send(:define_method, "lazy_#{name}".to_sym) do |options={}|
           _call("lazy_#{name}", options)
         end
       end
