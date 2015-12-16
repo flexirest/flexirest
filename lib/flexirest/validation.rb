@@ -30,7 +30,7 @@ module Flexirest
           elsif type == :existence
             if value.nil?
               @errors[validation[:field_name]] << "must be not be nil"
-            end            
+            end
           elsif type == :length
             if options[:within]
               @errors[validation[:field_name]] << "must be within range #{options[:within]}" unless options[:within].include?(value.to_s.length )
@@ -39,7 +39,7 @@ module Flexirest
               @errors[validation[:field_name]] << "must be at least #{options[:minimum]} characters long" unless value.to_s.length >= options[:minimum]
             end
             if options[:maximum]
-              @errors[validation[:field_name]] << "must be no more than #{options[:minimum]} characters long" unless value.to_s.length <= options[:maximum]
+              @errors[validation[:field_name]] << "must be no more than #{options[:maximum]} characters long" unless value.to_s.length <= options[:maximum]
             end
           elsif type == :numericality
             numeric = (true if Float(value) rescue false)
@@ -51,7 +51,7 @@ module Flexirest
                   @errors[validation[:field_name]] << "must be at least #{options[:minimum]}" unless value.to_f >= options[:minimum]
                 end
                 if options[:maximum]
-                  @errors[validation[:field_name]] << "must be no more than #{options[:minimum]}" unless value.to_f <= options[:maximum]
+                  @errors[validation[:field_name]] << "must be no more than #{options[:maximum]}" unless value.to_f <= options[:maximum]
                 end
               end
             end
@@ -74,7 +74,7 @@ module Flexirest
       return "" unless _errors.present?
       _errors.reduce([]) do |memo, (field, errors)|
         memo << "#{field.to_s} #{errors.join(' and ')}"
-      end      
+      end
     end
 
     def _errors
