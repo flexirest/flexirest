@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.9
+
+Bugfixes:
+
+- Fixing messages used during validation of maximum numericality (thanks Tom Hoen)
+
 ## 1.2.8
 
 Bugfixes:
