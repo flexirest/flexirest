@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.10
+
+Bugfixes:
+
+- Changes the date regexes to not misinterpret strings of 8 digits to be dates (thanks Tom Hoen)
+
 ## 1.2.9
 
 Bugfixes:
