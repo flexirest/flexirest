@@ -94,8 +94,18 @@ describe Flexirest::Base do
     expect(client["test"]).to eq(d)
   end
 
+  it "should automatically parse date/time strings regardless if the date portion has no delimiters" do
+    client = EmptyExample.new(:test => "20151230T09:48:50-05:00")
+    expect(client["test"]).to be_an_instance_of(DateTime)
+  end
+
   it "should allow strings of 4 digits and not intepret them as dates" do
     client = EmptyExample.new(:test => "2015")
+    expect(client["test"]).to be_an_instance_of(String)
+  end
+
+  it "should allow strings of 8 digits and not intepret them as dates" do
+    client = EmptyExample.new(:test => "1266129")
     expect(client["test"]).to be_an_instance_of(String)
   end
 
