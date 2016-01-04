@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.11
+
+Bugfixes:
+
+- Fixes the usage of :timeout on a per-request basis
+
 ## 1.2.10
 
 Bugfixes:
