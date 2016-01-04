@@ -328,6 +328,9 @@ module Flexirest
           :api_auth_secret_key => api_auth_secret_key
         }
       end
+      if @method[:options][:timeout]
+        request_options[:timeout] = @method[:options][:timeout]
+      end
 
       case http_method
       when :get
