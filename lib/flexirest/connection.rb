@@ -38,6 +38,7 @@ module Flexirest
       set_defaults(options)
       make_safe_request(path) do
         @session.get(path) do |req|
+          Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest::NAME}\033[0m Using #{options[:timeout]} as the timeout"
           set_per_request_timeout(req, options) if options[:timeout]
           req.headers = req.headers.merge(options[:headers])
           sign_request(req, options[:api_auth])
@@ -49,6 +50,7 @@ module Flexirest
       set_defaults(options)
       make_safe_request(path) do
         @session.put(path) do |req|
+          Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest::NAME}\033[0m Using #{options[:timeout]} as the timeout"
           set_per_request_timeout(req, options) if options[:timeout]
           req.headers = req.headers.merge(options[:headers])
           req.body = data
@@ -61,6 +63,7 @@ module Flexirest
       set_defaults(options)
       make_safe_request(path) do
         @session.post(path) do |req|
+          Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest::NAME}\033[0m Using #{options[:timeout]} as the timeout"
           set_per_request_timeout(req, options) if options[:timeout]
           req.headers = req.headers.merge(options[:headers])
           req.body = data
@@ -73,6 +76,7 @@ module Flexirest
       set_defaults(options)
       make_safe_request(path) do
         @session.delete(path) do |req|
+          Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest::NAME}\033[0m Using #{options[:timeout]} as the timeout"
           set_per_request_timeout(req, options) if options[:timeout]
           req.headers = req.headers.merge(options[:headers])
           sign_request(req, options[:api_auth])
