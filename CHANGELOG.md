@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.12
+
+Bugfixes:
+
+- Correcting README.md to make ApiAuth usage clearer (thanks to Jeffrey Gu)
+
 ## 1.2.11
 
 Bugfixes:
