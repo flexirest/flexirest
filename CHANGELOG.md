@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.13
+
+Bugfixes:
+
+- Putting README.md back the way it was regarding ApiAuth (thanks to Kevin Glowacz)
+
 ## 1.2.12
 
 Bugfixes:
