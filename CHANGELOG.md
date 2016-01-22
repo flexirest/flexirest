@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.2.14
+
+Bugfixes:
+
+- Patch was partially implemented in 2014, but never completed. It should be working now (thanks to Joel Low)
+
+# Changelog
+
 ## 1.2.13
 
 Bugfixes:

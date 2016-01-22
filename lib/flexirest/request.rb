@@ -339,6 +339,8 @@ module Flexirest
         response = connection.put(@url, @body, request_options)
       when :post
         response = connection.post(@url, @body, request_options)
+      when :patch
+        response = connection.patch(@url, @body, request_options)
       when :delete
         response = connection.delete(@url, request_options)
       else

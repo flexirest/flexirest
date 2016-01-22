@@ -79,6 +79,15 @@ describe Flexirest::Connection do
       expect(result.body).to eq("{result:true}")
     end
 
+    it "should pass a PUT request through to Faraday" do
+      stub_request(:patch, "www.example.com/foo").
+        with(body: "body").
+        to_return(body: "{result:true}", :headers => @default_headers)
+
+      result = @connection.patch("/foo", "body")
+      expect(result.body).to eq("{result:true}")
+    end
+
     it "should pass a POST request through to Faraday" do
       stub_request(:post, "www.example.com/foo").
         with(body: "body", :headers => @default_headers).
