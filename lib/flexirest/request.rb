@@ -154,7 +154,7 @@ module Flexirest
         prepare_request_body
         self.original_url = self.url
         cached = original_object_class.read_cached_response(self)
-        if cached
+        if cached && !cached.is_a?(String)
           if cached.expires && cached.expires > Time.now
             Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest::NAME}\033[0m #{@instrumentation_name} - Absolutely cached copy found"
             return handle_cached_response(cached)
