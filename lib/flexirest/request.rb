@@ -305,6 +305,8 @@ module Flexirest
           @base_url = "#{uri.scheme}://#{uri.host}#{":#{uri.port}" if uri.port != 80 && uri.port != 443}"
           @url = "#{base_url}#{@url}".gsub(@base_url, "")
           base_url = @base_url
+        else
+          base_url = parts[0]
         end
         base_url.gsub!(%r{//(.)}, "//#{username}:#{password}@\\1") if username && !base_url[%r{//[^/]*:[^/]*@}]
         connection = Flexirest::ConnectionManager.get_connection(base_url)

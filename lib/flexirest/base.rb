@@ -68,12 +68,10 @@ module Flexirest
       Flexirest::LazyLoader.new(prepare_direct_request(request, method), params)
     end
 
-    def self.prepare_direct_request(request, method, options={})
+    def self.prepare_direct_request(request, method = :get, options={})
       unless request.is_a? Flexirest::Request
         options[:plain] ||= false
-        mapped = {url:"DIRECT-CALLED-#{request}", method:method, options:{url:request, plain:options[:plain]}}
-
-        request = Request.new(mapped, self)
+        request = Flexirest::Request.new({ url: request, method: method, options: options }, self)
       end
       request
     end

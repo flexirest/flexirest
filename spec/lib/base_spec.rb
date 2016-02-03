@@ -323,7 +323,7 @@ describe Flexirest::Base do
         response = "This is a non-JSON string"
         other_response = "This is another non-JSON string"
         allow_any_instance_of(Flexirest::Connection).to receive(:get) do |instance, url, others|
-          if url == "/?test=1"
+          if url["/?test=1"]
             ::FaradayResponseMock.new(OpenStruct.new(status:200, response_headers:{}, body:response))
           else
             ::FaradayResponseMock.new(OpenStruct.new(status:200, response_headers:{}, body:other_response))
@@ -349,6 +349,11 @@ describe Flexirest::Base do
     it "should be able to specify a method and parameters for the call" do
       expect_any_instance_of(Flexirest::Connection).to receive(:post).with(any_args).and_return(::FaradayResponseMock.new(OpenStruct.new(status:200, response_headers:{}, body:"{\"first_name\":\"Billy\"}")))
       EmptyExample._request("http://api.example.com/", :post, {id:1234})
+    end
+
+    it "should be able to replace parameters in the URL for the call" do
+      expect_any_instance_of(Flexirest::Connection).to receive(:post).with("http://api.example.com/1234", "", any_args).and_return(::FaradayResponseMock.new(OpenStruct.new(status:200, response_headers:{}, body:"{\"first_name\":\"Billy\"}")))
+      EmptyExample._request("http://api.example.com/:id", :post, {id:1234})
     end
 
     it "should be able to use mapped methods to create a request to pass in to _lazy_request" do
