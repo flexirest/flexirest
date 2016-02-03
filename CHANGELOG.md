@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.2.16
+
+Feature:
+
+- Replaces URL :keyed parameters for direct requests.
+
+## 1.2.15
+
+Feature:
+
+- Fixing issue when moving from ActiveRestClient to Flexirest - cached responses have the old class in them, so come through as a String
+
 ## 1.2.14
 
 Bugfixes:
