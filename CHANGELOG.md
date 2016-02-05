@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.17
+
+Bugfixes:
+
+- Corrected parsing of dates/datetimes coming in responses (thanks to Matthias Neumayr)
+
 ## 1.2.16
 
 Feature:

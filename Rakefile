@@ -5,9 +5,10 @@ RSpec::Core::RakeTask.new('spec')
 task :console do
   require 'irb'
   require 'irb/completion'
-  require 'flexirest'
+  require './lib/flexirest'
   ARGV.clear
   IRB.start
 end
+task :c => :console
 
 task :default => :spec

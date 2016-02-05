@@ -6,6 +6,7 @@ require 'crack/xml'
 module Flexirest
 
   class Request
+    include AttributeParsing
     attr_accessor :post_params, :get_params, :url, :path, :headers, :method, :object, :body, :forced_url, :original_url
 
     def initialize(method, object, params = {})
@@ -448,11 +449,7 @@ module Flexirest
             end
           end
         else
-          if v.to_s[/\d{4}\-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(Z|[+-]\d{2}:\d{2})/]
-            object._attributes[k] = DateTime.parse(v)
-          else
-            object._attributes[k] = v
-          end
+          object._attributes[k] = parse_attribute_value(v)
         end
       end
       object.clean! unless object_is_class?
