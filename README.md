@@ -176,6 +176,34 @@ puts @person.expenses.reduce {|e| e.inc_vat}
 puts @person.address.full_string
 ```
 
+Sometimes we want attributes to just return a simple Ruby Array. To achieve this we can add an `:array` option to the method. This is especially useful when the attribute contains an array of scalar values. If you don't specify the `:array` option Flexirest will return a `Flexirest::ResultIterator`. To illustrate the difference consider the following example:
+
+```ruby
+class Book < Flexirest::Base
+  # :authors attribute ["Robert T. Kiyosaki", "Sharon L. Lechter C.P.A"]
+  # :genres attribute ["self-help", "finance", "education"]
+  get :find, "/books/:name", array: [:authors]
+end
+```
+
+In the example above, the following results can be observed:
+
+```ruby
+@book = Book.find("rich-dad-poor-dad")
+puts @book.authors
+#=> ["Robert T. Kiyosaki", "Sharon L. Lechter C.P.A"]
+puts @book.authors.class
+#=> Array
+puts @book.genres
+#=> #<Flexirest::ResultIterator:0x007ff420fe7a88 @_status=nil, @_headers=nil, @items=["self-help", "finance", "education"]>
+puts @books.genres.class
+#=> Flexirest::ResultIterator
+puts @books.genres.items
+#=> ["self-help", "finance", "education"]
+```
+
+When the `:array` option includes an attribute, it is assumed the values were returned with the request, and they will not be lazily loaded. It is also assumed the attribute values do not map to a Flexirest resource.
+
 #### Association Type 2 - Lazy Loading From Other URLs
 
 When mapping the method, passing a list of attributes will cause any requests for those attributes to mapped to the URLs given in their responses.  The response for the attribute may be one of the following:
