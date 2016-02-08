@@ -22,6 +22,7 @@ describe Flexirest::Request do
       end
 
       get :all, "/", :has_many => {:expenses => ExampleOtherClient}
+      get :array, "/johnny", array: [:likes, :dislikes]
       get :babies, "/babies", :has_many => {:children => ExampleOtherClient}
       get :single_association, "/single", :has_one => {:single => ExampleSingleClient}, :has_many => {:children => ExampleOtherClient}
       get :headers, "/headers"
@@ -260,6 +261,21 @@ describe Flexirest::Request do
     expect(object.first.first_name).to eq("Johnny")
     expect(object[1].first_name).to eq("Billy")
     expect(object._status).to eq(200)
+  end
+  
+  it "should parse an attribute to be an array if attribute included in array option" do
+    expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/johnny", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"first_name\":\"Johnny\", \"likes\":[\"donuts\", \"bacon\"], \"dislikes\":[\"politicians\", \"lawyers\", \"taxes\"]}", status:200, response_headers:{})))
+    object = ExampleClient.array
+    expect(object.likes).to be_instance_of(Array)
+    expect(object.likes.size).to eq(2)
+    expect(object.likes[0]).to eq("donuts")
+    expect(object.likes[1]).to eq("bacon")
+    expect(object.dislikes).to be_instance_of(Array)
+    expect(object.dislikes.size).to eq(3)
+    expect(object.dislikes[0]).to eq("politicians")
+    expect(object.dislikes[1]).to eq("lawyers")
+    expect(object.dislikes[2]).to eq("taxes")
+    #TODO
   end
 
   it "should instantiate other classes using has_many when required to do so" do
