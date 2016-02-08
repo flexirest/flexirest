@@ -4,20 +4,29 @@ describe "Flexirest::Validation" do
   class SimpleValidationExample < OpenStruct
     include Flexirest::Validation
     validates :first_name, presence: true
+    validates :middle_name, length: { minimum: 2, maximum: 30 }, allow_nil: true
     validates :last_name, existence: true
+    validates :nick_name, length: { minimum: 2, maximum: 30 }
+    validates :alias, length: { minimum: 2, maximum: 30 }, allow_nil: false
     validates :password, length: { within: 6..12 }
     validates :post_code, length: { minimum: 6, maximum: 8 }
     validates :salary, numericality: true, minimum: 20_000, maximum: 50_000
     validates :age, numericality: { minimum: 18, maximum: 65 }
     validates :suffix, inclusion: { in: %w{Dr. Mr. Mrs. Ms.}}
+    validates :golf_score, numericality: true, allow_nil: true
+    validates :retirement_age, numericality: { minimum: 65 }, allow_nil: true
+    validates :cars_owned, numericality: true
+    validates :houses_owned, numericality: true, allow_nil: false
+    validates :favorite_authors, inclusion: { in: ["George S. Klason", "Robert T. Kiyosaki", "Lee Child"] }, allow_nil: true
+    validates :favorite_artists, inclusion: { in: ["Claude Monet", "Vincent Van Gogh", "Andy Warhol"] }
+    validates :favorite_composers, inclusion: { in: ["Mozart", "Bach", "Pachelbel", "Beethoven"] }, allow_nil: false
   end
 
   it "should be able to register a validation" do
-    expect(SimpleValidationExample._validations.size).to eq(7)
+    expect(SimpleValidationExample._validations.size).to eq(17)
   end
 
   context "when validating presence" do
-
     it "should be invalid if a required value isn't present" do
       a = SimpleValidationExample.new
       a.first_name = nil
@@ -107,6 +116,24 @@ describe "Flexirest::Validation" do
       a.valid?
       expect(a._errors[:post_code].size).to eq(1)
     end
+    
+    it "should be valid if a length is nil and allow_nil option is true" do
+      a = SimpleValidationExample.new
+      a.valid?
+      expect(a._errors[:middle_name]).to be_empty
+    end
+
+    it "should be invalid if a length is nil and allow_nil option is not provided" do
+      a = SimpleValidationExample.new
+      a.valid?
+      expect(a._errors[:nick_name].size).to eq(1)
+    end
+
+    it "should be invalid if a length is nil and allow_nil option is false" do
+      a = SimpleValidationExample.new
+      a.valid?
+      expect(a._errors[:alias].size).to eq(1)
+    end
   end
 
 
@@ -136,6 +163,29 @@ describe "Flexirest::Validation" do
         expect(a._errors[:salary].size).to eq(0)
       end 
 
+      it "should be valid if a value is nil and allow_nil option is true" do
+        a = SimpleValidationExample.new
+        a.valid?
+        expect(a._errors[:golf_score]).to be_empty
+      end
+
+      it "should be valid if a value is nil and allow_nil option is true and a hash of options is passed to numericality" do
+        a = SimpleValidationExample.new
+        a.valid?
+        expect(a._errors[:retirement_age]).to be_empty
+      end
+
+      it "should be invalid if a value is nil and allow_nil option is not provided" do
+        a = SimpleValidationExample.new
+        a.valid?
+        expect(a._errors[:cars_owned].size).to eq(1)
+      end
+
+      it "should be invalid if a value is nil and allow_nil option is false" do
+        a = SimpleValidationExample.new
+        a.valid?
+        expect(a._errors[:houses_owned].size).to eq(1)
+      end
     end
 
     context "using the original format with min and max as types" do
@@ -162,7 +212,6 @@ describe "Flexirest::Validation" do
         a.valid?
         expect(a._errors[:age].size).to eq(0)
       end 
-
     end
   end
 
@@ -177,6 +226,24 @@ describe "Flexirest::Validation" do
       a = SimpleValidationExample.new(suffix: "Dr.")
       a.valid?
       expect(a._errors[:suffix].size).to eq(0)       
+    end
+    
+    it "should be valid if the value is nil and allow_nil option is true" do
+      a = SimpleValidationExample.new
+      a.valid?
+      expect(a._errors[:favorite_authors]).to be_empty
+    end
+
+    it "should be invalid if the value is nil and allow_nil option is not provided" do
+      a = SimpleValidationExample.new
+      a.valid?
+      expect(a._errors[:favorite_artists].size).to eq(1)
+    end
+
+    it "should be invalid if the value is nil and allow_nil option is false" do
+      a = SimpleValidationExample.new
+      a.valid?
+      expect(a._errors[:favorite_composers].size).to eq(1)
     end
   end
 
