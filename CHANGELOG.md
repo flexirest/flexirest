@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.2.18
+
+Features:
+
+- Allow nil option in validators (thanks to Jurgen Jocubeit)
+- Added array feature for returning simple scalar values (thanks to Jurgen Jocubeit)
+
 ## 1.2.17
 
 Bugfixes:
