@@ -13,8 +13,9 @@ module Flexirest
       @method                     = method
       @method[:options]           ||= {}
       @method[:options][:lazy]    ||= []
+      @method[:options][:array]   ||= []
       @method[:options][:has_one] ||= {}
-      @overridden_name             = @method[:options][:overridden_name]
+      @overridden_name            = @method[:options][:overridden_name]
       @object                     = object
       @response_delegate          = Flexirest::RequestDelegator.new(nil)
       @params                     = params
@@ -440,7 +441,11 @@ module Flexirest
         elsif v.is_a? Hash
           object._attributes[k] = new_object(v, overridden_name )
         elsif v.is_a? Array
-          object._attributes[k] = Flexirest::ResultIterator.new
+          if @method[:options][:array].include?(k)
+            object._attributes[k] = Array.new
+          else
+            object._attributes[k] = Flexirest::ResultIterator.new
+          end
           v.each do |item|
             if item.is_a? Hash
               object._attributes[k] << new_object(item, overridden_name)
@@ -514,7 +519,7 @@ module Flexirest
       if @method[:options][:has_many][name] || @method[:options][:has_one][name]
         return name
       end
-
+      
       parent_name || name
     end
 
