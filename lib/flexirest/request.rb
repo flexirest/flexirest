@@ -143,7 +143,7 @@ module Flexirest
           if fake.respond_to?(:call)
             fake = fake.call(self)
           end
-          Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest::NAME}\033[0m #{@instrumentation_name} - Faked response found"
+          Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest.name}\033[0m #{@instrumentation_name} - Faked response found"
           content_type = @method[:options][:fake_content_type] || "application/json"
           return handle_response(OpenStruct.new(status:200, body:fake, response_headers:{"X-ARC-Faked-Response" => "true", "Content-Type" => content_type}))
         end
@@ -158,10 +158,10 @@ module Flexirest
         cached = original_object_class.read_cached_response(self)
         if cached && !cached.is_a?(String)
           if cached.expires && cached.expires > Time.now
-            Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest::NAME}\033[0m #{@instrumentation_name} - Absolutely cached copy found"
+            Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest.name}\033[0m #{@instrumentation_name} - Absolutely cached copy found"
             return handle_cached_response(cached)
           elsif cached.etag.to_s != "" #present? isn't working for some reason
-            Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest::NAME}\033[0m #{@instrumentation_name} - Etag cached copy found with etag #{cached.etag}"
+            Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest.name}\033[0m #{@instrumentation_name} - Etag cached copy found with etag #{cached.etag}"
             etag = cached.etag
           end
         end
@@ -317,7 +317,7 @@ module Flexirest
         base_url.gsub!(%r{//(.)}, "//#{username}:#{password}@\\1") if username && !base_url[%r{//[^/]*:[^/]*@}]
         connection = Flexirest::ConnectionManager.get_connection(base_url)
       end
-      Flexirest::Logger.info "  \033[1;4;32m#{Flexirest::NAME}\033[0m #{@instrumentation_name} - Requesting #{connection.base_url}#{@url}"
+      Flexirest::Logger.info "  \033[1;4;32m#{Flexirest.name}\033[0m #{@instrumentation_name} - Requesting #{connection.base_url}#{@url}"
 
       if verbose?
         Flexirest::Logger.debug "Flexirest Verbose Log:"
@@ -376,7 +376,7 @@ module Flexirest
       status = @response.status || 200
 
       if cached && response.status == 304
-        Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest::NAME}\033[0m #{@instrumentation_name}" +
+        Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest.name}\033[0m #{@instrumentation_name}" +
           ' - Etag copy is the same as the server'
         return handle_cached_response(cached)
       end
@@ -386,9 +386,9 @@ module Flexirest
           return @response = response.body
         elsif is_json_response? || is_xml_response?
           if @response.respond_to?(:proxied) && @response.proxied
-            Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest::NAME}\033[0m #{@instrumentation_name} - Response was proxied, unable to determine size"
+            Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest.name}\033[0m #{@instrumentation_name} - Response was proxied, unable to determine size"
           else
-            Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest::NAME}\033[0m #{@instrumentation_name} - Response received #{@response.body.size} bytes"
+            Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest.name}\033[0m #{@instrumentation_name} - Response received #{@response.body.size} bytes"
           end
           result = generate_new_object(ignore_xml_root: @method[:options][:ignore_xml_root])
         else

@@ -46,7 +46,7 @@ module Flexirest
       def read_cached_response(request)
         if cache_store && perform_caching
           key = "#{request.class_name}:#{request.original_url}"
-          Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest::NAME}\033[0m #{key} - Trying to read from cache"
+          Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest.name}\033[0m #{key} - Trying to read from cache"
           value = cache_store.read(key)
           value = Marshal.load(value) rescue value
         end
@@ -64,7 +64,7 @@ module Flexirest
 
         if cache_store && (headers[:etag] || headers[:expires])
           key = "#{request.class_name}:#{request.original_url}"
-          Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest::NAME}\033[0m #{key} - Writing to cache"
+          Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest.name}\033[0m #{key} - Writing to cache"
           cached_response = CachedResponse.new(status:response.status, result:result)
           cached_response.etag = headers[:etag] if headers[:etag]
           cached_response.expires = Time.parse(headers[:expires]) rescue nil if headers[:expires]
