@@ -22,5 +22,12 @@ require "flexirest/base"
 require "flexirest/monkey_patching"
 
 module Flexirest
-  NAME = "Flexirest"
+  @@name = "Flexirest"
+
+  def self.name
+    @@name
+  end
+  def self.name=(value)
+    @@name = value
+  end
 end
