@@ -746,6 +746,19 @@ end
 @people = Person.all(active:false)
 ```
 
+If you specify `defaults` as a `Proc` this will be executed with the set parameters (which you can change). For example to allow you to specify a reference (but the API wants it formated as "id-reference") you could use:
+
+```ruby
+class Person < Flexirest::Base
+  get :all, "/", defaults: (Proc.new do |params|
+    reference = params.delete(:reference) # Delete the old parameter
+    {
+      id: "id-#{reference}"
+    } # The last thing is the hash of defaults
+  end)
+end
+```
+
 ### Required Parameters
 
 If you want to specify that certain parameters are required for a specific call, you can specify them like:

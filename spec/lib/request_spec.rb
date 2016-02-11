@@ -48,6 +48,16 @@ describe Flexirest::Request do
       get :all, "/"
     end
 
+    class ProcDefaultExampleClient < Flexirest::Base
+      base_url "http://www.example.com"
+      get :all, "/", defaults: (Proc.new do |params|
+        reference = params.delete(:reference)
+        {
+          id: "id-#{reference}"
+        }
+      end)
+    end
+
     class LazyLoadedExampleClient < ExampleClient
       base_url "http://www.example.com"
       lazy_load!
@@ -113,6 +123,11 @@ describe Flexirest::Request do
   it "should pass through get parameters, using defaults specified" do
     expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/defaults?overwrite=yes&persist=yes", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:'{"result":true}', response_headers:{})))
     ExampleClient.defaults overwrite:"yes"
+  end
+
+  it "should pass through get parameters, calling the proc if one is specified for defaults" do
+    expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/?id=id-123456", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:'{"result":true}', response_headers:{})))
+    ProcDefaultExampleClient.all reference:"123456"
   end
 
   it "should ensure any required parameters are specified" do
@@ -262,7 +277,7 @@ describe Flexirest::Request do
     expect(object[1].first_name).to eq("Billy")
     expect(object._status).to eq(200)
   end
-  
+
   it "should parse an attribute to be an array if attribute included in array option" do
     expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/johnny", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"first_name\":\"Johnny\", \"likes\":[\"donuts\", \"bacon\"], \"dislikes\":[\"politicians\", \"lawyers\", \"taxes\"]}", status:200, response_headers:{})))
     object = ExampleClient.array
