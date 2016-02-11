@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.0
+
+Features:
+
+- Allow a custom name to be set to be used in logging (thanks to Lewis Buckley)
+
 ## 1.2.19
 
 Features:
