@@ -53,7 +53,9 @@ Note I've specified the base_url in the class above.  This is useful where you w
 Flexirest::Base.base_url = "https://www.example.com/api/v1"
 ```
 
-Any `base_url` settings in specific classes override this declared default. You can then use your new class like this:
+Any `base_url` settings in specific classes override this declared default. Also note that the urls are prepended by "/", and the `api-auth` gem will  fail without this if you use it.
+
+You can then use your new class like this:
 
 ```ruby
 # Create a new person
