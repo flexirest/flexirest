@@ -215,7 +215,11 @@ module Flexirest
         params = {id:params}
       end
 
-      default_params = @method[:options][:defaults] || {}
+      if @method[:options][:defaults].respond_to?(:call)
+        default_params = @method[:options][:defaults].call(params)
+      else
+        default_params = @method[:options][:defaults] || {}
+      end
 
       if @explicit_parameters
         params = @explicit_parameters
@@ -519,7 +523,7 @@ module Flexirest
       if @method[:options][:has_many][name] || @method[:options][:has_one][name]
         return name
       end
-      
+
       parent_name || name
     end
 

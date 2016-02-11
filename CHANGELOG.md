@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.19
+
+Features:
+
+- Allow procs in defaults to be able to use params (for Michael Mealling)
+
 ## 1.2.18
 
 Features:
