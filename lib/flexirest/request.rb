@@ -15,6 +15,7 @@ module Flexirest
       @method[:options][:lazy]    ||= []
       @method[:options][:array]   ||= []
       @method[:options][:has_one] ||= {}
+      @method[:options][:noparse] ||= false
       @overridden_name            = @method[:options][:overridden_name]
       @object                     = object
       @response_delegate          = Flexirest::RequestDelegator.new(nil)
@@ -454,7 +455,7 @@ module Flexirest
             end
           end
         else
-          object._attributes[k] = parse_attribute_value(v)
+          object._attributes[k] = parse_attribute_value(v) unless @method[:options][:noparse]
         end
       end
       object.clean! unless object_is_class?
