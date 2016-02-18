@@ -7,6 +7,7 @@ module Flexirest
     include Caching
     include Recording
     include AttributeParsing
+    include Associations
 
     attr_accessor :_status
     attr_accessor :_etag

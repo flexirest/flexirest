@@ -176,6 +176,33 @@ puts @person.expenses.reduce {|e| e.inc_vat}
 puts @person.address.full_string
 ```
 
+You can also use `has_one`/`has_many` on the class level to allow chaining of classes.  You can specify the class name or allow the system to automatically convert it to the singular class. For example:
+
+```ruby
+class Expense < Flexirest::Base
+  def inc_vat
+    ex_vat * 1.20
+  end
+end
+
+class Address < Flexirest::Base
+  def full_string
+    return "#{self.street}, #{self.city}, #{self.region}, #{self.country}"
+  end
+end
+
+class Person < Flexirest::Base
+  has_one :addresses
+  has_many :expenses, Expense
+  get :find, "/people/:id"
+end
+
+class Company < Flexirest::Base
+  has_many :people
+  get :find, "/companies/:id"
+end
+```
+
 Sometimes we want attributes to just return a simple Ruby Array. To achieve this we can add an `:array` option to the method. This is especially useful when the attribute contains an array of scalar values. If you don't specify the `:array` option Flexirest will return a `Flexirest::ResultIterator`. To illustrate the difference consider the following example:
 
 ```ruby

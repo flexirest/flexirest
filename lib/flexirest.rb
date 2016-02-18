@@ -1,6 +1,7 @@
 require 'active_support/all'
 require "flexirest/version"
 require "flexirest/attribute_parsing"
+require "flexirest/associations"
 require "flexirest/mapping"
 require "flexirest/caching"
 require "flexirest/logger"
