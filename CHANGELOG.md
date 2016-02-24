@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.1
+
+Features:
+
+- You can now use has_many/has_one on the class live, more like ActiveRecord
+
 ## 1.3.0
 
 Features:
