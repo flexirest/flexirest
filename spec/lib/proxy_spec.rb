@@ -113,7 +113,7 @@ describe Flexirest::Base do
   end
 
   it "handles DELETE requests" do
-    expect_any_instance_of(Flexirest::Connection).to receive(:delete).with("/remove", instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"result\":true}", status:200, response_headers:{})))
+    expect_any_instance_of(Flexirest::Connection).to receive(:delete).with("/remove", "", instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"result\":true}", status:200, response_headers:{})))
     ProxyClientExample.remove
   end
 

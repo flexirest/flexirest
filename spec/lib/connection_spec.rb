@@ -45,8 +45,8 @@ describe Flexirest::Connection do
   end
 
   it "should pass a DELETE request through to Faraday" do
-    stub_request(:delete, "www.example.com/foo").to_return(body: "{result:true}")
-    result = @connection.delete("/foo")
+    stub_request(:delete, "www.example.com/foo").with(body: "body").to_return(body: "{result:true}")
+    result = @connection.delete("/foo", "body")
     expect(result.body).to eq("{result:true}")
   end
 
@@ -93,7 +93,7 @@ describe Flexirest::Connection do
         with(:headers => @default_headers).
         to_return(body: "{result:true}")
 
-      result = @connection.delete("/foo")
+      result = @connection.delete("/foo", "body")
       expect(result.body).to eq("{result:true}")
     end
   end
