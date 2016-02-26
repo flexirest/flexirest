@@ -350,7 +350,7 @@ module Flexirest
       when :patch
         response = connection.patch(@url, @body, request_options)
       when :delete
-        response = connection.delete(@url, request_options)
+        response = connection.delete(@url, @body, request_options)
       else
         raise InvalidRequestException.new("Invalid method #{http_method}")
       end
