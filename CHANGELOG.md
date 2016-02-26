@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.2
+
+Features:
+
+- Allow setting the body for a delete request - whether this is within HTTP spec is dubious, but a few APIs require it (thanks to Jeffrey Gu)
+
 ## 1.3.1
 
 Features:
