@@ -5,7 +5,7 @@ Flexirest works fine with Ruby on Rails Framework. This guide was tested with a 
 
 ## Integration
 
-Start referencing `flexirest` in you `Gemfile`
+Start referencing `flexirest` in your `Gemfile`
 
 ```ruby
 # Gemfile
