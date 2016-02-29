@@ -1,5 +1,11 @@
 # Changelog
 
+## Upcoming
+
+Features:
+
+- New Ruby on Rails integration guide (thanks to Matthias Neumayr)
+
 ## 1.3.2
 
 Features:
