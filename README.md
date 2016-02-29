@@ -123,6 +123,10 @@ If you want to debug the response, using inspect on the response object may well
 puts @person.to_json
 ```
 
+### Ruby on Rails Integration
+
+A detailed guide, how to integrate Flexirest with a RESTful resources can be found in the [Ruby-on-Rails-Integration.md](https://github.com/andyjeffries/flexirest/blob/master/Ruby-on-Rails-Integration.md).
+
 ## Advanced Features
 
 ### Faraday Configuration
