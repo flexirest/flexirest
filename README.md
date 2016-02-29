@@ -31,7 +31,7 @@ First you need to create your new model class:
 
 ```ruby
 # config/environments/production.rb
-MyApp::Application.configure do
+Rails.application.configure do
   # ...
   config.api_server_url = "https://www.example.com/api/v1"
 end
