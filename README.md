@@ -790,6 +790,16 @@ class Person < Flexirest::Base
 end
 ```
 
+### Root element removal
+
+If your JSON or XML object comes back with a root node and you'd like to ignore it, you can define the mapping as:
+
+```ruby
+class Feed < Flexirest::Base
+  get :list, "/feed", ignore_root: "feed"
+end
+```
+
 ### Required Parameters
 
 If you want to specify that certain parameters are required for a specific call, you can specify them like:
@@ -921,9 +931,7 @@ class Article < Flexirest::Base
 end
 ```
 
-## Beta Features
-
-### XML Responses
+## XML Responses
 
 Flexirest uses Crack to allow parsing of XML responses.  For example, given an XML response of (with a content type of `application/xml` or `text/xml`):
 
@@ -972,14 +980,6 @@ puts @atom.feed.title
 puts @atom.feed.link.href
 @atom.feed.entry.each do |entry|
   puts "#{entry.title} -> #{entry.link.href}"
-end
-```
-
-If your XML object comes back with a root node and you'd like to ignore it, you can define the mapping as:
-
-```ruby
-class Feed < Flexirest::Base
-  get :atom, "/atom", ignore_xml_root: "feed"
 end
 ```
 

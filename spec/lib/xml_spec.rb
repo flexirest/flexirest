@@ -2,7 +2,13 @@ require 'spec_helper'
 
 class XmlResponseExample < Flexirest::Base
   base_url "http://www.example.com/v1/"
-  get :root, "/root", ignore_xml_root: "feed", fake_content_type: "application/xml", fake: %Q{
+  get :root, "/root", ignore_root: "feed", fake_content_type: "application/xml", fake: %Q{
+    <?xml version="1.0" encoding="utf-8"?>
+    <feed xmlns="http://www.w3.org/2005/Atom">
+      <title>Example Feed</title>
+    </feed>
+  }
+  get :root_deprecated, "/root", ignore_xml_root: "feed", fake_content_type: "application/xml", fake: %Q{
     <?xml version="1.0" encoding="utf-8"?>
     <feed xmlns="http://www.w3.org/2005/Atom">
       <title>Example Feed</title>
@@ -69,6 +75,12 @@ describe XmlResponseExample do
 
   it "allows ignoring of the XML root node" do
     @feed = XmlResponseExample.root
+    expect(@feed.title).to eq("Example Feed")
+  end
+
+  it "allows ignoring of the XML root node using the deprecated call" do
+    expect(Flexirest::Logger).to receive(:warn).with("Using `ignore_xml_root` is deprecated, please switch to `ignore_root`")
+    @feed = XmlResponseExample.root_deprecated
     expect(@feed.title).to eq("Example Feed")
   end
 end

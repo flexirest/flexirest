@@ -390,7 +390,8 @@ module Flexirest
           else
             Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest.name}\033[0m #{@instrumentation_name} - Response received #{@response.body.size} bytes"
           end
-          result = generate_new_object(ignore_xml_root: @method[:options][:ignore_xml_root])
+          result = generate_new_object(ignore_root: @method[:options][:ignore_root], ignore_xml_root: @method[:options][:ignore_xml_root])
+          # TODO: Cleanup when ignore_xml_root is removed
         else
           raise ResponseParseException.new(status:status, body:@response.body)
         end
@@ -540,9 +541,15 @@ module Flexirest
         body = @response.body
       elsif is_json_response?
         body = @response.body.blank? ? {} : MultiJson.load(@response.body)
+        if options[:ignore_root]
+          body = body[options[:ignore_root].to_s]
+        end
       elsif is_xml_response?
         body = @response.body.blank? ? {} : Crack::XML.parse(@response.body)
-        if options[:ignore_xml_root]
+        if options[:ignore_root]
+          body = body[options[:ignore_root].to_s]
+        elsif options[:ignore_xml_root]
+          Flexirest::Logger.warn("Using `ignore_xml_root` is deprecated, please switch to `ignore_root`")
           body = body[options[:ignore_xml_root].to_s]
         end
       end

@@ -81,6 +81,16 @@ describe Flexirest::Request do
       post :save, "/save"
     end
 
+    class IgnoredRootExampleClient < ExampleClient
+      get :root, "/root", ignore_root: "feed", fake: %Q{
+        {
+          "feed": {
+            "title": "Example Feed"
+          }
+        }
+      }
+    end
+
     allow_any_instance_of(Flexirest::Request).to receive(:read_cached_response)
   end
 
@@ -757,5 +767,9 @@ describe Flexirest::Request do
       expect(object.is_a?(ExampleClient)).to be_truthy
       expect(object._delegate?).to be_truthy
     end
+  end
+
+  it "should ignore a specified root element" do
+    expect(IgnoredRootExampleClient.root.title).to eq("Example Feed")
   end
 end

@@ -1,10 +1,11 @@
 # Changelog
 
-## Upcoming
+## 1.3.3
 
 Features:
 
 - New Ruby on Rails integration guide (thanks to Matthias Neumayr)
+- New `ignore_root` method to ignore JSON or XML root nodes, deprecated `ignore_xml_root` (thanks to dsarhadian for the request)
 
 ## 1.3.2
 
@@ -16,7 +17,7 @@ Features:
 
 Features:
 
-- You can now use has_many/has_one on the class live, more like ActiveRecord
+- You can now use `has_many`/`has_one` on the class live, more like ActiveRecord
 
 ## 1.3.0
 
@@ -34,7 +35,7 @@ Features:
 
 Features:
 
-- Allow nil option in validators (thanks to Jurgen Jocubeit)
+- Allow `nil` option in validators (thanks to Jurgen Jocubeit)
 - Added array feature for returning simple scalar values (thanks to Jurgen Jocubeit)
 
 ## 1.2.17
@@ -47,7 +48,7 @@ Bugfixes:
 
 Feature:
 
-- Replaces URL :keyed parameters for direct requests.
+- Replaces URL `:keyed` parameters for direct requests.
 
 ## 1.2.15
 
@@ -60,8 +61,6 @@ Feature:
 Bugfixes:
 
 - Patch was partially implemented in 2014, but never completed. It should be working now (thanks to Joel Low)
-
-# Changelog
 
 ## 1.2.13
 
