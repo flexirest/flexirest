@@ -20,8 +20,12 @@ module Flexirest
       if defined?(Rails) && Rails.respond_to?(:logger)
         Rails.logger.debug(message)
       elsif @logfile
-        File.open(@logfile, "a") do |f|
-          f << "#{message}\n"
+        if @logfile.is_a?(String)
+          File.open(@logfile, "a") do |f|
+            f << "#{message}\n"
+          end
+        else
+          @logfile << "#{message}\n"
         end
       else
         @messages << message
@@ -32,8 +36,12 @@ module Flexirest
       if defined?(Rails) && Rails.respond_to?(:logger) && Rails.logger
         Rails.logger.info(message)
       elsif @logfile
-        File.open(@logfile, "a") do |f|
-          f << "#{message}\n"
+        if @logfile.is_a?(String)
+          File.open(@logfile, "a") do |f|
+            f << "#{message}\n"
+          end
+        else
+          @logfile << "#{message}\n"
         end
       else
         @messages << message
@@ -44,8 +52,12 @@ module Flexirest
       if defined?(Rails) && Rails.respond_to?(:logger)
         Rails.logger.warn(message)
       elsif @logfile
-        File.open(@logfile, "a") do |f|
-          f << "#{message}\n"
+        if @logfile.is_a?(String)
+          File.open(@logfile, "a") do |f|
+            f << "#{message}\n"
+          end
+        else
+          @logfile << "#{message}\n"
         end
       else
         @messages << message
@@ -56,8 +68,12 @@ module Flexirest
       if defined?(Rails) && Rails.respond_to?(:logger)
         Rails.logger.error(message)
       elsif @logfile
-        File.open(@logfile, "a") do |f|
-          f << "#{message}\n"
+        if @logfile.is_a?(String)
+          File.open(@logfile, "a") do |f|
+            f << "#{message}\n"
+          end
+        else
+          @logfile << "#{message}\n"
         end
       else
         @messages << message

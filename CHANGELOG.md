@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.4
+
+Features:
+
+- Allows assigning `STDOUT` to `Flexirest::Logger.logfile` which can be useful when debugging Flexirest or applications at the console (either `rails console` from a Rails app or `rake console` from within Flexirest's codebase) along with setting `verbose!` on the class.
+
 ## 1.3.3
 
 Features:

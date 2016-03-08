@@ -47,6 +47,21 @@ describe Flexirest::Instrumentation do
     Flexirest::Logger.warn("Hello warn")
   end
 
+  it "should write to a logfile if one has been specified" do
+    Flexirest::Logger.logfile = STDOUT
+    expect(STDOUT).to receive(:<<).with("Hello world\n")
+    Flexirest::Logger.debug("Hello world")
+
+    expect(STDOUT).to receive(:<<).with("Hello info\n")
+    Flexirest::Logger.info("Hello info")
+
+    expect(STDOUT).to receive(:<<).with("Hello error\n")
+    Flexirest::Logger.error("Hello error")
+
+    expect(STDOUT).to receive(:<<).with("Hello warn\n")
+    Flexirest::Logger.warn("Hello warn")
+  end
+
   it "should append to its own messages list if neither Rails nor a logfile has been specified" do
     expect(File).not_to receive(:open)
     Flexirest::Logger.debug("Hello world")
