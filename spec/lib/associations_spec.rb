@@ -16,6 +16,19 @@ class AssociationExampleBase < Flexirest::Base
   has_one :association_example_other
 end
 
+class DeepNestedHasManyChildExample < Flexirest::Base
+end
+
+class DeepNestedHasManyTopExample < Flexirest::Base
+  has_many :entries, DeepNestedHasManyChildExample
+end
+
+class DeepNestedHasManyExample < Flexirest::Base
+  has_many :results, DeepNestedHasManyTopExample
+  hash = { results: [ { entries: [ { items: [ "item one", "item two" ] } ] }, { entries: [ { items: [ "item three", "item four" ] } ] } ] }
+  get :find, "/iterate", fake: hash.to_json
+end
+
 describe "Has Many Associations" do
   let(:subject) {AssociationExampleBase.new}
 
@@ -53,6 +66,11 @@ describe "Has Many Associations" do
   it "should return correctly instantiated nested associations" do
     subject.others = [{nested: [{test: "foo"}]}]
     expect(subject.others.first.nested.first.test).to eq("foo")
+  end
+
+  it "should correctly work with deep nested associations" do
+    finder = DeepNestedHasManyExample.find
+    expect(finder.results.count).to eq(2)
   end
 end
 
