@@ -45,6 +45,10 @@ module Flexirest
       @items[key]
     end
 
+    # def []=(key, value)
+    #   @items[key] = value
+    # end
+
     def shuffle
       @items = @items.shuffle
       self
