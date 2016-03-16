@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.5
+
+Bugfix:
+
+- Deeply nested has_many relationships weren't working (thanks to Lewis Buckley for the bug report, spec and fix).
+
 ## 1.3.4
 
 Features:
