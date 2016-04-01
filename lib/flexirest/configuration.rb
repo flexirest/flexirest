@@ -81,6 +81,7 @@ module Flexirest
       end
 
       def request_body_type(value = nil)
+        @request_body_type ||= nil
         if value.nil?
           if @request_body_type.nil?
             if value.nil? && superclass.respond_to?(:request_body_type)
@@ -179,6 +180,7 @@ module Flexirest
       end
 
       def proxy(value = nil)
+        @proxy ||= nil
         value ? @proxy = value : @proxy || nil
       end
 

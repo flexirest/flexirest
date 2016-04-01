@@ -20,6 +20,7 @@ module Flexirest
       @response_delegate          = Flexirest::RequestDelegator.new(nil)
       @params                     = params
       @headers                    = HeadersList.new
+      @forced_url                 = nil
     end
 
     def object_is_class?

@@ -21,8 +21,9 @@ module Flexirest
 
       def _filter_request(type, name, param)
         _handle_super_class_filters(type, name, param)
+        @before_filters ||= []
+        @after_filters ||= []
         filters = (type == :before ? @before_filters : @after_filters)
-        filters ||= []
         filters.each do |filter|
           if filter.is_a? Symbol
             if self.respond_to?(filter)
