@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.6
+
+Bugfix:
+
+- Removed some warnings about using uninitialized variables (thanks to Joel Low for the heads-up).
+
 ## 1.3.5
 
 Bugfix:
