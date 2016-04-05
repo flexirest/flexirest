@@ -12,6 +12,7 @@ module Flexirest
       end
 
       def record_response?
+        @record_response ||= nil
         !!@record_response
       end
     end

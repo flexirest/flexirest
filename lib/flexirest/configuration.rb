@@ -12,6 +12,8 @@ module Flexirest
       @api_auth_secret_key = nil
 
       def base_url(value = nil)
+        @base_url ||= nil
+        @@base_url ||= nil
         if value.nil?
           value = if @base_url.nil?
             @@base_url
@@ -35,6 +37,8 @@ module Flexirest
       end
 
       def username(value = nil)
+        @username ||= nil
+        @@username ||= nil
         if value.nil?
           value = if @username.nil?
             @@username
@@ -124,11 +128,12 @@ module Flexirest
       end
 
       def lazy_load?
-        @lazy_load || false
+        @lazy_load ||= false
       end
 
       def whiny_missing(value = nil)
-        value ? @whiny_missing = value : @whiny_missing || false
+        @whiny_missing ||= false
+        value ? @whiny_missing = value : @whiny_missing
       end
 
       def api_auth_credentials(access_id, secret_key)
@@ -147,6 +152,7 @@ module Flexirest
       end
 
       def api_auth_access_id
+        @api_auth_access_id ||= nil
         if !@api_auth_access_id.nil?
           return @api_auth_access_id
         elsif self.superclass.respond_to?(:api_auth_access_id)
@@ -171,12 +177,14 @@ module Flexirest
       end
 
       def verbose(value = nil)
-        value ? @verbose = value : @verbose || false
+        @verbose ||= false
+        value ? @verbose = value : @verbose
       end
 
       def translator(value = nil)
         Flexirest::Logger.warn("DEPRECATION: The translator functionality of Flexirest has been replaced with proxy functionality, see https://github.com/andyjeffries/flexirest#proxying-apis for more information") unless value.nil?
-        value ? @translator = value : @translator || nil
+        @translator ||= nil
+        value ? @translator = value : @translator
       end
 
       def proxy(value = nil)

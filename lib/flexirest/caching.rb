@@ -4,6 +4,8 @@ module Flexirest
       @@perform_caching = true
 
       def perform_caching(value = nil)
+        @perform_caching ||= nil
+        @@perform_caching ||= nil
         if value.nil?
           if @perform_caching.nil?
             @@perform_caching
