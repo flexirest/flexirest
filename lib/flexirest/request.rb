@@ -554,10 +554,12 @@ module Flexirest
           body = body[options[:ignore_xml_root].to_s]
         end
       end
-      body = begin
-        @method[:name].nil? ? body : translator.send(@method[:name], body)
-      rescue NoMethodError
-        body
+      if translator
+        body = begin
+          @method[:name].nil? ? body : translator.send(@method[:name], body)
+        rescue NoMethodError
+          body
+        end
       end
       if body.is_a? Array
         result = Flexirest::ResultIterator.new(@response)

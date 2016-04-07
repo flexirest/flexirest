@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.8
+
+Bugfix:
+
+- Fixing crash when trying to parse a JSON response body for error codes and no translator present.
+
 ## 1.3.7
 
 Bugfix:
