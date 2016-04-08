@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.9
+
+Feature:
+
+- Proxying now works for PATCH requests, along with the existing GET, POST, PUT and DELETE (thanks to Andrew Schaper for the PR).
+
 ## 1.3.8
 
 Bugfix:
