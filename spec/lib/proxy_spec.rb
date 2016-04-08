@@ -30,6 +30,11 @@ class ProxyExample < Flexirest::ProxyBase
     body "MY-BODY-CONTENT"
     passthrough
   end
+  
+  patch "/partial_update" do
+    body "MY-BODY-CONTENT"
+    passthrough
+  end
 
   delete '/remove' do
     passthrough
@@ -81,6 +86,7 @@ class ProxyClientExample < Flexirest::Base
   get :change_xml_format, "/change-xml-format"
   post :create, "/create"
   put :update, "/update"
+  patch :partial_update, "/partial_update"
   get :not_proxied, "/not_proxied"
   delete :remove, "/remove"
   get :hal_test, "/hal_test/:id"
@@ -106,8 +112,13 @@ describe Flexirest::Base do
     expect_any_instance_of(Flexirest::Connection).to receive(:post).with("/create", {age:12, first_name:"John"}.to_query, instance_of(Hash)).and_return(OpenStruct.new(body:"{\"result\":true}", status:200, headers:{}))
     ProxyClientExample.create(fname:"John", lname:"Smith")
   end
+  
+  it "has access to raw body content for PATCH requests" do
+    expect_any_instance_of(Flexirest::Connection).to receive(:patch).with("/partial_update", "MY-BODY-CONTENT", instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"result\":true}", status:200, response_headers:{})))
+    ProxyClientExample.partial_update(fname:"John", lname:"Smith")
+  end
 
-  it "has access to raw body content for requests" do
+  it "has access to raw body content for PUT requests" do
     expect_any_instance_of(Flexirest::Connection).to receive(:put).with("/update", "MY-BODY-CONTENT", instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"result\":true}", status:200, response_headers:{})))
     ProxyClientExample.update(fname:"John", lname:"Smith")
   end

@@ -17,6 +17,10 @@ module Flexirest
       def put(match, &block)
         add_mapping(:put, match, block)
       end
+      
+      def patch(match, &block)
+        add_mapping(:patch, match, block)
+      end
 
       def delete(match, &block)
         add_mapping(:delete, match, block)
