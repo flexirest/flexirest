@@ -153,7 +153,6 @@ module Flexirest
         else
           @object.class.send(:_filter_request, :before, @method[:name], self)
         end
-        append_get_parameters
         prepare_request_body
         self.original_url = self.url
         cached = original_object_class.read_cached_response(self)
@@ -264,12 +263,6 @@ module Flexirest
       end
     end
 
-    def append_get_parameters
-      if @get_params.any?
-        @url += "?" + URI.encode_www_form(@get_params)
-      end
-    end
-
     def prepare_request_body(params = nil)
       if request_body_type == :form_encoded
         @body ||= (params || @post_params || {}).to_query
@@ -340,7 +333,11 @@ module Flexirest
       if @method[:options][:timeout]
         request_options[:timeout] = @method[:options][:timeout]
       end
-
+      
+      if @get_params.any?
+        request_options[:params] = @get_params
+      end
+      
       case http_method
       when :get
         response = connection.get(@url, request_options)
