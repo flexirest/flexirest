@@ -22,6 +22,7 @@ describe Flexirest::Request do
       end
 
       get :all, "/", :has_many => {:expenses => ExampleOtherClient}
+      get :flat, "/", :params_encoder => :flat
       get :array, "/johnny", array: [:likes, :dislikes]
       get :babies, "/babies", :has_many => {:children => ExampleOtherClient}
       get :single_association, "/single", :has_one => {:single => ExampleSingleClient}, :has_many => {:children => ExampleOtherClient}
@@ -186,6 +187,11 @@ describe Flexirest::Request do
   it "should pass through 'array type' get parameters" do
     expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/?include%5B%5D=your&include%5B%5D=friends", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"result\":true}", response_headers:{})))
     ExampleClient.all :include => [:your,:friends]
+  end
+
+  it "should pass through 'array type' get parameters using the same parameter name if a flat param_encoder is chosen" do
+    expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/?include=your&include=friends", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"result\":true}", response_headers:{})))
+    ExampleClient.flat :include => [:your,:friends]
   end
 
   it "should encode the body in a form-encoded format by default" do

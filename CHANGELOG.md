@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.10
+
+Feature:
+
+- Added per-request params encoding so you can choose between `param[]=foo&param[]=bar` or `param=foo&param=bar` (thanks to bkubic for the PR).
+
 ## 1.3.9
 
 Feature:
