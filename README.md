@@ -617,6 +617,33 @@ class Person < Flexirest::Base
 end
 ```
 
+### Per-request Params Encoding
+
+When url-encoding get parameters, Rudy adds brackets([]) by default to any parameters in an Array. For example, if you tried to pass these parameters:
+
+```ruby
+Person.all(param: [1, 2, 3])
+```
+
+Ruby would encode the url as 
+
+```
+?param[]=1&param[]=2&param[]=3
+```
+
+If you prefer flattened notation instead, pass a `params_encoder` option of `:flat` when mapping the call. So this call:
+
+```ruby
+class Person < Flexirest::Base
+  get :all, '/people', params_encoder: :flat
+end
+```
+would output the following url
+
+```
+?param=1&param=2&param=3
+```
+
 ### Raw Requests
 
 Sometimes you have have a URL that you just want to force through, but have the response handled in the same way as normal objects or you want to have the filters run (say for authentication).  The easiest way to do that is to call `_request` on the class:
