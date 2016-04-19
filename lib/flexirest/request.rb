@@ -266,7 +266,7 @@ module Flexirest
 
     def append_get_parameters
       if @get_params.any?
-        @url += "?" + @get_params.to_query
+        @url += "?" + URI.encode_www_form(@get_params)
       end
     end
 
