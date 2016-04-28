@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.12
+
+Bugfix:
+
+- The Travis build was breaking because Guard pulls in Listen, which only runs on Ruby 2.2 and above. So I removed Guard so the gem can be tested to work against older Ruby versions still.
+
 ## 1.3.11
 
 Feature:
