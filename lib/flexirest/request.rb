@@ -407,17 +407,17 @@ module Flexirest
           error_response = @response.body
         end
         if status == 400
-          raise HTTPBadRequestClientException.new(status:status, result:error_response, url:@url)
+          raise HTTPBadRequestClientException.new(status:status, result:error_response, raw_response: @response.body, url:@url, method: http_method)
         elsif status == 401
-          raise HTTPUnauthorisedClientException.new(status:status, result:error_response, url:@url)
+          raise HTTPUnauthorisedClientException.new(status:status, result:error_response, raw_response: @response.body, url:@url, method: http_method)
         elsif status == 403
-          raise HTTPForbiddenClientException.new(status:status, result:error_response, url:@url)
+          raise HTTPForbiddenClientException.new(status:status, result:error_response, raw_response: @response.body, url:@url, method: http_method)
         elsif status == 404
-          raise HTTPNotFoundClientException.new(status:status, result:error_response, url:@url)
+          raise HTTPNotFoundClientException.new(status:status, result:error_response, raw_response: @response.body, url:@url, method: http_method)
         elsif (400..499).include? status
-          raise HTTPClientException.new(status:status, result:error_response, url:@url)
+          raise HTTPClientException.new(status:status, result:error_response, raw_response: @response.body, url:@url, method: http_method)
         elsif (500..599).include? status
-          raise HTTPServerException.new(status:status, result:error_response, url:@url)
+          raise HTTPServerException.new(status:status, result:error_response, raw_response: @response.body, url:@url, method: http_method)
         elsif status == 0
           raise TimeoutException.new("Timed out getting #{response.url}")
         end
@@ -603,6 +603,12 @@ module Flexirest
       @status = options[:status]
       @result = options[:result]
       @request_url = options[:url]
+      @raw_response = options[:raw_response]
+      @method = options[:method]
+    end
+
+    def message
+      "Sending #{@method.upcase} to '#{@request_url}' returned a #{@status} with the body of - #{@raw_response}"
     end
   end
   class HTTPClientException < HTTPException ; end

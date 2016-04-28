@@ -494,6 +494,20 @@ describe Flexirest::Request do
     expect(e.result.first_name).to eq("John")
   end
 
+  it "should return a useful message for errors" do
+    expect_any_instance_of(Flexirest::Connection).
+      to receive(:post).
+      with("/create", "first_name=John&should_disappear=true", an_instance_of(Hash)).
+      and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"first_name\":\"John\", \"id\":1234}", response_headers:{}, status:500)))
+    object = ExampleClient.new(first_name:"John", should_disappear:true)
+    begin
+      object.create
+    rescue Flexirest::HTTPServerException => e
+      e
+    end
+    expect(e.message).to eq(%q{Sending POST to '/create' returned a 500 with the body of - {"first_name":"John", "id":1234}})
+  end
+
   it "should raise a parse exception for invalid JSON returns" do
     error_content = "<h1>500 Server Error</h1>"
     expect_any_instance_of(Flexirest::Connection).

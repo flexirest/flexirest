@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.11
+
+Feature:
+
+- Made the `Flexirest::*Exception#message` much nicer to help debugging applications, e.g. `Sending PUT to '/enable' returned a 500 with the body of - {"error":"John doesn't exist", "code":1234}`.
+
 ## 1.3.10
 
 Feature:
