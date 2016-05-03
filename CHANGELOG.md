@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.13
+
+Feature:
+
+- The undocumented `plain: true` option to mapped methods was tested and documented.
+
 ## 1.3.12
 
 Bugfix:

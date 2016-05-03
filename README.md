@@ -625,7 +625,7 @@ When url-encoding get parameters, Rudy adds brackets([]) by default to any param
 Person.all(param: [1, 2, 3])
 ```
 
-Ruby would encode the url as 
+Ruby would encode the url as
 
 ```
 ?param[]=1&param[]=2&param[]=3
@@ -687,6 +687,14 @@ Person._plain_request('http://api.example.com/v1/people', :post, {id:1234,name:"
 ```
 
 The parameters are the same as for `_request`, but it does no parsing on the response
+
+You can also bypass the response parsing using a mapped method like this:
+
+```ruby
+class Person < Flexirest::Base
+  get :all, "/v1/people", plain: true
+end
+```
 
 ### Proxying APIs
 
