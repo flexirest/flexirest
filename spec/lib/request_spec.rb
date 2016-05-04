@@ -264,7 +264,7 @@ describe Flexirest::Request do
   it "should not parse JSON from a plain request" do
     response_body = "This is another non-JSON string"
     expect_any_instance_of(Flexirest::Connection).to receive(:get).with(any_args).and_return(::FaradayResponseMock.new(OpenStruct.new(status:200, response_headers:{}, body:response_body)))
-    expect(ExampleClient.plain(id:1234)).to eq(response_body)
+    expect(ExampleClient.plain(id:1234)).to eq(OpenStruct.new(status: 200, response_headers:{}, body: response_body, headers:nil))
   end
 
   it "should return a lazy loader object if lazy loading is enabled" do

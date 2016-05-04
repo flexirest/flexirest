@@ -297,7 +297,7 @@ describe Flexirest::Base do
     it "should be able to pass the plain response from the directly called URL bypassing JSON loading" do
       response_body = "This is another non-JSON string"
       expect_any_instance_of(Flexirest::Connection).to receive(:post).with(any_args).and_return(::FaradayResponseMock.new(OpenStruct.new(status:200, response_headers:{}, body:response_body)))
-      expect(EmptyExample._plain_request("http://api.example.com/", :post, {id:1234})).to eq(response_body)
+      expect(EmptyExample._plain_request("http://api.example.com/", :post, {id:1234})).to eq(OpenStruct.new(status: 200, response_headers:{}, body: response_body, headers:nil))
     end
 
     context "Simulating Faraday connection in_parallel" do
@@ -312,7 +312,7 @@ describe Flexirest::Base do
         expect(result).to eq(nil)
 
         response.finish
-        expect(result).to eq(response_body)
+        expect(result).to eq(OpenStruct.new(status: 200, response_headers:{}, body: response_body, headers:nil))
       end
     end
 
@@ -331,8 +331,8 @@ describe Flexirest::Base do
         end
         EmptyExample.perform_caching = true
         EmptyExample.cache_store = TestCacheStore.new
-        expect(EmptyExample._plain_request("http://api.example.com/?test=1")).to eq(response)
-        expect(EmptyExample._plain_request("http://api.example.com/?test=2")).to eq(other_response)
+        expect(EmptyExample._plain_request("http://api.example.com/?test=1")).to eq(OpenStruct.new(status: 200, response_headers: {}, body: response, headers: nil))
+        expect(EmptyExample._plain_request("http://api.example.com/?test=2")).to eq(OpenStruct.new(status: 200, response_headers: {}, body: other_response, headers: nil))
       ensure
         EmptyExample.perform_caching = perform_caching
         EmptyExample.cache_store = cache_store
