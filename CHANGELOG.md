@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.14
+
+Feature:
+
+- Plain Requests (both using the `plain: true` option to mapped methods and using `_plain_request`) return a `Flexirest::PlainResponse` which is string-like for all intents and purposes (it's comparable with strings using the body of the response) and also has `_status` and `_headers` methods (thanks to Rui Ribeiro for the request/inspiration).
+
 ## 1.3.13
 
 Feature:

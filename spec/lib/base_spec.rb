@@ -300,6 +300,12 @@ describe Flexirest::Base do
       expect(EmptyExample._plain_request("http://api.example.com/", :post, {id:1234})).to eq(response_body)
     end
 
+    it "should return a PlainResponse from the directly called URL bypassing JSON loading" do
+      response_body = "This is another non-JSON string"
+      expect_any_instance_of(Flexirest::Connection).to receive(:post).with(any_args).and_return(::FaradayResponseMock.new(OpenStruct.new(status:200, response_headers:{}, body:response_body)))
+      expect(EmptyExample._plain_request("http://api.example.com/", :post, {id:1234})).to be_a(Flexirest::PlainResponse)
+    end
+
     context "Simulating Faraday connection in_parallel" do
       it "should be able to pass the plain response from the directly called URL bypassing JSON loading" do
         response_body = "This is another non-JSON string"

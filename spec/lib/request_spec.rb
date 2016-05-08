@@ -267,6 +267,12 @@ describe Flexirest::Request do
     expect(ExampleClient.plain(id:1234)).to eq(response_body)
   end
 
+  it "should return a PlainResponse from a plain request" do
+    response_body = "This is another non-JSON string"
+    expect_any_instance_of(Flexirest::Connection).to receive(:get).with(any_args).and_return(::FaradayResponseMock.new(OpenStruct.new(status:200, response_headers:{}, body:response_body)))
+    expect(ExampleClient.plain(id:1234)).to be_a(Flexirest::PlainResponse)
+  end
+
   it "should return a lazy loader object if lazy loading is enabled" do
     object = LazyLoadedExampleClient.fake id:1234, debug:true
     expect(object).to be_an_instance_of(Flexirest::LazyLoader)

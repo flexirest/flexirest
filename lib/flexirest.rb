@@ -21,6 +21,7 @@ require "flexirest/proxy_base"
 require "flexirest/recording"
 require "flexirest/base"
 require "flexirest/monkey_patching"
+require "flexirest/plain_response"
 
 module Flexirest
   @@name = "Flexirest"
