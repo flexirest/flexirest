@@ -10,6 +10,7 @@ module Flexirest
       @lazy_load = false
       @api_auth_access_id = nil
       @api_auth_secret_key = nil
+      @api_auth_options = {}
 
       def base_url(value = nil)
         @base_url ||= nil
@@ -136,7 +137,7 @@ module Flexirest
         value ? @whiny_missing = value : @whiny_missing
       end
 
-      def api_auth_credentials(access_id, secret_key)
+      def api_auth_credentials(access_id, secret_key, options = {})
         begin
           require 'api-auth'
         rescue LoadError
@@ -145,6 +146,7 @@ module Flexirest
 
         @api_auth_access_id = access_id
         @api_auth_secret_key = secret_key
+        @api_auth_options = options
       end
 
       def using_api_auth?
@@ -170,6 +172,16 @@ module Flexirest
         end
 
         return nil
+      end
+
+      def api_auth_options
+        if !@api_auth_options.nil?
+          return @api_auth_options
+        elsif self.superclass.respond_to?(:api_auth_options)
+          return self.superclass.api_auth_options
+        end
+
+        return {}
       end
 
       def verbose!

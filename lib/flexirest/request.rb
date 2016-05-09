@@ -75,6 +75,14 @@ module Flexirest
       end
     end
 
+    def api_auth_options
+      if object_is_class?
+        @object.api_auth_options
+      else
+        @object.class.api_auth_options
+      end
+    end
+
     def username
       if object_is_class?
         @object.username
@@ -338,7 +346,8 @@ module Flexirest
       if using_api_auth?
         request_options[:api_auth] = {
           :api_auth_access_id => api_auth_access_id,
-          :api_auth_secret_key => api_auth_secret_key
+          :api_auth_secret_key => api_auth_secret_key,
+          :api_auth_options => api_auth_options
         }
       end
       if @method[:options][:timeout]

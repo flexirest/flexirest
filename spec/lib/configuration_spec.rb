@@ -157,11 +157,18 @@ describe Flexirest::Configuration do
       it "should be false using_api_auth?" do
         expect(Flexirest::Base.using_api_auth?).to be_falsey
       end
+
+      it "should raise Flexirest::MissingOptionalLibraryError if api-auth isn't installed" do
+        expect(ConfigurationExample).to receive(:require).with("api-auth").and_raise(LoadError)
+        expect {
+          ConfigurationExample.api_auth_credentials('id123', 'secret123', digest: "sha256")
+        }.to raise_error(Flexirest::MissingOptionalLibraryError)
+      end
     end
 
     context 'setting api auth credentials' do
       before(:each) do
-        ConfigurationExample.api_auth_credentials('id123', 'secret123')
+        ConfigurationExample.api_auth_credentials('id123', 'secret123', digest: "sha256")
       end
 
       it "should remember setting using_api_auth?" do
@@ -174,6 +181,15 @@ describe Flexirest::Configuration do
 
       it "should remember setting api_auth_secret_key" do
         expect(ConfigurationExample.api_auth_secret_key).to eq('secret123')
+      end
+
+      it "should remember setting api_auth_options" do
+        expect(ConfigurationExample.api_auth_options).to eq({digest: "sha256"})
+      end
+
+      it "should return an empty hash for api_auth_options if it got reset to nil" do
+        ConfigurationExample.instance_variable_set(:@api_auth_options, nil)
+        expect(ConfigurationExample.api_auth_options).to eq({})
       end
 
       it "should inherit api_auth_credentials when not set" do
@@ -248,7 +264,6 @@ describe Flexirest::Configuration do
 
       ConfigurationExample.faraday_config.call(faraday_double)
     end
-
   end
 
 end

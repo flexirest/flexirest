@@ -26,7 +26,7 @@ module Flexirest
       end
       session = ConnectionManager.get_connection(base_url).session
       session.in_parallel do
-        yield
+        yield if block_given?
       end
     end
 

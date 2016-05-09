@@ -538,6 +538,14 @@ end
 
 For more information on how to generate an access id and secret key please read the [Api-Auth](https://github.com/mgomes/api_auth) documentation.
 
+If you want to specify either the `:digest` or `:override_http_method` to ApiAuth, you can pass these in as options after the access ID and secret key, for example:
+
+```ruby
+class Person < Flexirest::Base
+  api_auth_credentials('123456', 'abcdef', digest: "sha256")
+end
+```
+
 ### Body Types
 
 By default Flexirest puts the body in to normal CGI parameters in K=V&K2=V2 format.  However, if you want to use JSON for your PUT/POST requests, you can use either (the other option, the default, is `:form_encoded`):

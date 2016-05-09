@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.15
+
+Feature:
+
+- Allows setting of the ApiAuth `:digest` or `:override_http_method` (thanks to Alan Ruth for the request).
+
 ## 1.3.14
 
 Feature:

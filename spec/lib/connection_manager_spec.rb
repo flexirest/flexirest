@@ -34,10 +34,18 @@ describe Flexirest::ConnectionManager do
     expect(found_connection).to eq(connection)
   end
 
-  it "should call 'in_parllel' for a session and yield procedure inside that block" do
+  it "should call 'in_parallel' for a session and yield procedure inside that block" do
     Flexirest::Base.adapter = :typhoeus
-    session = Flexirest::ConnectionManager.get_connection("http://www.example.com").session
+    Flexirest::ConnectionManager.get_connection("http://www.example.com").session
     expect { |b| Flexirest::ConnectionManager.in_parallel("http://www.example.com", &b)}.to yield_control
+    Flexirest::Base._reset_configuration!
+  end
+
+  it "should raise Flexirest::MissingOptionalLibraryError if Typhous isn't available" do
+    Flexirest::Base.adapter = :typhoeus
+    Flexirest::ConnectionManager.get_connection("http://www.example.com").session
+    expect(Flexirest::ConnectionManager).to receive(:require).and_raise(LoadError)
+    expect { Flexirest::ConnectionManager.in_parallel("http://www.example.com")}.to raise_error(Flexirest::MissingOptionalLibraryError)
     Flexirest::Base._reset_configuration!
   end
 end

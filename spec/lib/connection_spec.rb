@@ -111,7 +111,7 @@ describe Flexirest::Connection do
     it 'should set a custom timeout' do
       stub_request(:get, "www.example.com/foo")
         .to_return(body: "{result:true}")
-      expect_any_instance_of(Flexirest::Connection).to receive(:set_per_request_timeout)
+      expect_any_instance_of(Flexirest::Connection).to receive(:set_per_request_timeout).and_call_original
       @connection.get("/foo", {:timeout => "5"})
     end
   end
@@ -124,7 +124,8 @@ describe Flexirest::Connection do
       @options = {
         :api_auth => {
           :api_auth_access_id => 'id123',
-          :api_auth_secret_key => 'secret123'
+          :api_auth_secret_key => 'secret123',
+          :api_auth_options => {}
         }
       }
 
@@ -141,6 +142,31 @@ describe Flexirest::Connection do
       stub_request(:get, "www.example.com/foo")
         .with(:headers => @default_headers)
         .to_return(body: "{result:true}")
+      result = @connection.get("/foo", @options)
+      expect(result.env.request_headers['Authorization']).to eq("APIAuth id123:PMWBThkB8vKbvUccHvoqu9G3eVk=")
+    end
+
+    it 'should have an Authorization header with a custom digest method' do
+      @options[:api_auth][:api_auth_options] = {
+        digest: "sha1"
+      }
+      stub_request(:get, "www.example.com/foo")
+        .with(:headers => @default_headers)
+        .to_return(body: "{result:true}")
+      result = @connection.get("/foo", @options)
+      expect(result.env.request_headers['Authorization']).to eq("APIAuth-HMAC-SHA1 id123:PMWBThkB8vKbvUccHvoqu9G3eVk=")
+    end
+
+    it "should warn about using custom digest methods with an Authorization header if ApiAuth doesn't support it" do
+      @options[:api_auth][:api_auth_options] = {
+        digest: "sha256"
+      }
+      stub_request(:get, "www.example.com/foo")
+        .with(:headers => @default_headers)
+        .to_return(body: "{result:true}")
+      expect(ApiAuth).to receive(:sign!).once.with(anything, anything, anything, {digest: "sha256"}).and_raise(ArgumentError)
+      expect(ApiAuth).to receive(:sign!).once.with(anything, anything, anything).and_call_original
+      expect(Flexirest::Logger).to receive(:warn)
       result = @connection.get("/foo", @options)
       expect(result.env.request_headers['Authorization']).to eq("APIAuth id123:PMWBThkB8vKbvUccHvoqu9G3eVk=")
     end
