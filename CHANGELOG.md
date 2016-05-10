@@ -4,7 +4,7 @@
 
 Feature:
 
-- Allows setting of the ApiAuth `:digest` or `:override_http_method` (thanks to Alan Ruth for the request).
+- Allows setting of the ApiAuth `:digest` or `:override_http_method` if v2.0 or above of ApiAuth is installed (thanks to Alan Ruth for the request).
 
 ## 1.3.14
 
