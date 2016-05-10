@@ -646,10 +646,27 @@ class Person < Flexirest::Base
   get :all, '/people', params_encoder: :flat
 end
 ```
+
 would output the following url
 
 ```
 ?param=1&param=2&param=3
+```
+
+### Automatic Conversion of Fields to Date/DateTime
+
+By default Flexirest will attempt to convert all fields to a Date or DateTime object if it's a string and the value matches a pair of regular expressions. However, on large responses this can be computationally expensive.  So, you can either disable this automatic conversion completely with:
+
+```ruby
+Flexirest::Base.disable_automatic_date_parsing = true
+```
+
+Additionally, you can specify when mapping the methods which fields should be parsed (so you can disable it in general, then apply it to particular known fields):
+
+```ruby
+class Person < Flexirest::Base
+  get :all, '/people', parse_fields: [:created_at, :updated_at]
+end
 ```
 
 ### Raw Requests

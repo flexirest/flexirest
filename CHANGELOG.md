@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.16
+
+Feature:
+
+- Allows disabling of the automatic date parsing with the `Flexirest::Base.disable_automatic_date_parsing` setting and/or specifying it per mapped method with the `:parse_fields` option (thanks to Michael Mealling for the request).
+
 ## 1.3.15
 
 Feature:

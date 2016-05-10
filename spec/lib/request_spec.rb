@@ -35,6 +35,7 @@ describe Flexirest::Request do
       post :create, "/create"
       post :test_encoding, "/encoding", request_body_type: :json
       put :update, "/put/:id"
+      put :conversion, "/put/:id", parse_fields: [:converted]
       delete :remove, "/remove/:id"
       get :hal, "/hal", fake:"{\"_links\":{\"child\": {\"href\": \"/child/1\"}, \"other\": {\"href\": \"/other/1\"}, \"cars\":[{\"href\": \"/car/1\", \"name\":\"car1\"}, {\"href\": \"/car/2\", \"name\":\"car2\"}, {\"href\": \"/car/not-embed\", \"name\":\"car_not_embed\"} ], \"lazy\": {\"href\": \"/lazy/load\"}, \"invalid\": [{\"href\": \"/invalid/1\"}]}, \"_embedded\":{\"other\":{\"name\":\"Jane\"},\"child\":{\"name\":\"Billy\"}, \"cars\":[{\"_links\": {\"self\": {\"href\": \"/car/1\"} }, \"make\": \"Bugatti\", \"model\": \"Veyron\"}, {\"_links\": {\"self\": {\"href\": \"/car/2\"} }, \"make\": \"Ferrari\", \"model\": \"F458 Italia\"} ], \"invalid\": [{\"present\":true, \"_links\": {} } ] } }", has_many:{other:ExampleOtherClient}
       get :fake, "/fake", fake:"{\"result\":true, \"list\":[1,2,3,{\"test\":true}], \"child\":{\"grandchild\":{\"test\":true}}}"
@@ -246,6 +247,24 @@ describe Flexirest::Request do
     expect(object.list.last.test).to eq(true)
     expect(object.created_at).to be_an_instance_of(DateTime)
     expect(object.child.grandchild.test).to eq(true)
+  end
+
+  it "should not convert date times in JSON if automatic parsing is disabled" do
+    begin
+      Flexirest::Base.disable_automatic_date_parsing = true
+      expect_any_instance_of(Flexirest::Connection).to receive(:put).with("/put/1234", "debug=true", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"created_at\":\"2012-03-04T01:02:03Z\"}", response_headers:{})))
+      object = ExampleClient.update id:1234, debug:true
+      expect(object.created_at).to be_an_instance_of(String)
+    ensure
+      Flexirest::Base.disable_automatic_date_parsing = false
+    end
+  end
+
+  it "should only convert date times in JSON if specified" do
+    expect_any_instance_of(Flexirest::Connection).to receive(:put).with("/put/1234", "debug=true", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"converted\":\"2012-03-04T01:02:03Z\", \"not_converted\":\"2012-03-04T01:02:03Z\"}", response_headers:{})))
+    object = ExampleClient.conversion id:1234, debug:true
+    expect(object.converted).to be_an_instance_of(DateTime)
+    expect(object.not_converted).to be_an_instance_of(String)
   end
 
   it "should parse JSON and return a nice object for faked responses" do

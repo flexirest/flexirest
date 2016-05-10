@@ -7,6 +7,7 @@ module Flexirest
       @@username = nil
       @@password = nil
       @@request_body_type = :form_encoded
+      @@disable_automatic_date_parsing = nil
       @lazy_load = false
       @api_auth_access_id = nil
       @api_auth_secret_key = nil
@@ -105,6 +106,28 @@ module Flexirest
       def request_body_type=(value)
         Flexirest::Logger.info "\033[1;4;32m#{name}\033[0m Request Body Type set to be #{value}"
         @@request_body_type = value
+      end
+
+      def disable_automatic_date_parsing(value = nil)
+        @disable_automatic_date_parsing ||= nil
+        if value.nil?
+          if @disable_automatic_date_parsing.nil?
+            if value.nil? && superclass.respond_to?(:disable_automatic_date_parsing)
+              superclass.disable_automatic_date_parsing
+            else
+              @@disable_automatic_date_parsing || false
+            end
+          else
+            @disable_automatic_date_parsing
+          end
+        else
+          @disable_automatic_date_parsing = value
+        end
+      end
+
+      def disable_automatic_date_parsing=(value)
+        Flexirest::Logger.info "\033[1;4;32m#{name}\033[0m Request Body Type set to be #{value}"
+        @@disable_automatic_date_parsing = value
       end
 
       def adapter=(adapter)

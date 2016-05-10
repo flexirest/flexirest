@@ -473,7 +473,15 @@ module Flexirest
             end
           end
         else
-          object._attributes[k] = parse_attribute_value(v)
+          if @method[:options][:parse_fields] && @method[:options][:parse_fields].include?(k)
+            object._attributes[k] = parse_attribute_value(v)
+          elsif @method[:options][:parse_fields]
+            object._attributes[k] = v
+          elsif Flexirest::Base.disable_automatic_date_parsing
+            object._attributes[k] = v
+          else
+            object._attributes[k] = parse_attribute_value(v)
+          end
         end
       end
       object.clean! unless object_is_class?
