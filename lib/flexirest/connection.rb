@@ -116,14 +116,11 @@ module Flexirest
 
     def sign_request(request, api_auth)
       return if api_auth[:api_auth_access_id].nil? || api_auth[:api_auth_secret_key].nil?
-      puts api_auth[:api_auth_options].inspect
-      puts request.inspect
       ApiAuth.sign!(
         request,
         api_auth[:api_auth_access_id],
         api_auth[:api_auth_secret_key],
         api_auth[:api_auth_options])
-      puts request.inspect
     rescue ArgumentError
       if api_auth[:api_auth_options] && api_auth[:api_auth_options].keys.size > 0
         Flexirest::Logger.warn("Specifying Api-Auth options isn't supported with your version of ApiAuth")

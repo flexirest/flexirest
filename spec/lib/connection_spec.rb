@@ -143,18 +143,22 @@ describe Flexirest::Connection do
         .with(:headers => @default_headers)
         .to_return(body: "{result:true}")
       result = @connection.get("/foo", @options)
-      expect(result.env.request_headers['Authorization']).to eq("APIAuth id123:TQiQIW6vVaDC5jvh99uTNkxIg6Q=")
+      auth_header = result.env.request_headers['Authorization']
+      expect(auth_header == "APIAuth id123:TQiQIW6vVaDC5jvh99uTNkxIg6Q=" || auth_header == "APIAuth id123:PMWBThkB8vKbvUccHvoqu9G3eVk=").to be_truthy
     end
 
-    it 'should have an Authorization header with a custom digest method' do
-      @options[:api_auth][:api_auth_options] = {
-        digest: "sha256"
-      }
-      stub_request(:get, "www.example.com/foo")
-        .with(:headers => @default_headers)
-        .to_return(body: "{result:true}")
-      result = @connection.get("/foo", @options)
-      expect(result.env.request_headers['Authorization']).to eq("APIAuth-HMAC-SHA256 id123:fDrJfQ1fOoPFHtzhqqdHby+v6bbn2K8b2HR5AKo3vmg=")
+    if Gem.loaded_specs["api-auth"].version.to_s >= "2.0.0"
+      it 'should have an Authorization header with a custom digest method' do
+        puts Gem.loaded_specs["api-auth"].version
+        @options[:api_auth][:api_auth_options] = {
+          digest: "sha256"
+        }
+        stub_request(:get, "www.example.com/foo")
+          .with(:headers => @default_headers)
+          .to_return(body: "{result:true}")
+        result = @connection.get("/foo", @options)
+        expect(result.env.request_headers['Authorization']).to eq("APIAuth-HMAC-SHA256 id123:fDrJfQ1fOoPFHtzhqqdHby+v6bbn2K8b2HR5AKo3vmg=")
+      end
     end
 
     it "should warn about using custom digest methods with an Authorization header if ApiAuth doesn't support it" do
@@ -168,7 +172,8 @@ describe Flexirest::Connection do
       expect(ApiAuth).to receive(:sign!).once.with(anything, anything, anything).and_call_original
       expect(Flexirest::Logger).to receive(:warn)
       result = @connection.get("/foo", @options)
-      expect(result.env.request_headers['Authorization']).to eq("APIAuth id123:TQiQIW6vVaDC5jvh99uTNkxIg6Q=")
+      auth_header = result.env.request_headers['Authorization']
+      expect(auth_header == "APIAuth id123:TQiQIW6vVaDC5jvh99uTNkxIg6Q=" || auth_header == "APIAuth id123:PMWBThkB8vKbvUccHvoqu9G3eVk=").to be_truthy
     end
 
     it 'should have an Content-MD5 header' do
