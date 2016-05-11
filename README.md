@@ -1,11 +1,11 @@
 # Flexirest
 
-[![Build Status](https://travis-ci.org/andyjeffries/flexirest.svg?branch=master)](https://travis-ci.org/andyjeffries/flexirest)
-[![Coverage Status](https://coveralls.io/repos/andyjeffries/flexirest/badge.png)](https://coveralls.io/r/andyjeffries/flexirest)
-[![Code Climate](https://codeclimate.com/github/andyjeffries/flexirest.png)](https://codeclimate.com/github/andyjeffries/flexirest)
+[![Build Status](https://travis-ci.org/flexirest/flexirest.svg?branch=master)](https://travis-ci.org/flexirest/flexirest)
+[![Coverage Status](https://coveralls.io/repos/flexirest/flexirest/badge.png)](https://coveralls.io/r/flexirest/flexirest)
+[![Code Climate](https://codeclimate.com/github/flexirest/flexirest.png)](https://codeclimate.com/github/flexirest/flexirest)
 [![Gem Version](https://badge.fury.io/rb/flexirest.png)](http://badge.fury.io/rb/flexirest)
-[![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/andyjeffries/flexirest.svg)](http://isitmaintained.com/project/andyjeffries/flexirest "Average time to resolve an issue")
-[![Percentage of issues still open](http://isitmaintained.com/badge/open/andyjeffries/flexirest.svg)](http://isitmaintained.com/project/andyjeffries/flexirest "Percentage of issues still open")
+[![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/flexirest/flexirest.svg)](http://isitmaintained.com/project/flexirest/flexirest "Average time to resolve an issue")
+[![Percentage of issues still open](http://isitmaintained.com/badge/open/flexirest/flexirest.svg)](http://isitmaintained.com/project/flexirest/flexirest "Percentage of issues still open")
 
 This gem is for accessing REST services in an ActiveRecord style.  ActiveResource already exists for this, but it doesn't work where the resource naming doesn't follow Rails conventions, it doesn't have in-built caching and it's not as flexible in general.
 
@@ -125,7 +125,7 @@ puts @person.to_json
 
 ### Ruby on Rails Integration
 
-A detailed guide, how to integrate Flexirest with a RESTful resources can be found in the [Ruby-on-Rails-Integration.md](https://github.com/andyjeffries/flexirest/blob/master/Ruby-on-Rails-Integration.md).
+A detailed guide, how to integrate Flexirest with a RESTful resources can be found in the [Ruby-on-Rails-Integration.md](https://github.com/flexirest/flexirest/blob/master/Ruby-on-Rails-Integration.md).
 
 ## Advanced Features
 
@@ -141,7 +141,7 @@ Flexirest::Base.adapter = :patron
 
 In versions before 1.2.0 the adapter was hardcoded to `:patron`, so if you want to ensure it still uses Patron, you should set this setting.
 
-If you want more control you can pass a **complete** configuration block ("complete" means that the block does not *override* [the default configuration](https://github.com/andyjeffries/flexirest/blob/5b1953d89e26c02ca74f74464ccb7cd4c9439dcc/lib/flexirest/configuration.rb#L184-L201), but rather *replaces* it). For available config variables look into the Faraday documentation.
+If you want more control you can pass a **complete** configuration block ("complete" means that the block does not *override* [the default configuration](https://github.com/flexirest/flexirest/blob/5b1953d89e26c02ca74f74464ccb7cd4c9439dcc/lib/flexirest/configuration.rb#L184-L201), but rather *replaces* it). For available config variables look into the Faraday documentation.
 
 ```ruby
 Flexirest::Base.faraday_config do |faraday|
