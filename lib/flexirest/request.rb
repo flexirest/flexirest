@@ -315,7 +315,7 @@ module Flexirest
             _, @base_url, @url = parts
           end
           base_url.gsub!(%r{//(.)}, "//#{username}:#{password}@\\1") if username && !base_url[%r{//[^/]*:[^/]*@}]
-          connection = Flexirest::ConnectionManager.get_connection(@base_url)
+          connection = Flexirest::ConnectionManager.get_connection(base_url)
         end
       else
         parts = @url.match(%r{^(https?://[a-z\d\.:-]+?)(/.*)}).to_a
