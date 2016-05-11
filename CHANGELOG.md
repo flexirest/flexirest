@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.17
+
+Bugfix:
+
+- Authentication credentials weren't being passed through proxied classes (thanks to Lukasz Modlinski for the contribution).
+
 ## 1.3.16
 
 Feature:
