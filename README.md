@@ -1,7 +1,7 @@
 # Flexirest
 
 [![Build Status](https://travis-ci.org/flexirest/flexirest.svg?branch=master)](https://travis-ci.org/flexirest/flexirest)
-[![Coverage Status](https://coveralls.io/repos/flexirest/flexirest/badge.png)](https://coveralls.io/r/flexirest/flexirest)
+[![Coverage Status](https://coveralls.io/repos/github/flexirest/flexirest/badge.svg?branch=master)](https://coveralls.io/github/flexirest/flexirest?branch=master)
 [![Code Climate](https://codeclimate.com/github/flexirest/flexirest.png)](https://codeclimate.com/github/flexirest/flexirest)
 [![Gem Version](https://badge.fury.io/rb/flexirest.png)](http://badge.fury.io/rb/flexirest)
 [![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/flexirest/flexirest.svg)](http://isitmaintained.com/project/flexirest/flexirest "Average time to resolve an issue")
