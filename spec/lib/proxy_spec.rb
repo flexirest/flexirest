@@ -1,5 +1,6 @@
 require 'spec_helper'
 require 'active_support/core_ext/hash'
+require 'base64'
 
 class ProxyExample < Flexirest::ProxyBase
   get "/all" do
@@ -30,7 +31,7 @@ class ProxyExample < Flexirest::ProxyBase
     body "MY-BODY-CONTENT"
     passthrough
   end
-  
+
   patch "/partial_update" do
     body "MY-BODY-CONTENT"
     passthrough
@@ -93,6 +94,8 @@ class ProxyClientExample < Flexirest::Base
 end
 
 describe Flexirest::Base do
+  before(:each) { ProxyClientExample.base_url 'http://www.example.com' }
+
   it "allows the URL to be changed" do
     expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/getAll?id=1", instance_of(Hash)).and_return(OpenStruct.new(body:"{\"result\":true}", status:200, headers:{}))
     ProxyClientExample.all(id:1)
@@ -112,7 +115,7 @@ describe Flexirest::Base do
     expect_any_instance_of(Flexirest::Connection).to receive(:post).with("/create", {age:12, first_name:"John"}.to_query, instance_of(Hash)).and_return(OpenStruct.new(body:"{\"result\":true}", status:200, headers:{}))
     ProxyClientExample.create(fname:"John", lname:"Smith")
   end
-  
+
   it "has access to raw body content for PATCH requests" do
     expect_any_instance_of(Flexirest::Connection).to receive(:patch).with("/partial_update", "MY-BODY-CONTENT", instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"result\":true}", status:200, response_headers:{})))
     ProxyClientExample.partial_update(fname:"John", lname:"Smith")
@@ -197,4 +200,13 @@ describe Flexirest::Base do
     expect(ProxyClientExample.hal_test(id:1).test.result).to eq(true)
   end
 
+  it "properly passes basic HTTP auth credentials" do
+    host, credentials, url_path = 'www.example.com', 'user:pass', '/getAll?id=1'
+    ProxyClientExample.base_url "http://#{credentials}@#{host}"
+    stub_request(:get, "#{host}#{url_path}")
+    ProxyClientExample.all(id:1)
+    expect(a_request(:get, "#{host}#{url_path}").with(headers: {
+      'Authorization'=>"Basic #{Base64.strict_encode64(credentials)}"
+    })).to have_been_made
+  end
 end
