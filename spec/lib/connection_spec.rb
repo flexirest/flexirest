@@ -147,7 +147,7 @@ describe Flexirest::Connection do
       expect(auth_header == "APIAuth id123:TQiQIW6vVaDC5jvh99uTNkxIg6Q=" || auth_header == "APIAuth id123:PMWBThkB8vKbvUccHvoqu9G3eVk=").to be_truthy
     end
 
-    if Gem.loaded_specs["api-auth"].version.to_s >= "2.0.0"
+    if  Gem.loaded_specs["api-auth"].present? && Gem.loaded_specs["api-auth"].version.to_s >= "2.0.0"
       it 'should have an Authorization header with a custom digest method' do
         puts Gem.loaded_specs["api-auth"].version
         @options[:api_auth][:api_auth_options] = {
