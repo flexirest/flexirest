@@ -45,10 +45,14 @@ module Flexirest
 
     def base_url
       if object_is_class?
-        @object.base_url
+        url = @object.base_url
       else
-        @object.class.base_url
+        url = @object.class.base_url
       end
+      if url.is_a?(Array)
+        url = url.sample
+      end
+      url
     end
 
     def using_api_auth?

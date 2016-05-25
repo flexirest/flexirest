@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.18
+
+Feature:
+
+- Simplistic load balancing of API servers by supplying an array of URLs to `base_url`. It then pulls a random one out for each request.
+
 ## 1.3.17
 
 Bugfix:

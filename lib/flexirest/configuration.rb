@@ -27,7 +27,13 @@ module Flexirest
           end
           value
         else
-          value = value.gsub(/\/$/, '')
+          if value.is_a?(Array)
+            value.each_with_index do |v, k|
+              value[k] = v.gsub(/\/$/, '')
+            end
+          else
+            value = value.gsub(/\/$/, '')
+          end
           @base_url = value
         end
       end

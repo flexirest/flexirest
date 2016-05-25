@@ -53,7 +53,9 @@ Note I've specified the base_url in the class above.  This is useful where you w
 Flexirest::Base.base_url = "https://www.example.com/api/v1"
 ```
 
-Any `base_url` settings in specific classes override this declared default. You can then use your new class like this:
+Any `base_url` settings in specific classes override this declared default. You can also assign an array of URLs to `base_url` and Flexirest will randomly pull one of the URLs for each request, giving you a very simplistic load balancing (it doesn't know about the health or load levels of the backends).
+
+You can then use your new class like this:
 
 ```ruby
 # Create a new person

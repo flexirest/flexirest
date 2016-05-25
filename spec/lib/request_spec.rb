@@ -44,6 +44,11 @@ describe Flexirest::Request do
       get :requires, "/requires", requires:[:name, :age]
     end
 
+    class ExampleLoadBalancedClient < Flexirest::Base
+      base_url ["http://api1.example.com", "http://api2.example.com"]
+      get :all, "/", :has_many => {:expenses => ExampleOtherClient}
+    end
+
     class AuthenticatedExampleClient < Flexirest::Base
       base_url "http://www.example.com"
       username "john"
@@ -102,6 +107,21 @@ describe Flexirest::Request do
     expect(Flexirest::ConnectionManager).to receive(:get_connection).with("http://www.example.com").and_return(connection)
     expect(connection).to receive(:get).with("/", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:'{"result":true}', response_headers:{})))
     ExampleClient.all
+  end
+
+  it "should get an HTTP connection from one of the servers when called if multiple are specified" do
+    connection = double(Flexirest::Connection).as_null_object
+    expect(connection).to receive(:get).with("/", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:'{"result":true}', response_headers:{})))
+    servers = []
+    # TODO: this next test is potentially flakey, if over 10 runs of []#sample it doesn't return both variants, but it's so unlikely...
+    10.times do
+      expect(Flexirest::ConnectionManager).to receive(:get_connection) do |arg|
+        servers << arg
+        connection
+      end
+      ExampleLoadBalancedClient.all
+    end
+    expect(servers.uniq.count).to eq(2)
   end
 
   it "should get an HTTP connection with authentication when called" do
