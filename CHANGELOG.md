@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.19
+
+Feature:
+
+- Added Headers in to Flexirest::ResponseParseException to aid debugging of why it doesn't work against custom APIs.
+
 ## 1.3.18
 
 Feature:

@@ -411,7 +411,7 @@ module Flexirest
           result = generate_new_object(ignore_root: @method[:options][:ignore_root], ignore_xml_root: @method[:options][:ignore_xml_root])
           # TODO: Cleanup when ignore_xml_root is removed
         else
-          raise ResponseParseException.new(status:status, body:@response.body)
+          raise ResponseParseException.new(status:status, body:@response.body, headers: @response.headers)
         end
       else
         if is_json_response? || is_xml_response?
@@ -611,10 +611,11 @@ module Flexirest
   class InvalidRequestException < RequestException ; end
   class MissingParametersException < RequestException ; end
   class ResponseParseException < RequestException
-    attr_accessor :status, :body
+    attr_accessor :status, :body, :headers
     def initialize(options)
       @status = options[:status]
       @body = options[:body]
+      @headers = options[:headers]
     end
   end
 
