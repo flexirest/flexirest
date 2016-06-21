@@ -77,6 +77,11 @@ end
 describe "Has One Associations" do
   let(:subject) {AssociationExampleBase.new}
 
+  it "should return nil if it's nil" do
+    subject.child = nil
+    expect(subject.child).to be_nil
+  end
+
   it "should return a list of the association class" do
     subject.child = {test: "foo"}
     expect(subject.child).to be_an(AssociationExampleOther)
