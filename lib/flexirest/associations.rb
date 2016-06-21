@@ -39,6 +39,8 @@ module Flexirest
         @_associations ||= {}
         @_associations[key] = klass
         define_method(key) do
+          return nil if _attributes[key].nil?
+
           if _attributes[key].is_a?(klass)
             return _attributes[key]
           end
