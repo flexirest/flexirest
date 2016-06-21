@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.20
+
+Bugfix:
+
+- Fixed `has_one` association raising an error if there is no associated object (it should just return `nil`) (thanks to Azat Galikhanov for the PR)
+
 ## 1.3.19
 
 Feature:
