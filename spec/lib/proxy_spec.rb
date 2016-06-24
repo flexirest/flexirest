@@ -194,7 +194,7 @@ describe Flexirest::Base do
     expect(ret.name).to eq("Johnny")
   end
 
-  it "can force the URL from a callback without it being passed through URL replacement" do
+  it "can force the URL from a filter without it being passed through URL replacement" do
     expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/hal_test/1", instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"result\":true}", status:200, response_headers:{})))
     expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/this/is/a/test", instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"result\":true}", status:200, response_headers:{})))
     expect(ProxyClientExample.hal_test(id:1).test.result).to eq(true)
@@ -203,8 +203,10 @@ describe Flexirest::Base do
   it "properly passes basic HTTP auth credentials" do
     host, credentials, url_path = 'www.example.com', 'user:pass', '/getAll?id=1'
     ProxyClientExample.base_url "http://#{credentials}@#{host}"
-    stub_request(:get, "http://#{credentials}@#{host}#{url_path}")
+    stub_request(:get, "#{host}#{url_path}")
     ProxyClientExample.all(id:1)
-    expect(a_request(:get, "#{credentials}@#{host}#{url_path}")).to have_been_made
+    expect(a_request(:get, "#{host}#{url_path}").with(headers: {
+      'Authorization'=>"Basic #{Base64.strict_encode64(credentials)}"
+    })).to have_been_made
   end
 end

@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.22
+
+Bugfix:
+
+- Broke a test in v1.3.21 (according to Travis) which was passing locally, updated all my gems and then it broke locally, so reverted the test.
+
 ## 1.3.21
 
 Feature:
