@@ -2,7 +2,7 @@ module Flexirest
   class Base
     include Mapping
     include Configuration
-    include RequestFiltering
+    include Callbacks
     include Validation
     include Caching
     include Recording

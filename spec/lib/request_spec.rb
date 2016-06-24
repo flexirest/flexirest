@@ -80,7 +80,7 @@ describe Flexirest::Request do
       post :create, "/create"
     end
 
-    class FilteredBodyExampleClient < ExampleClient
+    class CallbackBodyExampleClient < ExampleClient
       base_url "http://www.example.com"
       before_request do |name, request|
         request.body = MultiJson.dump(request.post_params)
@@ -310,6 +310,11 @@ describe Flexirest::Request do
     response_body = "This is another non-JSON string"
     expect_any_instance_of(Flexirest::Connection).to receive(:get).with(any_args).and_return(::FaradayResponseMock.new(OpenStruct.new(status:200, response_headers:{}, body:response_body)))
     expect(ExampleClient.plain(id:1234)).to be_a(Flexirest::PlainResponse)
+  end
+
+  it "should return true from 204 with empty bodies" do
+    expect_any_instance_of(Flexirest::Connection).to receive(:get).with(any_args).and_return(::FaradayResponseMock.new(OpenStruct.new(status:204, response_headers:{}, body: nil)))
+    expect(ExampleClient.all).to be_truthy
   end
 
   it "should return a lazy loader object if lazy loading is enabled" do
@@ -640,7 +645,7 @@ describe Flexirest::Request do
       def username ; end
       def password ; end
       def name ; end
-      def _filter_request(*args) ; end
+      def _callback_request(*args) ; end
       def verbose ; false ; end
     end
     fake_object = RequestFakeObject.new
@@ -649,20 +654,20 @@ describe Flexirest::Request do
     expect{request.call}.to raise_error(Flexirest::InvalidRequestException)
   end
 
-  it "should send all class mapped methods through _filter_request" do
+  it "should send all class mapped methods through _callback_request" do
     expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"first_name\":\"Johnny\", \"expenses\":[{\"amount\":1}, {\"amount\":2}]}", status:200, response_headers:{})))
-    expect(ExampleClient).to receive(:_filter_request).with(any_args).exactly(2).times
+    expect(ExampleClient).to receive(:_callback_request).with(any_args).exactly(2).times
     ExampleClient.all
   end
 
-  it "should send all instance mapped methods through _filter_request" do
+  it "should send all instance mapped methods through _callback_request" do
     expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"first_name\":\"Johnny\", \"expenses\":[{\"amount\":1}, {\"amount\":2}]}", status:200, response_headers:{})))
-    expect(ExampleClient).to receive(:_filter_request).with(any_args).exactly(2).times
+    expect(ExampleClient).to receive(:_callback_request).with(any_args).exactly(2).times
     e = ExampleClient.new
     e.all
   end
 
-  it "should change the generated object if an after_filter changes it" do
+  it "should change the generated object if an after_request changes it" do
     expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/change", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"first_name\":\"Johnny\", \"expenses\":[{\"amount\":1}, {\"amount\":2}]}", status:200, response_headers:{})))
     obj = ExampleClient.change
     expect(obj.test).to eq(1)
@@ -737,7 +742,7 @@ describe Flexirest::Request do
         end
 
         def name ; end
-        def _filter_request(*args) ; end
+        def _callback_request(*args) ; end
       end
       fake_object = RequestFakeObject.new
       request = Flexirest::Request.new(method, fake_object, {})
@@ -784,9 +789,9 @@ describe Flexirest::Request do
     end
   end
 
-  it "replaces the body completely in a filter" do
+  it "replaces the body completely in a callback" do
     expect_any_instance_of(Flexirest::Connection).to receive(:post).with("/save", "{\"id\":1234,\"name\":\"john\"}", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{}", response_headers:{})))
-    FilteredBodyExampleClient.save id:1234, name:'john'
+    CallbackBodyExampleClient.save id:1234, name:'john'
   end
 
   context 'Simulating Faraday connection in_parallel' do

@@ -272,9 +272,9 @@ describe Flexirest::Base do
       EmptyExample._request("http://api.example.com/")
     end
 
-    it "runs filters as usual" do
+    it "runs callbacks as usual" do
       expect_any_instance_of(Flexirest::Request).to receive(:do_request).with(any_args).and_return(::FaradayResponseMock.new(OpenStruct.new(status:200, response_headers:{}, body:"{\"first_name\":\"Billy\"}")))
-      expect(EmptyExample).to receive(:_filter_request).with(any_args).exactly(2).times
+      expect(EmptyExample).to receive(:_callback_request).with(any_args).exactly(2).times
       EmptyExample._request("http://api.example.com/")
     end
 

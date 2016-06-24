@@ -161,9 +161,9 @@ module Flexirest
           return handle_response(OpenStruct.new(status:200, body:fake, response_headers:{"X-ARC-Faked-Response" => "true", "Content-Type" => content_type}))
         end
         if object_is_class?
-          @object.send(:_filter_request, :before, @method[:name], self)
+          @object.send(:_callback_request, :before, @method[:name], self)
         else
-          @object.class.send(:_filter_request, :before, @method[:name], self)
+          @object.class.send(:_callback_request, :before, @method[:name], self)
         end
         append_get_parameters
         prepare_request_body
@@ -205,9 +205,9 @@ module Flexirest
             @object.record_response(self.url, response_env)
           end
           if object_is_class?
-            @object.send(:_filter_request, :after, @method[:name], response_env)
+            @object.send(:_callback_request, :after, @method[:name], response_env)
           else
-            @object.class.send(:_filter_request, :after, @method[:name], response_env)
+            @object.class.send(:_callback_request, :after, @method[:name], response_env)
           end
 
           result = handle_response(response_env, cached)
@@ -402,6 +402,8 @@ module Flexirest
       if (200..399).include?(status)
         if @method[:options][:plain]
           return @response = Flexirest::PlainResponse.from_response(response)
+        elsif status == 204 && @response.body.blank?
+          return true
         elsif is_json_response? || is_xml_response?
           if @response.respond_to?(:proxied) && @response.proxied
             Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest.name}\033[0m #{@instrumentation_name} - Response was proxied, unable to determine size"

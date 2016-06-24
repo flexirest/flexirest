@@ -396,11 +396,11 @@ If Rails is defined, it will default to using Rails.cache as the cache store, if
 Flexirest::Base.cache_store = Redis::Store.new("redis://localhost:6379/0/cache")
 ```
 
-### Using filters
+### Using callbacks
 
-You can use filters to alter get/post parameters, the URL or set the post body (doing so overrides normal parameter insertion in to the body) before a request or to adjust the response after a request.  This can either be a block or a named method (like ActionController's `before_filter`/`before_action` methods).
+You can use callbacks to alter get/post parameters, the URL or set the post body (doing so overrides normal parameter insertion in to the body) before a request or to adjust the response after a request.  This can either be a block or a named method (like ActionController's `before_callback`/`before_action` methods).
 
-The filter is passed the name of the method (e.g. `:save`) and an object (a request object for `before_request` and a response object for `after_request`). The request object has four public attributes `post_params` (a Hash of the POST parameters), `get_params` (a Hash of the GET parameters), headers and `url` (a String containing the full URL without GET parameters appended)
+The callback is passed the name of the method (e.g. `:save`) and an object (a request object for `before_request` and a response object for `after_request`). The request object has four public attributes `post_params` (a Hash of the POST parameters), `get_params` (a Hash of the GET parameters), headers and `url` (a String containing the full URL without GET parameters appended)
 
 ```ruby
 require 'secure_random'
@@ -445,7 +445,7 @@ class Person < Flexirest::Base
 end
 ```
 
-If you need to, you can create a custom parent class with a `before_request` filter and all children will inherit this filter.
+If you need to, you can create a custom parent class with a `before_request` callback and all children will inherit this callback.
 
 ```ruby
 class MyProject::Base < Flexirest::Base
@@ -459,7 +459,7 @@ class Person < MyProject::Base
 end
 ```
 
-After filters work in exactly the same way:
+After callbacks work in exactly the same way:
 
 ```ruby
 class Person < Flexirest::Base
@@ -474,6 +474,8 @@ class Person < Flexirest::Base
   end
 end
 ```
+
+**Note:** since v1.3.21 this isn't necessary, empty responses for 204 are accepted normally (the method returns `true`), but this is hear to show an example of an `after_request` callback.
 
 ### Lazy Loading
 
@@ -565,7 +567,7 @@ or
 Flexirest::Base.request_body_type = :json
 ```
 
-This will also set the header `Content-Type` to `application/x-www-form-urlencoded` by default or `application/json; charset=utf-8` when `:json`. You can override this using the filter `before_request`.
+This will also set the header `Content-Type` to `application/x-www-form-urlencoded` by default or `application/json; charset=utf-8` when `:json`. You can override this using the callback `before_request`.
 
 If you have an API that is inconsistent in its body type requirements, you can also specify it on the individual method mapping:
 
@@ -673,7 +675,7 @@ end
 
 ### Raw Requests
 
-Sometimes you have have a URL that you just want to force through, but have the response handled in the same way as normal objects or you want to have the filters run (say for authentication).  The easiest way to do that is to call `_request` on the class:
+Sometimes you have have a URL that you just want to force through, but have the response handled in the same way as normal objects or you want to have the callbacks run (say for authentication).  The easiest way to do that is to call `_request` on the class:
 
 ```ruby
 class Person < Flexirest::Base

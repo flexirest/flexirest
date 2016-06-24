@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.21
+
+Feature:
+
+- Now any requests returning a 204 with an empty (nil or blank) body return true instead of raising a ParseException
+
 ## 1.3.20
 
 Bugfix:
