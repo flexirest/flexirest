@@ -9,6 +9,8 @@
 
 This gem is for accessing REST services in an ActiveRecord style.  ActiveResource already exists for this, but it doesn't work where the resource naming doesn't follow Rails conventions, it doesn't have in-built caching and it's not as flexible in general.
 
+If you are a previous user of ActiveRestClient, there's some more information on [why I created this fork and how to upgrade](https://github.com/flexirest/flexirest/blob/master/Migrating-from-ActiveRestClient.md).
+
 - [Installation](#installation)
 - [Basic Usage](#usage)
   - [Create a new person](#create-a-new-person)
