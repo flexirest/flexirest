@@ -9,6 +9,47 @@
 
 This gem is for accessing REST services in an ActiveRecord style.  ActiveResource already exists for this, but it doesn't work where the resource naming doesn't follow Rails conventions, it doesn't have in-built caching and it's not as flexible in general.
 
+- [Installation](#installation)
+- [Basic Usage](#usage)
+  - [Create a new person](#create-a-new-person)
+  - [Find a person](#find-a-person-not-needed-after-creating)
+  - [Update a person](#update-a-person)
+  - [Get all people](#get-all-people)
+  - [Ruby on Rails Integration](#ruby-on-rails-integration)
+- [Advanced Features](#advanced-features)
+	- [Faraday Configuration](#faraday-configuration)
+	- [Associations](#associations)
+		- [Association Type 1 - Loading Other Classes](#association-type-1-loading-other-classes)
+		- [Association Type 2 - Lazy Loading From Other URLs](#association-type-2-lazy-loading-from-other-urls)
+		- [Association Type 3 - HAL Auto-loaded Resources](#association-type-3-hal-auto-loaded-resources)
+		- [Association Type 4 - Nested Resources](#association-type-4-nested-resources)
+	- [Caching](#caching)
+	- [Using callbacks](#using-callbacks)
+	- [Lazy Loading](#lazy-loading)
+	- [Authentication](#authentication)
+		- [Basic](#basic)
+		- [Api-Auth](#api-auth)
+	- [Body Types](#body-types)
+	- [Parallel Requests](#parallel-requests)
+	- [Faking Calls](#faking-calls)
+	- [Per-request Timeouts](#per-request-timeouts)
+	- [Per-request Params Encoding](#per-request-params-encoding)
+	- [Automatic Conversion of Fields to Date/DateTime](#automatic-conversion-of-fields-to-datedatetime)
+	- [Raw Requests](#raw-requests)
+	- [Plain Requests](#plain-requests)
+	- [Proxying APIs](#proxying-apis)
+	- [Translating APIs](#translating-apis)
+	- [Default Parameters](#default-parameters)
+	- [Root element removal](#root-element-removal)
+	- [Required Parameters](#required-parameters)
+	- [HTTP/Parse Error Handling](#httpparse-error-handling)
+	- [Validation](#validation)
+		- [Permitting nil values](#permitting-nil-values)
+- [Debugging](#debugging)
+- [XML Responses](#xml-responses)
+- [Contributing](#contributing)
+
+
 ## Installation
 
 Add this line to your application's Gemfile:
