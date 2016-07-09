@@ -20,6 +20,10 @@ describe Flexirest::AttributeParsing do
     expect(subject.test("1980-12-24")).to be_a(Date)
   end
 
+  it "should not parse a multiline string as a datetime" do
+    expect(subject.test("not a date\n1980-12-24")).to be_a(String)
+  end
+
   it "should return strings for string values" do
     expect(subject.test("1980-12")).to eq("1980-12")
   end
