@@ -37,5 +37,8 @@ Gem::Specification.new do |spec|
   else
     spec.add_runtime_dependency "activesupport", "< 5.0.0"
   end
+  if RUBY_VERSION < "2.0"
+    spec.add_runtime_dependency "json", "< 2.0.0"
+  end
   spec.add_runtime_dependency "faraday"
 end
