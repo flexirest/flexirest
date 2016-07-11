@@ -32,7 +32,7 @@ Gem::Specification.new do |spec|
 
   spec.add_runtime_dependency "multi_json"
   spec.add_runtime_dependency "crack"
-  if RUBY_VERSION >= "2.2"
+  if RUBY_VERSION >= "2.2.2"
     spec.add_runtime_dependency "activesupport"
   else
     spec.add_runtime_dependency "activesupport", "< 5.0.0"
