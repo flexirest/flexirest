@@ -32,6 +32,10 @@ Gem::Specification.new do |spec|
 
   spec.add_runtime_dependency "multi_json"
   spec.add_runtime_dependency "crack"
-  spec.add_runtime_dependency "activesupport"
+  if RUBY_VERSION >= "2.2"
+    spec.add_runtime_dependency "activesupport"
+  else
+    spec.add_runtime_dependency "activesupport", "< 5.0.0"
+  end
   spec.add_runtime_dependency "faraday"
 end
