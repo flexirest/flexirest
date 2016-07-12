@@ -32,13 +32,17 @@ Gem::Specification.new do |spec|
 
   spec.add_runtime_dependency "multi_json"
   spec.add_runtime_dependency "crack"
-  if RUBY_VERSION >= "2.2.2"
+  spec.add_runtime_dependency "faraday"
+
+  # Use Gem::Version to parse the Ruby version for reliable comparison
+  # ActiveSupport 5+ requires Ruby 2.2.2
+  if Gem::Version.new(RUBY_VERSION) > Gem::Version.new('2.2.2')
     spec.add_runtime_dependency "activesupport"
   else
     spec.add_runtime_dependency "activesupport", "< 5.0.0"
   end
-  if RUBY_VERSION < "2.0"
+  # JSON is an implicit dependency of something, but JSON v2+ requires Ruby 2+
+  if Gem::Version.new(RUBY_VERSION) < Gem::Version.new('2.0.0')
     spec.add_runtime_dependency "json", "< 2.0.0"
   end
-  spec.add_runtime_dependency "faraday"
 end

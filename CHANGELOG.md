@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.23
+
+Bugfix:
+
+- Should not parse multiline strings as `DateTime` when using the automatica parsing (thanks to execjosh for the PR)
+
 ## 1.3.22
 
 Bugfix:
