@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.24
+
+Bugfix:
+
+- Calling class methods on an instance where the instance is cacheable should work (thanks to johnmckinght for the bug report)
+
 ## 1.3.23
 
 Bugfix:

@@ -82,9 +82,9 @@ describe Flexirest::Caching do
         def write(key, value, options={}) ; end
       end
 
-      expect{ Flexirest::Base.cache_store = CachingExampleCacheStore2.new }.to raise_error
-      expect{ Flexirest::Base.cache_store = CachingExampleCacheStore3.new }.to raise_error
-      expect{ Flexirest::Base.cache_store = CachingExampleCacheStore4.new }.to raise_error
+      expect{ Flexirest::Base.cache_store = CachingExampleCacheStore2.new }.to raise_error(Flexirest::InvalidCacheStoreException)
+      expect{ Flexirest::Base.cache_store = CachingExampleCacheStore3.new }.to raise_error(Flexirest::InvalidCacheStoreException)
+      expect{ Flexirest::Base.cache_store = CachingExampleCacheStore4.new }.to raise_error(Flexirest::InvalidCacheStoreException)
     end
 
     it "should allow you to remove the custom cache store" do

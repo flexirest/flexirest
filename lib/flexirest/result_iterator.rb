@@ -2,8 +2,8 @@ module Flexirest
   class ResultIterator
     include Enumerable
 
-    attr_accessor :_status
-    attr_reader :items, :_headers
+    attr_accessor :_status, :items
+    attr_reader :_headers
 
     def initialize(response = nil)
       @_status  = response.try :status
@@ -17,6 +17,10 @@ module Flexirest
 
     def size
       @items.size
+    end
+
+    def to_a
+      @items
     end
 
     def index(value)

@@ -149,7 +149,6 @@ describe Flexirest::Connection do
 
     if  Gem.loaded_specs["api-auth"].present? && Gem.loaded_specs["api-auth"].version.to_s >= "2.0.0"
       it 'should have an Authorization header with a custom digest method' do
-        puts Gem.loaded_specs["api-auth"].version
         @options[:api_auth][:api_auth_options] = {
           digest: "sha256"
         }

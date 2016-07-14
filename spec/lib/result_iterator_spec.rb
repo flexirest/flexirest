@@ -120,7 +120,7 @@ describe Flexirest::ResultIterator do
   it "raises an error if you call paginate without WillPaginate installed" do
     result = Flexirest::ResultIterator.new
     result << 3
-    expect{result.paginate}.to raise_error
+    expect{result.paginate}.to raise_error(Flexirest::WillPaginateNotAvailableException)
   end
 
   it "returns a WillPaginate::Collection if you call paginate with WillPaginate installed" do

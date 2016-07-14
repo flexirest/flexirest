@@ -45,9 +45,10 @@ describe Flexirest::Instrumentation do
     expect(File).to receive(:open).with("/dev/null", "a").and_yield(file)
     expect(file).to receive(:<<).with("Hello warn\n")
     Flexirest::Logger.warn("Hello warn")
+    Flexirest::Logger.logfile = nil
   end
 
-  it "should write to a logfile if one has been specified" do
+  it "should write to STODOUT if one has been specified" do
     Flexirest::Logger.logfile = STDOUT
     expect(STDOUT).to receive(:<<).with("Hello world\n")
     Flexirest::Logger.debug("Hello world")
@@ -60,6 +61,7 @@ describe Flexirest::Instrumentation do
 
     expect(STDOUT).to receive(:<<).with("Hello warn\n")
     Flexirest::Logger.warn("Hello warn")
+    Flexirest::Logger.logfile = nil
   end
 
   it "should append to its own messages list if neither Rails nor a logfile has been specified" do

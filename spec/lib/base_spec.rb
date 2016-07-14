@@ -37,6 +37,11 @@ class NonHostnameBaseUrlExample < Flexirest::Base
   get :all, "/all"
 end
 
+class InstanceMethodExample < Flexirest::Base
+  base_url "http://www.example.com/v1/"
+  get :all, "/all"
+end
+
 describe Flexirest::Base do
   it 'should instantiate a new descendant' do
     expect{EmptyExample.new}.to_not raise_error
@@ -345,6 +350,21 @@ describe Flexirest::Base do
       end
     end
 
+    it "should work with caching if instance methods are used" do
+      perform_caching = InstanceMethodExample.perform_caching
+      cache_store = InstanceMethodExample.cache_store
+      begin
+        response = "{\"id\": 1, \"name\":\"test\"}"
+        allow_any_instance_of(Flexirest::Connection).to receive(:get).and_return(            ::FaradayResponseMock.new(OpenStruct.new(status:200, response_headers:{"Etag" => "12345678", "Content-type" => "application/json"}, body:response)))
+        e = InstanceMethodExample.new
+        e.all(1)
+        expect(e.id).to eq(1)
+      ensure
+        InstanceMethodExample.perform_caching = perform_caching
+        InstanceMethodExample.cache_store = cache_store
+      end
+    end
+
     it "should be able to lazy load a direct URL request" do
       expect_any_instance_of(Flexirest::Request).to receive(:do_request).with(any_args).and_return(::FaradayResponseMock.new(OpenStruct.new(status:200, response_headers:{}, body:"{\"first_name\":\"Billy\"}")))
       example = EmptyExample._lazy_request("http://api.example.com/")
@@ -409,7 +429,6 @@ describe Flexirest::Base do
       expect(json_parsed_object["students"].first["age"]).to eq(student1.age)
       expect(json_parsed_object["students"].second["age"]).to eq(student2.age)
     end
-
   end
 
 end

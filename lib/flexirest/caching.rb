@@ -68,9 +68,11 @@ module Flexirest
           key = "#{request.class_name}:#{request.original_url}"
           Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest.name}\033[0m #{key} - Writing to cache"
           cached_response = CachedResponse.new(status:response.status, result:result)
-          cached_response.etag = headers[:etag] if headers[:etag]
+          cached_response.etag = "#{headers[:etag]}" if headers[:etag]
           cached_response.expires = Time.parse(headers[:expires]) rescue nil if headers[:expires]
-          cache_store.write(key, Marshal.dump(cached_response), {}) if cached_response.etag.present? || cached_response.expires
+          if cached_response.etag.present? || cached_response.expires
+            cache_store.write(key, Marshal.dump(cached_response), {})
+          end
         end
       end
     end
@@ -82,13 +84,32 @@ module Flexirest
   end
 
   class CachedResponse
-    attr_accessor :status, :result, :etag, :expires
+    attr_accessor :class_name, :status, :etag, :expires
 
     def initialize(options)
       @status = options[:status]
-      @result = options[:result]
       @etag = options[:etag]
       @expires = options[:expires]
+
+      @class_name = options[:result].class.name
+      if options[:result].is_a?(ResultIterator)
+        @class_name = options[:result][0].class.name
+        @result = options[:result].map{|i| {}.merge(i._attributes)}
+      else
+        @result = {}.merge(options[:result].try(:_attributes) || {})
+      end
+    end
+
+    def result
+      return @result if @class_name.nil? # Old cached instance
+
+      if @result.is_a?(Array)
+        ri = ResultIterator.new(self)
+        ri.items = @result.map{|i| @class_name.constantize.new(i)}
+        ri
+      else
+        @class_name.constantize.new(@result)
+      end
     end
   end
 end
