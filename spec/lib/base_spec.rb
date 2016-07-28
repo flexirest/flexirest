@@ -42,6 +42,11 @@ class InstanceMethodExample < Flexirest::Base
   get :all, "/all"
 end
 
+class WhitelistedDateExample < Flexirest::Base
+  parse_date :updated_at
+end
+
+
 describe Flexirest::Base do
   it 'should instantiate a new descendant' do
     expect{EmptyExample.new}.to_not raise_error
@@ -428,6 +433,24 @@ describe Flexirest::Base do
     it "should set integers as a native JSON type" do
       expect(json_parsed_object["students"].first["age"]).to eq(student1.age)
       expect(json_parsed_object["students"].second["age"]).to eq(student2.age)
+    end
+  end
+
+  describe "instantiating object" do
+    context "no whitelist specified" do
+      it "should convert dates automatically" do
+        client = EmptyExample.new(test: Time.now.iso8601)
+        expect(client["test"]).to be_an_instance_of(DateTime)
+      end
+    end
+
+    context "whitelist specified" do
+      it "should only convert specified dates" do
+        time = Time.now.iso8601
+        client = WhitelistedDateExample.new(updated_at: time, created_at: time)
+        expect(client["updated_at"]).to be_an_instance_of(DateTime)
+        expect(client["created_at"]).to be_an_instance_of(String)
+      end
     end
   end
 

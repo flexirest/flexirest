@@ -26,7 +26,7 @@ module Flexirest
 
       attrs.each do |attribute_name, attribute_value|
         attribute_name = attribute_name.to_sym
-        @attributes[attribute_name] = parse_attribute_value(attribute_value)
+        @attributes[attribute_name] = possible_date?(attribute_name) ? parse_attribute_value(attribute_value) : attribute_value
         @dirty_attributes << attribute_name
       end
     end
@@ -173,6 +173,10 @@ module Flexirest
       else
         value.inspect
       end
+    end
+
+    def possible_date?(name)
+      self.class._date_fields.empty? || self.class._date_fields.include?(name)
     end
 
   end
