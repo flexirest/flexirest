@@ -479,9 +479,11 @@ module Flexirest
             end
           end
         else
-          if @method[:options][:parse_fields] && @method[:options][:parse_fields].include?(k)
+          parse_fields = [ @method[:options][:parse_fields], @object._date_fields ].compact.reduce([], :|)
+          parse_fields = nil if parse_fields.empty?
+          if (parse_fields && parse_fields.include?(k))
             object._attributes[k] = parse_attribute_value(v)
-          elsif @method[:options][:parse_fields]
+          elsif parse_fields
             object._attributes[k] = v
           elsif Flexirest::Base.disable_automatic_date_parsing
             object._attributes[k] = v
