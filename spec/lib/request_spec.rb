@@ -99,6 +99,12 @@ describe Flexirest::Request do
       }
     end
 
+    class WhitelistedDateClient < Flexirest::Base
+      base_url "http://www.example.com"
+      put :conversion, "/put/:id"
+      parse_date :converted
+    end
+
     allow_any_instance_of(Flexirest::Request).to receive(:read_cached_response)
   end
 
@@ -283,6 +289,13 @@ describe Flexirest::Request do
   it "should only convert date times in JSON if specified" do
     expect_any_instance_of(Flexirest::Connection).to receive(:put).with("/put/1234", "debug=true", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"converted\":\"2012-03-04T01:02:03Z\", \"not_converted\":\"2012-03-04T01:02:03Z\"}", response_headers:{})))
     object = ExampleClient.conversion id:1234, debug:true
+    expect(object.converted).to be_an_instance_of(DateTime)
+    expect(object.not_converted).to be_an_instance_of(String)
+  end
+
+  it "should convert date times in JSON if whitelisted" do
+    expect_any_instance_of(Flexirest::Connection).to receive(:put).with("/put/1234", "debug=true", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"converted\":\"2012-03-04T01:02:03Z\", \"not_converted\":\"2012-03-04T01:02:03Z\"}", response_headers:{})))
+    object = WhitelistedDateClient.conversion id:1234, debug:true
     expect(object.converted).to be_an_instance_of(DateTime)
     expect(object.not_converted).to be_an_instance_of(String)
   end

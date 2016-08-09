@@ -29,6 +29,16 @@ class DeepNestedHasManyExample < Flexirest::Base
   get :find, "/iterate", fake: hash.to_json
 end
 
+class WhitelistedDateExample < Flexirest::Base
+  parse_date :updated_at
+end
+
+class WhitelistedDateMultipleExample < Flexirest::Base
+  parse_date :updated_at, :created_at
+  parse_date :generated_at
+end
+
+
 describe "Has Many Associations" do
   let(:subject) {AssociationExampleBase.new}
 
@@ -106,5 +116,31 @@ describe "Has One Associations" do
   it "should return correctly instantiated nested associations" do
     subject.child = {nested_child: {test: "foo"}}
     expect(subject.child.nested_child.test).to eq("foo")
+  end
+end
+
+describe "whitelisted date fields" do
+  context "no whitelist specified" do
+    let(:subject) {AssociationExampleNested}
+
+    it "should show whitelist as empty array" do
+      expect(subject._date_fields).to eq([])
+    end
+  end
+
+  context "whitelist specified" do
+    let(:subject) {WhitelistedDateExample}
+
+    it "should contain whitelisted field" do
+      expect(subject._date_fields).to eq([:updated_at])
+    end
+  end
+
+  context "multiple attributes whitelisted" do
+    let(:subject) {WhitelistedDateMultipleExample}
+
+    it "should contain all fields" do
+      expect(subject._date_fields).to match_array([:updated_at, :created_at, :generated_at])
+    end
   end
 end

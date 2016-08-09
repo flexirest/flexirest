@@ -50,6 +50,19 @@ module Flexirest
           _attributes[key]
         end
       end
+
+      def parse_date(*keys)
+        keys.each { |key| @_date_fields << key }
+      end
+
+      def _date_fields
+        @_date_fields.uniq
+      end
+
+      def inherited(subclass)
+        subclass.instance_variable_set(:@_date_fields, [])
+        super
+      end
     end
 
     def self.included(base)
