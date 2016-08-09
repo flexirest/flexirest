@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.25
+
+Feature:
+
+- Improvements in performance due to date parsing (thanks to guanglunw for the PR)
+
 ## 1.3.24
 
 Bugfix:
