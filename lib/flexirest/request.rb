@@ -570,7 +570,12 @@ module Flexirest
       if @response.body.is_a?(Array) || @response.body.is_a?(Hash)
         body = @response.body
       elsif is_json_response?
-        body = @response.body.blank? ? {} : MultiJson.load(@response.body)
+        begin
+          body = @response.body.blank? ? {} : MultiJson.load(@response.body)
+        rescue MultiJson::ParseError => exception
+          raise ResponseParseException.new(status:@response.status, body:@response.body, headers:@response.headers)
+        end
+
         if options[:ignore_root]
           body = body[options[:ignore_root].to_s]
         end

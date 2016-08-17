@@ -612,6 +612,23 @@ describe Flexirest::Request do
     expect(e.result).to eq(error_content)
   end
 
+  it "should raise response parse exception for invalid JSON content" do
+    message_content = "Success"
+    expect_any_instance_of(Flexirest::Connection).
+      to receive(:post).
+      with("/create", "first_name=John&should_disappear=true", an_instance_of(Hash)).
+      and_return(::FaradayResponseMock.new(OpenStruct.new(body:message_content, response_headers:{'Content-Type' => 'application/json'}, status:200)))
+    object = ExampleClient.new(first_name:"John", should_disappear:true)
+    begin
+      object.create
+    rescue => e
+      e
+    end
+    expect(e).to be_instance_of(Flexirest::ResponseParseException)
+    expect(e.status).to eq(200)
+    expect(e.body).to eq(message_content)
+  end
+
   it "should raise response parse exception for 200 response status and non json content type" do
     error_content = "<h1>malformed json</h1>"
     expect_any_instance_of(Flexirest::Connection).
