@@ -327,7 +327,7 @@ describe Flexirest::Request do
 
   it "should return true from 204 with empty bodies" do
     expect_any_instance_of(Flexirest::Connection).to receive(:get).with(any_args).and_return(::FaradayResponseMock.new(OpenStruct.new(status:204, response_headers:{}, body: nil)))
-    expect(ExampleClient.all).to be_truthy
+    expect(ExampleClient.all).to eq({})
   end
 
   it "should return a lazy loader object if lazy loading is enabled" do
