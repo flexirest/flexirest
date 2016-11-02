@@ -46,5 +46,6 @@ Gem::Specification.new do |spec|
   if Gem::Version.new(RUBY_VERSION) < Gem::Version.new('2.0.0')
     spec.add_runtime_dependency "json", "< 2.0.0"
     spec.add_runtime_dependency "tins", "~> 1.6.0"
+    spec.add_runtime_dependency "term-ansicolor", "~> 1.3.2"
   end
 end
