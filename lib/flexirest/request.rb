@@ -271,7 +271,7 @@ module Flexirest
         matches.each do |token|
           token = token.first[1,999]
           target = @get_params.delete(token.to_sym) || @post_params.delete(token.to_sym) || @get_params.delete(token.to_s) || @post_params.delete(token.to_s) || ""
-          @url.gsub!(":#{token}", target.to_s)
+          @url.gsub!(":#{token}", URI.escape(target.to_s))
         end
       end
     end

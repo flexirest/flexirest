@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.26
+
+Bugfix:
+
+- Parameters sent within the URL (e.g. /foo/:bar) should be URI escaped or Flexirest raises an error about unparseable URLs
+
 ## 1.3.25
 
 Feature:
