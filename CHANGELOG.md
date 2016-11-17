@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.27
+
+Bugfix:
+
+- HTTP GET requests shouldn't send any body, JSON-encoded or otherwise
+
 ## 1.3.26
 
 Bugfix:

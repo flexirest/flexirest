@@ -287,7 +287,9 @@ module Flexirest
     end
 
     def prepare_request_body(params = nil)
-      if request_body_type == :form_encoded
+      if http_method == :get
+        @body = ""
+      elsif request_body_type == :form_encoded
         @body ||= (params || @post_params || {}).to_query
         headers["Content-Type"] ||= "application/x-www-form-urlencoded"
       elsif request_body_type == :json

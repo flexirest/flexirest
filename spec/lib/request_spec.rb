@@ -238,6 +238,12 @@ describe Flexirest::Request do
     ExampleClient.update id:1234, debug:true, test:'foo'
   end
 
+  it "should not pass through an encoded empty body parameter" do
+    expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/1234", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"result\":true}", response_headers:{})))
+    ExampleClient.request_body_type :json
+    ExampleClient.find id:1234
+  end
+
   it "allows forcing a request_body_type per request" do
     expect_any_instance_of(Flexirest::Connection).to receive(:post).with("/encoding", %q({"id":1234,"test":"something"}), an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"result\":true}", response_headers:{})))
     ExampleClient.request_body_type :form_encoded # Should be ignored and the per_method :json used
