@@ -101,6 +101,16 @@ describe Flexirest::ResultIterator do
     expect(result.shuffle.first == result.shuffle.first && result.shuffle.first == result.shuffle.first).to_not be_truthy
   end
 
+  it "should implement delete_if" do
+    result = Flexirest::ResultIterator.new
+    result << "a"
+    result << "z"
+    result.delete_if {|i| i == "z" }
+    expect(result.items).to eq(["a"])
+  end
+
+
+
   it "can parallelise calls to each item" do
     result = Flexirest::ResultIterator.new
     result << 3

@@ -58,6 +58,11 @@ module Flexirest
       self
     end
 
+    def delete_if
+      @items = @items.delete_if &Proc.new
+      self
+    end
+
     def parallelise(method=nil)
       collected_responses = []
       threads = []

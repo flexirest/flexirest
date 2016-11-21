@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.28
+
+Feature:
+
+- Implemented delete_if on ResultIterator
+
 ## 1.3.27
 
 Bugfix:
