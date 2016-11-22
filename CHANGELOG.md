@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.30
+
+Bugfix:
+
+- Restoring cached Flexirest::ResultIterators created via a Proxy wasn't restoring correctly
+
 ## 1.3.29
 
 Bugfix:
