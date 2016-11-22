@@ -189,7 +189,7 @@ describe Flexirest::Caching do
       expect(ret._status).to eq(200)
     end
 
-    it "should not write the response to the cache unless if has caching headers" do
+    it "should not write the response to the cache unless it has caching headers" do
       expect_any_instance_of(CachingExampleCacheStore5).to receive(:read).once.with("Person:/").and_return(nil)
       expect_any_instance_of(CachingExampleCacheStore5).not_to receive(:write)
       expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/", an_instance_of(Hash)).and_return(OpenStruct.new(status:200, body:"{\"result\":true}", headers:{}))
