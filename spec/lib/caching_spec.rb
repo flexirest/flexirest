@@ -1,5 +1,33 @@
 require 'spec_helper'
 
+class DummyCache
+  def initialize
+    @items = {}
+  end
+
+  def read(key)
+    puts "reading #{key} #{@items[key]}"
+    @items[key]
+  end
+
+  def write(key, value, options={})
+    puts "writing #{value}"
+    @items[key] = value
+  end
+
+  def fetch(key, &block)
+    value = read(key)
+    return value if value.present?
+    value = block.call
+    write(key, value)
+    value
+  end
+
+  def items
+    @items
+  end
+end
+
 describe Flexirest::Caching do
   before :each do
     Flexirest::Base._reset_caching!
@@ -173,6 +201,7 @@ describe Flexirest::Caching do
 
     it "should restore a result iterator from the cache store, if there's a hard expiry" do
       class CachingExample3 < Flexirest::Base ; end
+
       object = Flexirest::ResultIterator.new(double(status: 200))
       object << CachingExample3.new(first_name:"Johnny")
       object << CachingExample3.new(first_name:"Billy")
@@ -186,6 +215,29 @@ describe Flexirest::Caching do
       expect_any_instance_of(Flexirest::Connection).not_to receive(:get)
       ret = Person.all
       expect(ret.first.first_name).to eq("Johnny")
+      expect(ret._status).to eq(200)
+    end
+
+    it "should restore a nested result iterator from the cache store" do
+      class CachingExample4 < Flexirest::Base
+        perform_caching true
+        self.cache_store = DummyCache.new
+        base_url "http://www.example.com"
+        get :all, "/all"
+      end
+
+      Flexirest::Logger.logfile = "/dev/stdout"
+
+      request = double("Request", class_name: "CachingExample4", original_url: "/all")
+      response = double("Response", status: 200, response_headers: {"Content-type" => "some/voodoo", "Expires" => 1.day.from_now.rfc822})
+      object = Flexirest::ResultIterator.new(response)
+      object.items << CachingExample4.new(name: "Johnny")
+      object._status = 200
+      CachingExample4.write_cached_response(request, response, object)
+      # puts CachingExample4.cache_store.inspect
+      ret = CachingExample4.all
+      puts ret.inspect
+      expect(ret.first.name).to eq("Johnny")
       expect(ret._status).to eq(200)
     end
 

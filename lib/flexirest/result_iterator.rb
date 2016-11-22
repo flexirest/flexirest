@@ -6,6 +6,7 @@ module Flexirest
     attr_reader :_headers
 
     def initialize(response = nil)
+      puts response.inspect
       @_status  = response.try :status
       @_headers = response.try :response_headers
       @items = []
