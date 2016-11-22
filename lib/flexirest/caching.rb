@@ -70,7 +70,7 @@ module Flexirest
         if cache_store && (headers[:etag] || headers[:expires])
           key = "#{request.class_name}:#{request.original_url}"
           Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest.name}\033[0m #{key} - Writing to cache"
-          cached_response = CachedResponse.new(status:response.status, result:result)
+          cached_response = CachedResponse.new(status:response.status, result:result, response_headers: headers)
           cached_response.etag = "#{headers[:etag]}" if headers[:etag]
           cached_response.expires = Time.parse(headers[:expires]) rescue nil if headers[:expires]
           if cached_response.etag.present? || cached_response.expires
@@ -87,12 +87,13 @@ module Flexirest
   end
 
   class CachedResponse
-    attr_accessor :class_name, :status, :etag, :expires
+    attr_accessor :class_name, :status, :etag, :expires, :response_headers
 
     def initialize(options)
       @status = options[:status]
       @etag = options[:etag]
       @expires = options[:expires]
+      @response_headers = options[:response_headers]
 
       @class_name = options[:result].class.name
       if options[:result].is_a?(ResultIterator)
