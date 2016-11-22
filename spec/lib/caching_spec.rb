@@ -212,6 +212,21 @@ describe Flexirest::Caching do
       Person.all
     end
 
+    it "should not write the response to the cache if there's an etag but perform_caching is off at the base level" do
+      begin
+        caching = Flexirest::Base.perform_caching
+        Flexirest::Base.perform_caching false
+        Person._reset_caching!
+        Person.cache_store = CachingExampleCacheStore5.new
+        expect(Person.cache_store).to_not receive(:read)
+        expect(Person.cache_store).to_not receive(:write)
+        expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(status:200, body:"{\"result\":true}", response_headers:{etag:"1234567890"})))
+        Person.all
+      ensure
+        Flexirest::Base.perform_caching caching
+      end
+    end
+
     it "should write the response to the cache if there's a hard expiry" do
       expect_any_instance_of(CachingExampleCacheStore5).to receive(:read).once.with("Person:/").and_return(nil)
       expect_any_instance_of(CachingExampleCacheStore5).to receive(:write).once.with("Person:/", an_instance_of(String), an_instance_of(Hash))

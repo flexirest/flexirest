@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.29
+
+Bugfix:
+
+- Setting `perform_caching` on `Flexirest::Base` was being ignored
+
 ## 1.3.28
 
 Feature:

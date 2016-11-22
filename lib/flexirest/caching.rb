@@ -5,13 +5,16 @@ module Flexirest
 
       def perform_caching(value = nil)
         @perform_caching ||= nil
-        @@perform_caching ||= nil
         if value.nil?
-          if @perform_caching.nil?
+          value = if @perform_caching.nil?
             @@perform_caching
           else
             @perform_caching
           end
+          if value.nil? && superclass.respond_to?(:perform_caching)
+            value = superclass.perform_caching
+          end
+          value
         else
           @perform_caching = value
         end
@@ -40,8 +43,8 @@ module Flexirest
       end
 
       def _reset_caching!
-        @@perform_caching = false
-        @perform_caching = false
+        @@perform_caching = nil
+        @perform_caching = nil
         @@cache_store = nil
       end
 
