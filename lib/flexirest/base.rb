@@ -124,11 +124,17 @@ module Flexirest
           @attributes[name_sym]
         else
           if name[/^lazy_/] && mapped = self.class._mapped_method(name_sym)
-            raise ValidationFailedException.new unless valid?
+            if mapped[:method] != :delete
+              raise ValidationFailedException.new unless valid?
+            end
+
             request = Request.new(mapped, self, args.first)
             Flexirest::LazyLoader.new(request)
           elsif mapped = self.class._mapped_method(name_sym)
-            raise ValidationFailedException.new if !valid? && mapped[:method] != :delete
+            if mapped[:method] != :delete
+              raise ValidationFailedException.new unless valid?
+            end
+
             request = Request.new(mapped, self, args.first)
             request.call
           elsif self.class.whiny_missing
