@@ -15,12 +15,12 @@ gem 'flexirest'
 
 ## Configuration
 
-It's possible to explicit specify the `base_url` in the Model Class. If you have an common API Endpoint it makes sense to setup an initializer in `config/initializer` or use the `Rails.application.configure` namespace.
+It's possible to explicit specify the `base_url` in the Model Class. If you have an common API Endpoint it makes sense to setup an initializer in `config/initializers` or use the `Rails.application.configure` namespace.
 
-This example use a custom file in `config/initializer` to setup the API endpoint. Either set a fixed URL or use environment variables if you would like to follow the [12factor](http://12factor.net/config) rules for preparing your application running on cloud infrastructure like heroku.
+This example use a custom file in `config/initializers` to setup the API endpoint. Either set a fixed URL or use environment variables if you would like to follow the [12factor](http://12factor.net/config) rules for preparing your application running on cloud infrastructure like heroku.
 
 ```ruby
-# config/initializer/flexirest.rb
+# config/initializers/flexirest.rb
 Flexirest::Base.base_url = ENV.fetch("API_ENDPOINT_URL")
 ```
 
