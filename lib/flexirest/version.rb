@@ -1,3 +1,3 @@
 module Flexirest
-  VERSION = "1.3.31"
+  VERSION = "1.3.30"
 end

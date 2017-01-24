@@ -195,7 +195,7 @@ module Flexirest
           if verbose?
             Flexirest::Logger.debug "  Response"
             Flexirest::Logger.debug "  << Status : #{response_env.status}"
-            (response_env.response_headers || response_env.try(:response).try(:headers)).each do |k,v|
+            response_env.response_headers.each do |k,v|
               Flexirest::Logger.debug "  << #{k} : #{v}"
             end
             Flexirest::Logger.debug "  << Body:\n#{response_env.body}"
@@ -500,8 +500,8 @@ module Flexirest
     end
 
     def hal_response?
-      _, content_type = (@response.response_headers || @response.try(:response).try(:headers)).detect{|k,v| k.downcase == "content-type"}
-      faked_response = (@response.response_headers || @response.try(:response).try(:headers)).detect{|k,v| k.downcase == "x-arc-faked-response"}
+      _, content_type = @response.response_headers.detect{|k,v| k.downcase == "content-type"}
+      faked_response = @response.response_headers.detect{|k,v| k.downcase == "x-arc-faked-response"}
       if content_type && content_type.respond_to?(:each)
         content_type.each do |ct|
           return true if ct[%r{application\/hal\+json}i]
@@ -561,13 +561,11 @@ module Flexirest
     end
 
     def is_json_response?
-      headers = (@response.response_headers || @response.try(:response).try(:headers))
-      headers['Content-Type'].nil? || headers['Content-Type'].include?('json')
+      @response.response_headers['Content-Type'].nil? || @response.response_headers['Content-Type'].include?('json')
     end
 
     def is_xml_response?
-      headers = (@response.response_headers || @response.try(:response).try(:headers))
-      headers['Content-Type'].include?('xml')
+      @response.response_headers['Content-Type'].include?('xml')
     end
 
     def generate_new_object(options={})
@@ -607,8 +605,8 @@ module Flexirest
       else
         result = new_object(body, @overridden_name)
         result._status = @response.status
-        result._headers = (@response.response_headers || @response.try(:response).try(:headers))
-        result._etag = result._headers['ETag']
+        result._headers = @response.response_headers
+        result._etag = @response.response_headers['ETag']
         if !object_is_class? && options[:mutable] != false
           @object._copy_from(result)
           @object._clean!
