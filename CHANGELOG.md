@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.3.32
+
+Bugfix:
+
+- Rolled back 1.3.31 - was an error in client code
+
+## 1.3.31
+
+Bugfix:
+
+- Working with later versions of Faraday where the response seems to have lost response_headers
+
 ## 1.3.30
 
 Bugfix:
