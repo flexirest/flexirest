@@ -187,12 +187,12 @@ describe Flexirest::Connection do
 
   it "should retry once in the event of a connection failed" do
     stub_request(:get, "www.example.com/foo").to_raise(Faraday::Error::ConnectionFailed.new("Foo"))
-    expect { @connection.get("/foo") }.to raise_error(Flexirest::ConnectionFailedException)
+    expect { @connection.get("/foo") }.to raise_error(Flexirest::BaseException)
   end
 
   it "should raise an exception on timeout" do
     stub_request(:get, "www.example.com/foo").to_timeout
-    expect { @connection.get("/foo") }.to raise_error(Flexirest::TimeoutException)
+    expect { @connection.get("/foo") }.to raise_error(Flexirest::BaseException)
   end
 
   it "should raise an exception on timeout" do
