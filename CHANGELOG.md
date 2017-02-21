@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.33
+
+Feature:
+
+- Allowed specifying custom message for validation failures
+
 ## 1.3.32
 
 Bugfix:

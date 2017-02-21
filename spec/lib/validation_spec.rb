@@ -3,7 +3,7 @@ require 'spec_helper'
 describe "Flexirest::Validation" do
   class SimpleValidationExample < OpenStruct
     include Flexirest::Validation
-    validates :first_name, presence: true
+    validates :first_name, presence: true, message: "Sorry, something went wrong"
     validates :middle_name, length: { minimum: 2, maximum: 30 }, allow_nil: true
     validates :last_name, existence: true
     validates :nick_name, length: { minimum: 2, maximum: 30 }
@@ -34,6 +34,13 @@ describe "Flexirest::Validation" do
       expect(a._errors[:first_name].size).to eq(1)
     end
 
+    it "should return a custom error if specified and a validation fails" do
+      a = SimpleValidationExample.new
+      a.first_name = nil
+      a.valid?
+      expect(a._errors[:first_name][0]).to eq("Sorry, something went wrong")
+    end
+
     it "should be invalid if a required value is present but blank" do
       a = SimpleValidationExample.new
       a.first_name = ""
@@ -60,7 +67,7 @@ describe "Flexirest::Validation" do
       a.first_name = "John"
       a.valid?
       expect(a._errors[:first_name]).to be_empty
-    end    
+    end
   end
 
   context "when validating existence" do
@@ -83,7 +90,7 @@ describe "Flexirest::Validation" do
       a.last_name = "John"
       a.valid?
       expect(a._errors[:last_name]).to be_empty
-    end 
+    end
   end
 
   context "when validating length" do
@@ -116,7 +123,7 @@ describe "Flexirest::Validation" do
       a.valid?
       expect(a._errors[:post_code].size).to eq(1)
     end
-    
+
     it "should be valid if a length is nil and allow_nil option is true" do
       a = SimpleValidationExample.new
       a.valid?
@@ -155,13 +162,13 @@ describe "Flexirest::Validation" do
         a = SimpleValidationExample.new(salary:100_000)
         a.valid?
         expect(a._errors[:salary].size).to be > 0
-      end      
+      end
 
       it "should be valid that a numeric field is above or equal to a minimum" do
         a = SimpleValidationExample.new(salary:30_000)
         a.valid?
         expect(a._errors[:salary].size).to eq(0)
-      end 
+      end
 
       it "should be valid if a value is nil and allow_nil option is true" do
         a = SimpleValidationExample.new
@@ -205,13 +212,13 @@ describe "Flexirest::Validation" do
         a = SimpleValidationExample.new(age: 70)
         a.valid?
         expect(a._errors[:age].size).to be > 0
-      end      
+      end
 
       it "should be valid that a numeric field is above or equal to a minimum" do
         a = SimpleValidationExample.new(age: 30)
         a.valid?
         expect(a._errors[:age].size).to eq(0)
-      end 
+      end
     end
   end
 
@@ -219,15 +226,15 @@ describe "Flexirest::Validation" do
     it "should be invalid if the value is not contained in the list" do
       a = SimpleValidationExample.new(suffix: "Baz")
       a.valid?
-      expect(a._errors[:suffix].size).to be > 0      
+      expect(a._errors[:suffix].size).to be > 0
     end
 
     it "should be valid if the value is contained in the list" do
       a = SimpleValidationExample.new(suffix: "Dr.")
       a.valid?
-      expect(a._errors[:suffix].size).to eq(0)       
+      expect(a._errors[:suffix].size).to eq(0)
     end
-    
+
     it "should be valid if the value is nil and allow_nil option is true" do
       a = SimpleValidationExample.new
       a.valid?
@@ -270,7 +277,7 @@ describe "Flexirest::Validation" do
       a = ValidationExample2.new(first_name:"Johnny")
       a.valid?
       expect(a._errors[:first_name]).to be_empty
-    end    
+    end
   end
 
   describe "#full_error_messages" do

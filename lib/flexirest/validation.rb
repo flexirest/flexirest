@@ -24,63 +24,63 @@ module Flexirest
         validation[:options].each do |type, options|
           if type == :presence
             if value.nil?
-              @errors[validation[:field_name]] << "must be present"
+              @errors[validation[:field_name]] << (validation[:options][:message] || "must be present")
             elsif value.blank?
-              @errors[validation[:field_name]] << "must be present"
+              @errors[validation[:field_name]] << (validation[:options][:message] || "must be present")
             end
           elsif type == :existence
             if value.nil?
-              @errors[validation[:field_name]] << "must be not be nil"
+              @errors[validation[:field_name]] << (validation[:options][:message] || "must be not be nil")
             end
           elsif type == :length
             if value.nil?
-              @errors[validation[:field_name]] << "must be not be nil" unless allow_nil
+              @errors[validation[:field_name]] << (validation[:options][:message] || "must be not be nil") unless allow_nil
             else
               if options[:within]
-                @errors[validation[:field_name]] << "must be within range #{options[:within]}" unless options[:within].include?(value.to_s.length )
+                @errors[validation[:field_name]] << (validation[:options][:message] || "must be within range #{options[:within]}") unless options[:within].include?(value.to_s.length )
               end
               if options[:minimum]
-                @errors[validation[:field_name]] << "must be at least #{options[:minimum]} characters long" unless value.to_s.length >= options[:minimum]
+                @errors[validation[:field_name]] << (validation[:options][:message] || "must be at least #{options[:minimum]} characters long") unless value.to_s.length >= options[:minimum]
               end
               if options[:maximum]
-                @errors[validation[:field_name]] << "must be no more than #{options[:maximum]} characters long" unless value.to_s.length <= options[:maximum]
+                @errors[validation[:field_name]] << (validation[:options][:message] || "must be no more than #{options[:maximum]} characters long") unless value.to_s.length <= options[:maximum]
               end
             end
           elsif type == :numericality
             if value.nil?
-              @errors[validation[:field_name]] << "must be not be nil" unless allow_nil
+              @errors[validation[:field_name]] << (validation[:options][:message] || "must be not be nil") unless allow_nil
             else
               numeric = (true if Float(value) rescue false)
               if !numeric
-                @errors[validation[:field_name]] << "must be numeric"
+                @errors[validation[:field_name]] << (validation[:options][:message] || "must be numeric")
               else
                 if options.is_a?(Hash)
                   if options[:minimum]
-                    @errors[validation[:field_name]] << "must be at least #{options[:minimum]}" unless value.to_f >= options[:minimum]
+                    @errors[validation[:field_name]] << (validation[:options][:message] || "must be at least #{options[:minimum]}") unless value.to_f >= options[:minimum]
                   end
                   if options[:maximum]
-                    @errors[validation[:field_name]] << "must be no more than #{options[:maximum]}" unless value.to_f <= options[:maximum]
+                    @errors[validation[:field_name]] << (validation[:options][:message] || "must be no more than #{options[:maximum]}") unless value.to_f <= options[:maximum]
                   end
                 end
               end
             end
           elsif type == :minimum
             if value.nil?
-              @errors[validation[:field_name]] << "must be not be nil" unless allow_nil
+              @errors[validation[:field_name]] << (validation[:options][:message] || "must be not be nil") unless allow_nil
             else
-              @errors[validation[:field_name]] << "must be at least #{options}" unless value.to_f >= options.to_f
+              @errors[validation[:field_name]] << (validation[:options][:message] || "must be at least #{options}") unless value.to_f >= options.to_f
             end
           elsif type == :maximum
             if value.nil?
-              @errors[validation[:field_name]] << "must be not be nil" unless allow_nil
+              @errors[validation[:field_name]] << (validation[:options][:message] || "must be not be nil") unless allow_nil
             else
-              @errors[validation[:field_name]] << "must be no more than #{options}" unless value.to_f <= options.to_f
+              @errors[validation[:field_name]] << (validation[:options][:message] || "must be no more than #{options}") unless value.to_f <= options.to_f
             end
           elsif type == :inclusion
             if value.nil?
-              @errors[validation[:field_name]] << "must be not be nil" unless allow_nil
+              @errors[validation[:field_name]] << (validation[:options][:message] || "must be not be nil") unless allow_nil
             else
-              @errors[validation[:field_name]] << "must be included in #{options[:in].join(", ")}" unless options[:in].include?(value)
+              @errors[validation[:field_name]] << (validation[:options][:message] || "must be included in #{options[:in].join(", ")}") unless options[:in].include?(value)
             end
           end
         end
