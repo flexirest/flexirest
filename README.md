@@ -977,7 +977,15 @@ Note: the block based validation is responsible for adding errors to `object._er
 
 Validations are run when calling `valid?` or when calling any API on an instance (and then only if it is `valid?` will the API go on to be called).
 
-`full_error_messages` returns an array of attributes with their associated error messages, i.e. `["age must be at least 18"]`. Custom messages can be specified by passing a `:message` option to `validates`. This differs slightly from ActiveRecord in that it's an option to `validates` itself, not a part of a final hash.
+`full_error_messages` returns an array of attributes with their associated error messages, i.e. `["age must be at least 18"]`. Custom messages can be specified by passing a `:message` option to `validates`. This differs slightly from ActiveRecord in that it's an option to `validates` itself, not a part of a final hash of other options. This is because the author doesn't like the ActiveRecord format (but will accept pull requests that make both syntaxes valid). To make this clearer, an example may help:
+
+```ruby
+# ActiveRecord
+validates :name, presence: { message: "must be given please" }
+
+# Flexirest
+validates :name, :presence, message: "must be given please"
+```
 
 #### Permitting nil values
 The default behavior for `:length`, `:numericality` and `:inclusion` validators is to fail when a `nil` value is encountered. You can prevent `nil` attribute values from triggering validation errors for attributes that may permit `nil` by adding the `:allow_nil => true` option. Adding this option with a `true` value to `:length`, `:numericality` and `:inclusion` validators will permit `nil` values and not trigger errors. Some examples are:
