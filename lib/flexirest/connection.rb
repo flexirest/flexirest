@@ -2,8 +2,9 @@ require 'faraday'
 
 module Flexirest
 
-  class TimeoutException < StandardError ; end
-  class ConnectionFailedException < StandardError ; end
+  class BaseException < StandardError ; end
+  class TimeoutException < BaseException ; end
+  class ConnectionFailedException < BaseException ; end
 
   class Connection
     attr_accessor :session, :base_url
