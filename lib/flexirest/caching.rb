@@ -4,7 +4,7 @@ module Flexirest
       @@perform_caching = true
 
       def perform_caching(value = nil)
-        @perform_caching ||= nil
+        @perform_caching = nil unless instance_variable_defined?(:@perform_caching)
         if value.nil?
           value = if @perform_caching.nil?
             @@perform_caching
