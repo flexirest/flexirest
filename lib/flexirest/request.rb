@@ -224,7 +224,7 @@ module Flexirest
 
     def prepare_params
       params = @params || @object._attributes rescue {}
-      if params.is_a?(String) || params.is_a?(Fixnum)
+      if params.is_a?(String) || params.is_a?(Integer)
         params = {id:params}
       end
 

@@ -890,4 +890,41 @@ describe Flexirest::Request do
   it "should ignore a specified root element" do
     expect(IgnoredRootExampleClient.root.title).to eq("Example Feed")
   end
+
+  context "Parameter preparation" do
+    method = {url: "http://www.example.com", method: :get}
+    object = nil
+
+    it "should properly handle Hash params" do
+      req = Flexirest::Request.new method, object, {hello: {}}
+      req.prepare_params
+
+      expect(req.get_params.is_a?(Hash)).to be_truthy
+      expect(req.get_params[:hello]).to eq({})
+    end
+
+    it "should properly handle String params" do
+      req = Flexirest::Request.new method, object, String.new
+      req.prepare_params
+
+      expect(req.get_params.is_a?(Hash)).to be_truthy
+      expect(req.get_params[:id].is_a?(String)).to be_truthy
+    end
+
+    it "should properly handle Integer (Fixnum) params" do
+      req = Flexirest::Request.new method, object, 1234
+      req.prepare_params
+
+      expect(req.get_params.is_a?(Hash)).to be_truthy
+      expect(req.get_params[:id].is_a?(Integer)).to be_truthy
+    end
+
+    it "should properly handle Integer (Bignum) params" do
+      req = Flexirest::Request.new method, object, 12345678901234567890
+      req.prepare_params
+
+      expect(req.get_params.is_a?(Hash)).to be_truthy
+      expect(req.get_params[:id].is_a?(Integer)).to be_truthy
+    end
+  end
 end
