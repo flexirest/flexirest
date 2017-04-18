@@ -20,19 +20,19 @@ module Flexirest
 
     def initialize(attrs={})
       @attributes = {}
-      @dirty_attributes = Set.new
+      @dirty_attributes = Hash.new
 
       raise Exception.new("Cannot instantiate Base class") if self.class.name == "Flexirest::Base"
 
       attrs.each do |attribute_name, attribute_value|
         attribute_name = attribute_name.to_sym
         @attributes[attribute_name] = parse_date?(attribute_name) ? parse_attribute_value(attribute_value) : attribute_value
-        @dirty_attributes << attribute_name
+        @dirty_attributes[attribute_name] = [nil, attribute_value]
       end
     end
 
     def _clean!
-      @dirty_attributes = Set.new
+      @dirty_attributes = Hash.new
     end
 
     def _attributes
@@ -46,6 +46,20 @@ module Flexirest
 
     def dirty?
       @dirty_attributes.size > 0
+    end
+
+    def changed?
+      dirty?
+    end
+
+    # Returns an array of changed fields
+    def changed
+      @dirty_attributes.keys
+    end
+
+    # Returns hash of old and new vaules for each changed field
+    def changes
+      @dirty_attributes
     end
 
     def errors
@@ -87,8 +101,7 @@ module Flexirest
     end
 
     def []=(key, value)
-      @attributes[key.to_sym] = value
-      @dirty_attributes << key
+      _set_attribute(key, value)
     end
 
     def each
@@ -107,15 +120,14 @@ module Flexirest
                    end
       inspection += "#{"," if @attributes.any?} ETag: #{@_etag}" unless @_etag.nil?
       inspection += "#{"," if @attributes.any?} Status: #{@_status}" unless @_status.nil?
-      inspection += " (unsaved: #{@dirty_attributes.map(&:to_s).join(", ")})" if @dirty_attributes.any?
+      inspection += " (unsaved: #{@dirty_attributes.keys.map(&:to_s).join(", ")})" if @dirty_attributes.any?
       "#<#{self.class} #{inspection}>"
     end
 
     def method_missing(name, *args)
       if name.to_s[-1,1] == "="
         name = name.to_s.chop.to_sym
-        @attributes[name] = args.first
-        @dirty_attributes << name
+        _set_attribute(name, args.first)
       else
         name_sym = name.to_sym
         name = name.to_s
@@ -131,6 +143,12 @@ module Flexirest
             raise ValidationFailedException.new unless valid?
             request = Request.new(mapped, self, args.first)
             request.call
+          elsif name[/_was$/] and @attributes.has_key? (name.sub(/_was$/,'').to_sym)
+            k = (name.sub(/_was$/,'').to_sym)
+            @dirty_attributes[k][0]
+          elsif name[/^reset_.*!$/] and @attributes.has_key? (name.sub(/^reset_/,'').sub(/!$/,'').to_sym)
+            k = (name.sub(/^reset_/,'').sub(/!$/,'').to_sym)
+            _reset_attribute(k)
           elsif self.class.whiny_missing
             raise NoAttributeException.new("Missing attribute #{name_sym}")
           else
@@ -164,6 +182,20 @@ module Flexirest
     end
 
     private
+
+    def _set_attribute(key, value)
+      old_value = @dirty_attributes[key.to_sym]
+      old_value = @attributes[key.to_sym] unless old_value
+      old_value = old_value[0] if old_value and old_value.is_a? Array
+      @dirty_attributes[key.to_sym] = [old_value, value]
+      @attributes[key.to_sym] = value
+    end
+
+    def _reset_attribute(key)
+      old_value = @dirty_attributes[key.to_sym]
+      @attributes[key.to_sym] = old_value[0] if old_value and old_value.is_a? Array
+      @dirty_attributes.delete(key.to_sym)
+    end
 
     def value_for_inspect(value)
       if value.is_a?(String) && value.length > 50

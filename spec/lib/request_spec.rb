@@ -42,6 +42,9 @@ describe Flexirest::Request do
       get :fake_proc, "/fake", fake:->(request) { "{\"result\":#{request.get_params[:id]}}" }
       get :defaults, "/defaults", defaults:{overwrite:"no", persist:"yes"}
       get :requires, "/requires", requires:[:name, :age]
+      patch :only_changed_1, "/changed1", only_changed: true
+      patch :only_changed_2, "/changed2", only_changed: [:debug1, :debug2]
+      patch :only_changed_3, "/changed3", only_changed: { :debug1 => false, :debug2 => true }
     end
 
     class ExampleLoadBalancedClient < Flexirest::Base
@@ -389,6 +392,46 @@ describe Flexirest::Request do
     expect(object.dislikes[2]).to eq("taxes")
     #TODO
   end
+
+  it "should only send changed attributes if only_changed:true" do
+    expect_any_instance_of(Flexirest::Connection).to receive(:patch).with("/changed1", "debug=true", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"[{\"first_name\":\"Johnny\"}, {\"first_name\":\"Billy\"}, {\"debug\":\"true\"}]", status:200, response_headers:{})))
+    object = ExampleClient.new
+    object.bad_debug = true
+    object._clean!
+    object.debug = true
+    object.only_changed_1
+  end
+  it "should only send changed attributes within the :only_changed array if :only_changed is an array" do
+    expect_any_instance_of(Flexirest::Connection).to receive(:patch).with("/changed2", "debug2=true", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"[{\"first_name\":\"Johnny\"}, {\"first_name\":\"Billy\"}, {\"debug\":\"true\"}]", status:200, response_headers:{})))
+    object = ExampleClient.new
+    object.bad_debug1 = true
+    object.debug1 = true
+    object._clean!
+    object.bad_debug2 = true
+    object.debug2 = true
+    object.only_changed_2
+  end
+  it "should only send changed attributes marked true within the :only_changed hash when :only_changed is a hash" do
+    expect_any_instance_of(Flexirest::Connection).to receive(:patch).with("/changed3", "debug1=false&debug2=true", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"[{\"first_name\":\"Johnny\"}, {\"first_name\":\"Billy\"}, {\"debug\":\"true\"}]", status:200, response_headers:{})))
+    object = ExampleClient.new
+    object.bad_debug1 = true
+    object.debug1 = true
+    object._clean!
+    object.bad_debug2 = true
+    object.debug1 = false
+    object.debug2 = true
+    object.only_changed_3
+  end
+  it "should always send changed attributes marked false within the :only_changed hash when :only_changed is an hash" do
+    expect_any_instance_of(Flexirest::Connection).to receive(:patch).with("/changed3", "debug1=true", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"[{\"first_name\":\"Johnny\"}, {\"first_name\":\"Billy\"}, {\"debug\":\"true\"}]", status:200, response_headers:{})))
+    object = ExampleClient.new
+    object.bad_debug1 = true
+    object.debug1 = true
+    object._clean!
+    object.bad_debug2 = true
+    object.only_changed_3
+  end
+
 
   it "should instantiate other classes using has_many when required to do so" do
     expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"first_name\":\"Johnny\", \"expenses\":[{\"amount\":1}, {\"amount\":2}]}", status:200, response_headers:{})))

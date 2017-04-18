@@ -245,6 +245,41 @@ module Flexirest
         @get_params = {}
       end
 
+      # Evaluate :only_changed
+      if @method[:options][:only_changed]
+        if http_method == :post or http_method == :put or http_method == :patch then
+          # we only ever mess with @post_params in here, because @get_params will/should never match our method criteria
+          if @method[:options][:only_changed].is_a? Hash then
+            # only include the listed attributes marked 'true' when they are changed; attributed marked false are always included
+            newPostHash = {}
+            @method[:options][:only_changed].each_pair do |changed_attr_k,changed_attr_v|
+              if changed_attr_v == false or @object.changes.has_key? changed_attr_k.to_sym then
+                newPostHash[changed_attr_k.to_sym] = @object[changed_attr_k.to_sym]
+              end
+            end
+            @post_params = newPostHash
+          elsif @method[:options][:only_changed].is_a? Array then
+            # only send these listed attributes, and only if they are changed
+            newPostHash = {}
+            @method[:options][:only_changed].each do |changed_attr|
+              if @object.changes.has_key? changed_attr.to_sym then
+                newPostHash[changed_attr.to_sym] = @object[changed_attr.to_sym]
+              end
+            end
+            @post_params = newPostHash
+          else
+            # only send attributes if they are changed, drop the rest
+            newPostHash = {}
+            @object.changed.each do |k|
+              newPostHash[k] = @object[k]
+            end
+            @post_params = newPostHash
+          end
+        end
+      else
+        # did not contain only_changed
+      end
+
       if @method[:options][:requires]
         requires = @method[:options][:requires].dup
         merged_params = @get_params.merge(@post_params || {})
@@ -270,7 +305,10 @@ module Flexirest
         @post_params ||= {}
         matches.each do |token|
           token = token.first[1,999]
+          # pull URL path variables out of @get_params/@post_params
           target = @get_params.delete(token.to_sym) || @post_params.delete(token.to_sym) || @get_params.delete(token.to_s) || @post_params.delete(token.to_s) || ""
+          # it's possible the URL path variable may not be part of the request, in that case, try to resolve it from the object attributes
+          target = @object._attributes[token.to_sym] || "" if target == ""
           @url.gsub!(":#{token}", URI.escape(target.to_s))
         end
       end
