@@ -35,6 +35,20 @@ describe Flexirest::Caching do
       Flexirest::Base._reset_caching!
     end
 
+    it "should be possible to disable caching for each objects" do
+      Flexirest::Base.perform_caching = true
+
+      class CachingExample4 < Flexirest::Base; end
+      class CachingExample5 < Flexirest::Base
+        perform_caching false
+      end
+      expect(Flexirest::Base.perform_caching).to be_truthy
+      expect(CachingExample4.perform_caching).to be_truthy
+      expect(CachingExample5.perform_caching).to be_falsey
+
+      Flexirest::Base._reset_caching!
+    end
+
     it "should use Rails.cache if available" do
       begin
         class Rails
