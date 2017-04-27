@@ -133,6 +133,35 @@ describe Flexirest::Base do
     expect(client).to be_dirty
   end
 
+  it "should track changed attributes and provide access to previous values (similar to ActiveRecord/Mongoid)" do
+    client = EmptyExample.new()
+    client["test"] = "Something"
+
+    client._clean! # force a clean state so we can proceed with tests
+
+    expect(client).to_not be_dirty # clean state should have set in (dirty?)
+    expect(client).to_not be_changed # clean state should have set in (changed?)
+    expect(client["test"].to_s).to eq("Something") # verify attribute value persists
+
+    client["test"] = "SomethingElse" # change the attribute value
+    expect(client["test"].to_s).to eq("SomethingElse") # most current set value should be returned
+    expect(client).to be_dirty # an attribute was changed, so the entire object is dirty
+    expect(client).to be_changed # an attribute was changed, so the entire object is changed
+    expect(client.changed).to be_a(Array) # the list of changed attributes should be an Array
+    expect(client.changed).to eq([:test]) # the list of changed attributes should provide the name of the changed attribute
+    expect(client.changes).to be_a(Hash) # changes are returned as a hash
+    expect(client.changes).to eq({test: ["Something", "SomethingElse"]}) # changes include [saved,unsaved] values, keyed by attribute name
+    expect(client.test_was).to eq("Something") # dynamic *_was notation provides original value
+
+    client["test"] = "SomethingElseAgain" # change the attribute value again
+    expect(client.test_was).to eq("Something") # dynamic *_was notation provides original value (from most recent save/load, not most recent change)
+    expect(client.changes).to eq({test: ["Something", "SomethingElseAgain"]}) # changes include [saved,unsaved] values, keyed by attribute name
+
+    # resets the test attribute back to the original value
+    expect( client.reset_test! ).to eq(["Something", "SomethingElseAgain"]) # reseting an attribute returns the previous pending changeset
+    expect(client).to_not be_dirty # reseting an attribute should makeit not dirty again
+  end
+
   it "should overwrite attributes already set and mark them as dirty" do
     client = EmptyExample.new(:hello => "World")
     client._clean!
@@ -177,10 +206,10 @@ describe Flexirest::Base do
     expect(client).to_not be_dirty
   end
 
-  it "should not overly pollute the instance method namespace to reduce chances of clashing (<10 instance methods)" do
+  it "should not overly pollute the instance method namespace to reduce chances of clashing (<13 instance methods)" do
     instance_methods = EmptyExample.instance_methods - Object.methods
     instance_methods = instance_methods - instance_methods.grep(/^_/)
-    expect(instance_methods.size).to be < 10
+    expect(instance_methods.size).to be < 13
   end
 
   it "should raise an exception for missing attributes if whiny_missing is enabled" do
