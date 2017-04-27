@@ -968,7 +968,7 @@ end
 
 * The above examples specifically showed PATCH methods, but this is also available for POST and PUT methods for flexibility purposes (even though they break typical REST methodology).
 * This logic is currently evaluated before Required Parameters, so it is possible to ensure that requirements are met by some clever usage.
- - Ie, if a method is `:requires => [:active], :only_changed => {active: false}` then `active` will always have a value and would always pass the `:requires` directive (so you need to be very careful because the answer may end up being `nil` if you didn't specifically set it).
+ - This means that if a method is `:requires => [:active], :only_changed => {active: false}` then `active` will always have a value and would always pass the `:requires` directive (so you need to be very careful because the answer may end up being `nil` if you didn't specifically set it).
 
 ### HTTP/Parse Error Handling
 

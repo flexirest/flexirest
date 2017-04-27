@@ -247,22 +247,22 @@ module Flexirest
 
       # Evaluate :only_changed
       if @method[:options][:only_changed]
-        if http_method == :post or http_method == :put or http_method == :patch then
+        if http_method == :post or http_method == :put or http_method == :patch
           # we only ever mess with @post_params in here, because @get_params will/should never match our method criteria
-          if @method[:options][:only_changed].is_a? Hash then
+          if @method[:options][:only_changed].is_a? Hash
             # only include the listed attributes marked 'true' when they are changed; attributed marked false are always included
             newPostHash = {}
             @method[:options][:only_changed].each_pair do |changed_attr_k,changed_attr_v|
-              if changed_attr_v == false or @object.changes.has_key? changed_attr_k.to_sym then
+              if changed_attr_v == false or @object.changes.has_key? changed_attr_k.to_sym
                 newPostHash[changed_attr_k.to_sym] = @object[changed_attr_k.to_sym]
               end
             end
             @post_params = newPostHash
-          elsif @method[:options][:only_changed].is_a? Array then
+          elsif @method[:options][:only_changed].is_a? Array
             # only send these listed attributes, and only if they are changed
             newPostHash = {}
             @method[:options][:only_changed].each do |changed_attr|
-              if @object.changes.has_key? changed_attr.to_sym then
+              if @object.changes.has_key? changed_attr.to_sym
                 newPostHash[changed_attr.to_sym] = @object[changed_attr.to_sym]
               end
             end
@@ -276,8 +276,6 @@ module Flexirest
             @post_params = newPostHash
           end
         end
-      else
-        # did not contain only_changed
       end
 
       if @method[:options][:requires]

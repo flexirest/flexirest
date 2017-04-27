@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.3.34
+
+Feature:
+
+- Added ActiveRecord/Mongoid style dirty/changed tracking methods (thanks to eshork for the PR)
+
+Bugfix:
+
+- Now can disable caching on subclasses after being enabled on a parent (thanks to yujideveloper for the PR)
+
 ## 1.3.33
 
 Feature:
