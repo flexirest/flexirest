@@ -200,6 +200,11 @@ describe Flexirest::Request do
     ExampleClient.find id:"foo bar"
   end
 
+  it "should pass URL-encode URL parameters including slashes" do
+    expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/foo%2Fbar", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:'{"result":true}', response_headers:{})))
+    ExampleClient.find id:"foo/bar"
+  end
+
   it "should accept an integer as the only parameter and use it as id" do
     expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/1234", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:'{"result":true}', response_headers:{})))
     ExampleClient.find(1234)

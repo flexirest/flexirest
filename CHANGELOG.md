@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.35
+
+Bugfix:
+
+- Slashes in URL params are now escaped to %2F (thanks to davidtolsma for the bug report)
+
 ## 1.3.34
 
 Feature:

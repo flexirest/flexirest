@@ -307,7 +307,7 @@ module Flexirest
           target = @get_params.delete(token.to_sym) || @post_params.delete(token.to_sym) || @get_params.delete(token.to_s) || @post_params.delete(token.to_s) || ""
           # it's possible the URL path variable may not be part of the request, in that case, try to resolve it from the object attributes
           target = @object._attributes[token.to_sym] || "" if target == ""
-          @url.gsub!(":#{token}", URI.escape(target.to_s))
+          @url.gsub!(":#{token}", URI.escape(target.to_s).gsub("/", "%2F"))
         end
       end
     end
