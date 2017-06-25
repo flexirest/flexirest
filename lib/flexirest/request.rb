@@ -7,6 +7,7 @@ module Flexirest
 
   class Request
     include AttributeParsing
+    include JsonAPIParsing
     attr_accessor :post_params, :get_params, :url, :path, :headers, :method, :object, :body, :forced_url, :original_url
 
     def initialize(method, object, params = {})
@@ -600,6 +601,10 @@ module Flexirest
       @response.response_headers['Content-Type'].nil? || @response.response_headers['Content-Type'].include?('json')
     end
 
+    def is_json_api_response?
+      @response.response_headers['Content-Type'] && @response.response_headers['Content-Type'].include?('application/vnd.api+json')
+    end
+
     def is_xml_response?
       @response.response_headers['Content-Type'].include?('xml')
     end
@@ -610,8 +615,12 @@ module Flexirest
       elsif is_json_response?
         begin
           body = @response.body.blank? ? {} : MultiJson.load(@response.body)
-        rescue MultiJson::ParseError => exception
+        rescue MultiJson::ParseError
           raise ResponseParseException.new(status:@response.status, body:@response.body, headers:@response.headers)
+        end
+
+        if is_json_api_response?
+          body = parse_json_api(body)
         end
 
         if options[:ignore_root]
