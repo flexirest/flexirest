@@ -29,6 +29,18 @@ class DeepNestedHasManyExample < Flexirest::Base
   get :find, "/iterate", fake: hash.to_json
 end
 
+class JsonAPIAssociationExampleOther < Flexirest::Base
+end
+
+class JsonAPIAssociationExample < Flexirest::Base
+  has_many :others, JsonAPIAssociationExampleOther
+  hash = {
+    data: { id: 1, type: "example", attributes: { item: "item one" }, relationships: { "others": { data: [ { id: 1, type: "other" }, { id: 2, type: "other" } ] } } },
+    included: [ { id: 1, type: "other", attributes: { item: "item two" } }, { id: 2, type: "other", attributes: { item: "item three" } } ]
+  }
+  get :find, "/iterate", fake: hash.to_json, fake_content_type: "application/vnd.api+json"
+end
+
 class WhitelistedDateExample < Flexirest::Base
   parse_date :updated_at
 end
@@ -81,6 +93,11 @@ describe "Has Many Associations" do
   it "should correctly work with deep nested associations" do
     finder = DeepNestedHasManyExample.find
     expect(finder.results.count).to eq(2)
+  end
+
+  it "should retrieve the resource's associations via its relationships object" do
+    finder = JsonAPIAssociationExample.find
+    expect(finder.others.size).to eq(2)
   end
 end
 
@@ -144,3 +161,22 @@ describe "whitelisted date fields" do
     end
   end
 end
+=begin
+describe "JSON-API" do
+  context "following conventions" do
+    let(:subject) {JsonAPIAssociationExample.find}
+
+    it "should bypass the data object" do
+      expect(subject.count).to eq(1)
+      subject.first.id = 1
+      expect(subject.first.id).to eq(1)
+    end
+
+    it "should bypass resource's attribute object" do
+      subject.first.item = "foo"
+      expect(subject.first.item).to eq("foo")
+    end
+
+  context "Has Many Associations"
+
+=end
