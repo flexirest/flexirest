@@ -161,22 +161,3 @@ describe "whitelisted date fields" do
     end
   end
 end
-=begin
-describe "JSON-API" do
-  context "following conventions" do
-    let(:subject) {JsonAPIAssociationExample.find}
-
-    it "should bypass the data object" do
-      expect(subject.count).to eq(1)
-      subject.first.id = 1
-      expect(subject.first.id).to eq(1)
-    end
-
-    it "should bypass resource's attribute object" do
-      subject.first.item = "foo"
-      expect(subject.first.item).to eq("foo")
-    end
-
-  context "Has Many Associations"
-
-=end
