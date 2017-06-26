@@ -33,11 +33,25 @@ class JsonAPIOneRelationshipExample < Flexirest::Base
   get :find, "/iterate", fake: hash.to_json, fake_content_type: "application/vnd.api+json"
 end
 
+class JsonAPILazyOtherExample < Flexirest::Base
+  base_url "http://www.example.com"
+  hash = { data: { id: 1, type: "other", attributes: { item: "item two" } } }
+  get :find, "/other", fake: hash.to_json, fake_content_type: "application/vnd.api+json"
+end
+
+class JsonAPILazyLoadingExample < Flexirest::Base
+  base_url "http://www.example.com"
+  hash = {
+    data: { id: 1, type: "example", attributes: { item: "item one" }, relationships: { "other": { links: { self: "http://www.example.com/relations/other", related: "http://www.example.com/other" } } } }
+  }
+  get :find, "/iterate", lazy: { other: JsonAPILazyOtherExample }, fake: hash.to_json, fake_content_type: "application/vnd.api+json"
+end
 
 describe "JSON API" do
   let(:subject1) { JsonAPIOneDataExample.new }
   let(:subject2) { JsonAPIMoreDataExample.new }
   let(:subject3) { JsonAPIOneRelationshipExample.new }
+  let(:subject4) { JsonAPILazyLoadingExample.new }
 
   context "responses" do
     it "should return the data object if the response contains only one data instance" do
@@ -70,6 +84,14 @@ describe "JSON API" do
 
     it "should retrieve a Flexirest::ResultIterator if the relationship type is plural" do
       expect(subject1.find.others).to be_a(Flexirest::ResultIterator)
+    end
+  end
+
+  context "lazy loading" do
+    it "should retrieve the resource by loading the url from the links object" do
+      expect(subject4.find.other).to be_a(Flexirest::LazyAssociationLoader)
+      expect(subject4.find.other.id).to_not be_nil
+      expect(subject4.find.other.item).to_not be_nil
     end
   end
 end

@@ -17,24 +17,14 @@ module Flexirest
         rels = records.first["relationships"].keys
       end
 
-      if included
-        bucket = records.map do |record|
-          retrieve_attributes_and_relations(base, record, included, rels)
-        end
-      else
-        # TODO Lazy loading with links
-        bucket = records.map do |record|
-          (rels || []).each do |rel|
-            record[rel] = singular?(rel) ? nil : []
-          end
-          record
-        end
+      bucket = records.map do |record|
+        retrieve_attributes_and_relations(base, record, included, rels)
       end
 
       is_singular_record ? bucket.first : bucket
     end
 
-    def retrieve_attributes_and_relations(base, record, included, rels)
+    def retrieve_attributes_and_relations(base, record, included, rels = [])
       rels -= [base]
       base = record["type"]
       relationships = record["relationships"]
@@ -42,7 +32,11 @@ module Flexirest
       rels.each do |rel|
         if singular?(rel)
           unless relationships[rel]["data"]
-            record[rel] = nil
+            begin
+              record[rel] = relationships[rel]["links"]["related"]
+            rescue NoMethodError
+              record[rel] = nil
+            end
             next record
           end
 
@@ -51,7 +45,11 @@ module Flexirest
 
         else
           unless relationships[rel]["data"]
-            record[rel] = []
+            begin
+              record[rel] = relationships[rel]["links"]["related"]
+            rescue NoMethodError
+              record[rel] = []
+            end
             next record
           end
 
