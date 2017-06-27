@@ -1,8 +1,28 @@
 module Flexirest
   module JsonAPIParsing
-    private
+    def json_api_create_params(params, object, options = {})
+      type_name = options[:type_name] || class_type_name(object.class)
+      _params = Parameters.new(object.id, type_name)
+      params.delete(:id)
 
-    def parse_json_api(body)
+      params.map do |k, v|
+        if v.is_a?(Array)
+          # Should always contain the same class in entire list
+          raise Flexirest::Logger.error("Cannot contain different instances for #{k}!") if v.map(&:class).count > 1
+          v.each do |el|
+            _params.add_relationship(k, class_type_name(el.class), el[:id])
+          end
+        elsif v.is_a?(Flexirest::Base)
+          _params.add_relationship(k, class_type_name(v.class), v[:id])
+        else
+          _params.add_attribute(k, v)
+        end
+      end
+
+      _params.to_hash
+    end
+
+    def json_api_parse_response(body)
       included = body["included"]
       records = body["data"]
 
@@ -24,7 +44,10 @@ module Flexirest
       is_singular_record ? bucket.first : bucket
     end
 
-    def retrieve_attributes_and_relations(base, record, included, rels = [])
+    private
+
+    def retrieve_attributes_and_relations(base, record, included, rels)
+      rels ||= []
       rels -= [base]
       base = record["type"]
       relationships = record["relationships"]
@@ -91,6 +114,55 @@ module Flexirest
       r.delete("type")
       r.delete("attributes")
       r.delete("relationships")
+    end
+
+    def class_type_name(klass)
+      klass.name.underscore.split('/').last
+    end
+
+    class Parameters
+      include Flexirest::JsonAPIParsing
+      def initialize(id, type)
+        @params = build(id, type)
+      end
+
+      def to_hash
+        @params
+      end
+
+      def add_relationship(name, type_name, id)
+        if singular?(name)
+          @params[:data][:relationships][name] = {
+            data: { type: type_name, id: id }
+          }
+        else
+          if @params[:data][:relationships][name]
+            @params[:data][:relationships][name][:data] << {
+              type: type_name, id: id
+            }
+          else
+            @params[:data][:relationships][name] = {
+              data: [ { type: type_name, id: id } ]
+            }
+          end
+        end
+      end
+
+      def add_attribute(key, value)
+        @params[:data][:attributes][key] = value
+      end
+
+      private
+
+      def build(id, type)
+        pp = {}
+        pp[:data] = {}
+        pp[:data][:id] = id if id
+        pp[:data][:type] = type
+        pp[:data][:attributes] = {}
+        pp[:data][:relationships] = {}
+        pp
+      end
     end
   end
 end
