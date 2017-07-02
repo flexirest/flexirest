@@ -66,6 +66,21 @@ module JsonAPIExample
     patch :update, "/articles/:id"
     delete :delete, "/articles/:id"
   end
+
+  class ArticleAlias < Flexirest::Base
+    alias_type :article
+    base_url "http://www.example.com"
+    request_body_type :json_api
+    has_one :author, Author
+    has_many :tags, Tag
+
+    faker = {
+      data: { id: 1, type: "article", attributes: { item: "item one" } }
+    }
+
+    get :find, "/articles/:id", fake: faker.to_json, fake_content_type: "application/vnd.api+json"
+    patch :update, "/articles/:id"
+  end
 end
 
 describe "JSON API" do
@@ -161,6 +176,16 @@ describe "JSON API" do
         expect(data).to eq("{}")
       }.and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{}", response_headers:{})))
       JsonAPIExample::Article.find(1).delete
+    end
+
+    it "should have placed the right type value in the request" do
+      expect_any_instance_of(Flexirest::Connection).to receive(:patch) { |_, _, data|
+        hash = MultiJson.load(data)
+        expect(hash["data"]["type"]).to eq(JsonAPIExample::ArticleAlias.alias_type.to_s)
+      }.and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{}", response_headers:{})))
+      author = JsonAPIExample::ArticleAlias.find(1)
+      author.item = "item one"
+      author.update
     end
   end
 end

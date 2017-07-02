@@ -4,6 +4,7 @@ module Flexirest
   module Configuration
     module ClassMethods
       @@base_url = nil
+      @@alias_type = nil
       @@username = nil
       @@password = nil
       @@request_body_type = :form_encoded
@@ -90,6 +91,27 @@ module Flexirest
         Flexirest::Logger.info "\033[1;4;32m#{name}\033[0m Password set..."
         value = CGI::escape(value) if value.present? && !value.include?("%")
         @@password = value
+      end
+
+      def alias_type(value = nil)
+        @alias_type ||= nil
+        if value.nil?
+          if @alias_type.nil?
+            if value.nil? && superclass.respond_to?(:alias_type)
+              superclass.alias_type
+            else
+              @@alias_type || nil
+            end
+          else
+            @alias_type
+          end
+        else
+          @alias_type = value
+        end
+      end
+
+      def alias_type=(value)
+        @@alias_type = value
       end
 
       def request_body_type(value = nil)

@@ -1,8 +1,7 @@
 module Flexirest
   module JsonAPIParsing
     def json_api_create_params(params, object, options = {})
-      type_name = options[:type_name] || class_type_name(object.class)
-      _params = Parameters.new(object.id, type_name)
+      _params = Parameters.new(object.id, type(object))
       params.delete(:id)
 
       params.map do |k, v|
@@ -10,10 +9,10 @@ module Flexirest
           # Should always contain the same class in entire list
           raise Flexirest::Logger.error("Cannot contain different instances for #{k}!") if v.map(&:class).count > 1
           v.each do |el|
-            _params.add_relationship(k, class_type_name(el.class), el[:id])
+            _params.add_relationship(k, type(el), el[:id])
           end
         elsif v.is_a?(Flexirest::Base)
-          _params.add_relationship(k, class_type_name(v.class), v[:id])
+          _params.add_relationship(k, type(v), v[:id])
         else
           _params.add_attribute(k, v)
         end
@@ -116,8 +115,10 @@ module Flexirest
       r.delete("relationships")
     end
 
-    def class_type_name(klass)
-      klass.name.underscore.split('/').last
+    def type(object)
+      type = object.alias_type || object.class.alias_type
+      return object.class.name.underscore.split('/').last if type.nil?
+      type
     end
 
     class Parameters
@@ -130,19 +131,19 @@ module Flexirest
         @params
       end
 
-      def add_relationship(name, type_name, id)
+      def add_relationship(name, type, id)
         if singular?(name)
           @params[:data][:relationships][name] = {
-            data: { type: type_name, id: id }
+            data: { type: type, id: id }
           }
         else
           if @params[:data][:relationships][name]
             @params[:data][:relationships][name][:data] << {
-              type: type_name, id: id
+              type: type, id: id
             }
           else
             @params[:data][:relationships][name] = {
-              data: [ { type: type_name, id: id } ]
+              data: [ { type: type, id: id } ]
             }
           end
         end
