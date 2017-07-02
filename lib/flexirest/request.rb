@@ -16,7 +16,6 @@ module Flexirest
       @method[:options][:lazy]    ||= []
       @method[:options][:array]   ||= []
       @method[:options][:has_one] ||= {}
-      @type_name                  = @method[:options][:type_name]
       @overridden_name            = @method[:options][:overridden_name]
       @object                     = object
       @response_delegate          = Flexirest::RequestDelegator.new(nil)
@@ -338,7 +337,7 @@ module Flexirest
           if http_method == :delete
             {}
           else
-            json_api_create_params(params || @post_params || {}, @object, type_name: @type_name)
+            json_api_create_params(params || @post_params || {}, @object)
           end.to_json
         headers["Content-Type"] ||= "application/vnd.api+json"
         headers["Accept"] ||= "application/vnd.api+json"
