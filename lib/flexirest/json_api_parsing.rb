@@ -53,7 +53,7 @@ module Flexirest
 
       rels.each do |rel|
         if singular?(rel)
-          unless included || relationships[rel]["data"]
+          if included.blank? || relationships[rel]["data"].blank?
             begin
               record[rel] = relationships[rel]["links"]["related"]
             rescue NoMethodError
@@ -66,7 +66,7 @@ module Flexirest
           record[rel] = included.select { |i| i["id"] == rel_id && i["type"] == rel.singularize }
 
         else
-          unless included || relationships[rel]["data"]
+          if included.blank? || relationships[rel]["data"].blank?
             begin
               record[rel] = relationships[rel]["links"]["related"]
             rescue NoMethodError
