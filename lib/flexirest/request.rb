@@ -629,7 +629,7 @@ module Flexirest
         end
 
         if is_json_api_response?
-          body = json_api_parse_response(body)
+          body = json_api_parse_response(body, self)
         end
 
         if options[:ignore_root]

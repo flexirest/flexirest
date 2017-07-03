@@ -21,7 +21,7 @@ module Flexirest
       _params.to_hash
     end
 
-    def json_api_parse_response(body)
+    def json_api_parse_response(body, request)
       included = body["included"]
       records = body["data"]
 
@@ -37,7 +37,7 @@ module Flexirest
       end
 
       bucket = records.map do |record|
-        retrieve_attributes_and_relations(base, record, included, rels)
+        retrieve_attributes_and_relations(base, record, included, rels, request)
       end
 
       is_singular_record ? bucket.first : bucket
@@ -45,7 +45,7 @@ module Flexirest
 
     private
 
-    def retrieve_attributes_and_relations(base, record, included, rels)
+    def retrieve_attributes_and_relations(base, record, included, rels, request)
       rels ||= []
       rels -= [base]
       base = record["type"]
@@ -56,7 +56,7 @@ module Flexirest
           if included.blank? || relationships[rel]["data"].blank?
             begin
               url = relationships[rel]["links"]["related"]
-              record[rel] = Flexirest::LazyAssociationLoader.new(rel, url, nil)
+              record[rel] = Flexirest::LazyAssociationLoader.new(rel, url, request)
             rescue NoMethodError
               record[rel] = nil
             end
@@ -70,7 +70,7 @@ module Flexirest
           if included.blank? || relationships[rel]["data"].blank?
             begin
               url = relationships[rel]["links"]["related"]
-              record[rel] = Flexirest::LazyAssociationLoader.new(rel, url, nil)
+              record[rel] = Flexirest::LazyAssociationLoader.new(rel, url, request)
             rescue NoMethodError
               record[rel] = []
             end
@@ -88,7 +88,7 @@ module Flexirest
           subrels = subrecord["relationships"].keys
           next subrecord if subrels.empty?
 
-          retrieve_attributes_and_relations(base, subrecord, included, subrels)
+          retrieve_attributes_and_relations(base, subrecord, included, subrels, request)
         end
 
         record[rel] = singular?(rel) ? relations.first : relations
