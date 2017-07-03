@@ -54,8 +54,10 @@ module Flexirest
       rels.each do |rel|
         if singular?(rel)
           if included.blank? || relationships[rel]["data"].blank?
+            require 'byebug'; byebug
             begin
-              record[rel] = relationships[rel]["links"]["related"]
+              url = relationships[rel]["links"]["related"]
+              record[rel] = Flexirest::LazyAssociationLoader.new(rel, url, nil)
             rescue NoMethodError
               record[rel] = nil
             end
@@ -68,7 +70,8 @@ module Flexirest
         else
           if included.blank? || relationships[rel]["data"].blank?
             begin
-              record[rel] = relationships[rel]["links"]["related"]
+              url = relationships[rel]["links"]["related"]
+              record[rel] = Flexirest::LazyAssociationLoader.new(rel, url, nil)
             rescue NoMethodError
               record[rel] = []
             end
