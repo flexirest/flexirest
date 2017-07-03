@@ -66,7 +66,6 @@ end
 
 describe "JSON API" do
   let(:subject) { JsonAPIExampleArticle.new }
-  let(:lazy) { JsonAPILazyLoadingExample.new }
 
   context "responses" do
     it "should return the data object if the response contains only one data instance" do

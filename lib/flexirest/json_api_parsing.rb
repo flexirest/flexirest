@@ -1,5 +1,7 @@
 module Flexirest
   module JsonAPIParsing
+    @@_associations ||= {}
+
     def json_api_create_params(params, object, options = {})
       _params = Parameters.new(object.id, type(object))
       params.delete(:id)
@@ -8,10 +10,13 @@ module Flexirest
         if v.is_a?(Array)
           # Should always contain the same class in entire list
           raise Flexirest::Logger.error("Cannot contain different instances for #{k}!") if v.map(&:class).count > 1
+          @@_associations[k] = v.first.is_a?(Class) ? v.first : v.first.class
+
           v.each do |el|
             _params.add_relationship(k, type(el), el[:id])
           end
         elsif v.is_a?(Flexirest::Base)
+          @@_associations[k] = v.is_a?(Class) ? v : v.class
           _params.add_relationship(k, type(v), v[:id])
         else
           _params.add_attribute(k, v)
@@ -21,7 +26,7 @@ module Flexirest
       _params.to_hash
     end
 
-    def json_api_parse_response(body, object)
+    def json_api_parse_response(body)
       included = body["included"]
       records = body["data"]
 
@@ -37,7 +42,7 @@ module Flexirest
       end
 
       bucket = records.map do |record|
-        retrieve_attributes_and_relations(base, record, included, rels, object)
+        retrieve_attributes_and_relations(base, record, included, rels)
       end
 
       is_singular_record ? bucket.first : bucket
@@ -60,13 +65,13 @@ module Flexirest
 
         params[:include] = include_params.join(',')
       end
-      
+
       params
     end
 
     private
 
-    def retrieve_attributes_and_relations(base, record, included, rels, object)
+    def retrieve_attributes_and_relations(base, record, included, rels)
       rels ||= []
       rels -= [base]
       base = record["type"]
@@ -77,7 +82,9 @@ module Flexirest
           if included.blank? || relationships[rel]["data"].blank?
             begin
               url = relationships[rel]["links"]["related"]
-              record[rel] = Flexirest::LazyAssociationLoader.new(rel, url, object)
+              klass = @@_associations[rel.to_sym]
+              request = Flexirest::Request.new(klass._mapped_method(:find), klass.new)
+              record[rel] = Flexirest::LazyAssociationLoader.new(rel, url, request)
             rescue NoMethodError
               record[rel] = nil
             end
@@ -91,7 +98,9 @@ module Flexirest
           if included.blank? || relationships[rel]["data"].blank?
             begin
               url = relationships[rel]["links"]["related"]
-              record[rel] = Flexirest::LazyAssociationLoader.new(rel, url, object)
+              klass = @@_associations[rel.to_sym]
+              request = Flexirest::Request.new(klass._mapped_method(:find), klass.new)
+              record[rel] = Flexirest::LazyAssociationLoader.new(rel, url, request)
             rescue NoMethodError
               record[rel] = []
             end
@@ -109,7 +118,7 @@ module Flexirest
           subrels = subrecord["relationships"].keys
           next subrecord if subrels.empty?
 
-          retrieve_attributes_and_relations(base, subrecord, included, subrels, object)
+          retrieve_attributes_and_relations(base, subrecord, included, subrels)
         end
 
         record[rel] = singular?(rel) ? relations.first : relations
