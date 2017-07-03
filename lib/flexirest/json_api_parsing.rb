@@ -1,8 +1,9 @@
 module Flexirest
   module JsonAPIParsing
-    @@_associations ||= {}
+    @@klass ||= nil
 
     def json_api_create_params(params, object, options = {})
+      @@klass = object.is_a?(Class) ? object : object.class
       _params = Parameters.new(object.id, type(object))
       params.delete(:id)
 
@@ -10,13 +11,11 @@ module Flexirest
         if v.is_a?(Array)
           # Should always contain the same class in entire list
           raise Flexirest::Logger.error("Cannot contain different instances for #{k}!") if v.map(&:class).count > 1
-          @@_associations[k] = v.first.is_a?(Class) ? v.first : v.first.class
 
           v.each do |el|
             _params.add_relationship(k, type(el), el[:id])
           end
         elsif v.is_a?(Flexirest::Base)
-          @@_associations[k] = v.is_a?(Class) ? v : v.class
           _params.add_relationship(k, type(v), v[:id])
         else
           _params.add_attribute(k, v)
@@ -81,10 +80,7 @@ module Flexirest
         if singular?(rel)
           if included.blank? || relationships[rel]["data"].blank?
             begin
-              url = relationships[rel]["links"]["related"]
-              klass = @@_associations[rel.to_sym]
-              request = Flexirest::Request.new(klass._mapped_method(:find), klass.new)
-              record[rel] = Flexirest::LazyAssociationLoader.new(rel, url, request)
+              record[rel] = build_lazy_loader(rel, relationships[rel]["links"]["related"])
             rescue NoMethodError
               record[rel] = nil
             end
@@ -97,10 +93,7 @@ module Flexirest
         else
           if included.blank? || relationships[rel]["data"].blank?
             begin
-              url = relationships[rel]["links"]["related"]
-              klass = @@_associations[rel.to_sym]
-              request = Flexirest::Request.new(klass._mapped_method(:find), klass.new)
-              record[rel] = Flexirest::LazyAssociationLoader.new(rel, url, request)
+              record[rel] = build_lazy_loader(rel, relationships[rel]["links"]["related"])
             rescue NoMethodError
               record[rel] = []
             end
@@ -151,6 +144,11 @@ module Flexirest
       type = object.alias_type || object.class.alias_type
       return object.class.name.underscore.split('/').last if type.nil?
       type
+    end
+
+    def build_lazy_loader(name, url)
+      request = Flexirest::Request.new({ url: url, method: :get }, @@klass.new)
+      return Flexirest::LazyAssociationLoader.new(name, url, request)
     end
 
     class Parameters

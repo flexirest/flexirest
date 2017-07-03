@@ -4,6 +4,7 @@ class JsonAPIAssociationExampleTag < Flexirest::Base; end
 class JsonAPIAssociationExampleAuthor < Flexirest::Base; end
 
 class JsonAPIExampleArticle < Flexirest::Base
+  request_body_type :json_api
   has_many :tags, JsonAPIAssociationExampleTag
   has_one :author, JsonAPIAssociationExampleAuthor
 
@@ -38,10 +39,19 @@ module JsonAPIExample
     has_one :author, Author
     has_many :tags, Tag
 
-    faker = {
-      data: { id: 1, type: "article", attributes: { item: "item one" } }
+    faker_lazy = {
+      data: { id: 1, type: "article", attributes: { item: "item one" },
+        relationships: { "tags": { links: {
+          self: "http://www.example.com/articles/1/relationships/tags",
+          related: "http://www.example.com/articles/1/tags" } }
+        }
+      }
     }
+    faker = { data: { id: 1, type: "article", attributes: { item: "item one" } } }
+    tag_faker = { data: [ { id: 1, type: "tag", attributes: { item: "item one" } } ] }
 
+    get :find_lazy, "/articles/:id", fake: faker_lazy.to_json, fake_content_type: "application/vnd.api+json"
+    get :find_tags, "/articles/:id/tags", fake: tag_faker.to_json, fake_content_type: "application/vnd.api+json"
     get :find, "/articles/:id", fake: faker.to_json, fake_content_type: "application/vnd.api+json"
     post :create, "/articles"
     patch :update, "/articles/:id"
@@ -66,6 +76,7 @@ end
 
 describe "JSON API" do
   let(:subject) { JsonAPIExampleArticle.new }
+  let(:article) { JsonAPIExample::Article.new }
 
   context "responses" do
     it "should return the data object if the response contains only one data instance" do
