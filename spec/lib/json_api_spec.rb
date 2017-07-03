@@ -28,25 +28,6 @@ class JsonAPIExampleArticle < Flexirest::Base
   get :find_single_author, "/articles", fake: faker3.to_json, fake_content_type: "application/vnd.api+json"
 end
 
-class JsonAPILazyExampleAuthor < Flexirest::Base
-  base_url "http://www.example.com"
-
-  faker = { data: { id: 1, type: "author", attributes: { item: "item two" } } }
-
-  get :find, "/articles/1/author", fake: faker.to_json, fake_content_type: "application/vnd.api+json"
-end
-
-class JsonAPILazyLoadingExample < Flexirest::Base
-  base_url "http://www.example.com"
-  has_one :author, JsonAPILazyExampleAuthor
-
-  faker = {
-    data: { id: 1, type: "article", attributes: { item: "item one" }, relationships: { "author": { links: { self: "http://www.example.com/articles/1/relationships/author", related: "http://www.example.com/articles/1/author" } } } }
-  }
-
-  get :find, "/articles", lazy: { author: JsonAPILazyExampleAuthor }, fake: faker.to_json, fake_content_type: "application/vnd.api+json"
-end
-
 module JsonAPIExample
   class Author < Flexirest::Base; end
   class Tag < Flexirest::Base; end
@@ -118,14 +99,6 @@ describe "JSON API" do
 
     it "should retrieve a Flexirest::ResultIterator if the relationship type is plural" do
       expect(subject.find.tags).to be_a(Flexirest::ResultIterator)
-    end
-  end
-
-  context "lazy loading" do
-    it "should retrieve the resource by loading the url from the links object" do
-      expect(lazy.find.author).to be_a(Flexirest::LazyAssociationLoader)
-      expect(lazy.find.author.id).to_not be_nil
-      expect(lazy.find.author.item).to_not be_nil
     end
   end
 
