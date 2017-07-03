@@ -84,21 +84,21 @@ describe "JSON API" do
     end
 
     it "should return the association's attributes as part of the association instance" do
-      expect(subject.find_single_author.author.item).to_not be_nil
+      expect(subject.find_single_author(include: [:author]).author.item).to_not be_nil
     end
   end
 
   context "associations" do
     it "should retrieve the resource's associations via its relationships object" do
-      expect(subject.find.tags.size).to eq(2)
+      expect(subject.find(include: [:tags]).tags.size).to eq(2)
     end
 
     it "should retrieve the response object if the relationship type is singular" do
-      expect(subject.find_single_author.author).to be_a(JsonAPIAssociationExampleAuthor)
+      expect(subject.find_single_author(include: [:author]).author).to be_a(JsonAPIAssociationExampleAuthor)
     end
 
     it "should retrieve a Flexirest::ResultIterator if the relationship type is plural" do
-      expect(subject.find.tags).to be_a(Flexirest::ResultIterator)
+      expect(subject.find(include: [:tags]).tags).to be_a(Flexirest::ResultIterator)
     end
   end
 
@@ -120,9 +120,7 @@ describe "JSON API" do
         expect(hash["data"]["type"]).to_not be_nil
       }.and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{}", response_headers:{})))
       author = JsonAPIExample::Author.new
-      author.id = 1
       tag = JsonAPIExample::Tag.new
-      tag.id = 1
       article = JsonAPIExample::Article.new
       article.item = "item one"
       article.author = author

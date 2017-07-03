@@ -16,6 +16,7 @@ module Flexirest
       @method[:options][:lazy]    ||= []
       @method[:options][:array]   ||= []
       @method[:options][:has_one] ||= {}
+      @method[:options][:include] ||= []
       @overridden_name            = @method[:options][:overridden_name]
       @object                     = object
       @response_delegate          = Flexirest::RequestDelegator.new(nil)
@@ -107,6 +108,8 @@ module Flexirest
     def request_body_type
       if @method[:options][:request_body_type]
         @method[:options][:request_body_type]
+      elsif @object.nil?
+        nil
       elsif object_is_class?
         @object.request_body_type
       else
@@ -227,6 +230,11 @@ module Flexirest
       params = @params || @object._attributes rescue {}
       if params.is_a?(String) || params.is_a?(Integer)
         params = {id:params}
+      end
+
+      # Format includes parameter for jsonapi
+      if request_body_type == :json_api
+        params = json_api_format_params(params)
       end
 
       if @method[:options][:defaults].respond_to?(:call)
@@ -629,7 +637,7 @@ module Flexirest
         end
 
         if is_json_api_response?
-          body = json_api_parse_response(body, self)
+          body = json_api_parse_response(body, @object)
         end
 
         if options[:ignore_root]
