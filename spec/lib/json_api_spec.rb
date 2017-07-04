@@ -112,6 +112,13 @@ describe "JSON API" do
     end
   end
 
+  context "lazy loading" do
+    it "should fetch association lazily" do
+      expect(article.find_lazy.tags).to be_a(Flexirest::LazyAssociationLoader)
+      expect(article.find_lazy.tags.first.item).to_not be_nil
+    end
+  end
+
   context "client" do
     it "should request with json api format, and expect a json api response" do
       expect_any_instance_of(Flexirest::Connection).to receive(:post) { |_, _, _, options|

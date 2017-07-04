@@ -1,9 +1,9 @@
 module Flexirest
   module JsonAPIParsing
-    @@klass ||= nil
+    @@object ||= nil
+    @@headers ||= {}
 
     def json_api_create_params(params, object, options = {})
-      @@klass = object.is_a?(Class) ? object : object.class
       _params = Parameters.new(object.id, type(object))
       params.delete(:id)
 
@@ -25,7 +25,9 @@ module Flexirest
       _params.to_hash
     end
 
-    def json_api_parse_response(body)
+    def json_api_parse_response(body, object)
+      @@object = object
+
       included = body["included"]
       records = body["data"]
 
@@ -66,6 +68,10 @@ module Flexirest
       end
 
       params
+    end
+
+    def json_api_preserve_headers(headers)
+      @@headers = headers
     end
 
     private
@@ -147,7 +153,9 @@ module Flexirest
     end
 
     def build_lazy_loader(name, url)
-      request = Flexirest::Request.new({ url: url, method: :get }, @@klass.new)
+      request = Flexirest::Request.new({ url: url, method: :get }, @@object)
+      request.headers = @@headers
+      require 'byebug'; byebug
       return Flexirest::LazyAssociationLoader.new(name, url, request)
     end
 
