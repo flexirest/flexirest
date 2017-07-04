@@ -1,6 +1,11 @@
 # Flexirest
 
-[![Build Status](https://travis-ci.org/flexirest/flexirest.svg?branch=master)](https://travis-ci.org/flexirest/flexirest) [![Coverage Status](https://coveralls.io/repos/github/flexirest/flexirest/badge.svg?branch=master)](https://coveralls.io/github/flexirest/flexirest?branch=master) [![Code Climate](https://codeclimate.com/github/flexirest/flexirest.png)](https://codeclimate.com/github/flexirest/flexirest) [![Gem Version](https://badge.fury.io/rb/flexirest.png)](http://badge.fury.io/rb/flexirest) [![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/flexirest/flexirest.svg)](http://isitmaintained.com/project/flexirest/flexirest "Average time to resolve an issue") [![Percentage of issues still open](http://isitmaintained.com/badge/open/flexirest/flexirest.svg)](http://isitmaintained.com/project/flexirest/flexirest "Percentage of issues still open")
+[![Build Status](https://travis-ci.org/flexirest/flexirest.svg?branch=master)](https://travis-ci.org/flexirest/flexirest)
+[![Coverage Status](https://coveralls.io/repos/github/flexirest/flexirest/badge.svg?branch=master)](https://coveralls.io/github/flexirest/flexirest?branch=master)
+[![Code Climate](https://codeclimate.com/github/flexirest/flexirest.png)](https://codeclimate.com/github/flexirest/flexirest)
+[![Gem Version](https://badge.fury.io/rb/flexirest.png)](http://badge.fury.io/rb/flexirest)
+[![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/flexirest/flexirest.svg)](http://isitmaintained.com/project/flexirest/flexirest "Average time to resolve an issue")
+[![Percentage of issues still open](http://isitmaintained.com/badge/open/flexirest/flexirest.svg)](http://isitmaintained.com/project/flexirest/flexirest "Percentage of issues still open")
 
 This gem is for accessing REST services in an ActiveRecord style. ActiveResource already exists for this, but it doesn't work where the resource naming doesn't follow Rails conventions, it doesn't have in-built caching and it's not as flexible in general.
 
@@ -331,10 +336,10 @@ If you need to, you can access properties of the HAL association. By default jus
 
 It's common to have resources that are logically children of other resources. For example, suppose that your API includes these endpoints:
 
-| HTTP Verb | Path                        |
-| --------- | --------------------------- | ----------------------------------------
-| POST      | /magazines/:magazine_id/ads | create a new ad belonging to a magazine
-| GET       | /magazines/:magazine_id/ads | display a list of all ads for a magazine
+| HTTP Verb | Path                        |                                          |
+|-----------|-----------------------------|------------------------------------------|
+| POST      | /magazines/:magazine_id/ads | create a new ad belonging to a magazine  |
+| GET       | /magazines/:magazine_id/ads | display a list of all ads for a magazine |
 
 In these cases, your child class will contain the following:
 
