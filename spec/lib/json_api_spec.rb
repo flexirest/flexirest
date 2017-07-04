@@ -30,10 +30,22 @@ class JsonAPIExampleArticle < Flexirest::Base
 end
 
 module JsonAPIExample
-  class Author < Flexirest::Base; end
+  class Author < Flexirest::Base
+    request_body_type :json_api
+    base_url "http://www.example.com"
+
+    author_faker = { data: { id: 1, type: "author", attributes: { item: "item three" } } }
+
+    get :find_author, "/articles/:article_id/author", fake: author_faker.to_json, fake_content_type: "application/vnd.api+json"
+  end
+
   class Tag < Flexirest::Base
     request_body_type :json_api
     base_url "http://www.example.com"
+
+    tags_faker = { data: [ { id: 1, type: "tag", attributes: { item: "item two" } } ] }
+
+    get :find_tags, "/articles/:article_id/tags", fake: tags_faker.to_json, fake_content_type: "application/vnd.api+json"
   end
 
   class Article < Flexirest::Base
@@ -42,19 +54,23 @@ module JsonAPIExample
     has_one :author, Author
     has_many :tags, Tag
 
+    faker = { data: { id: 1, type: "article", attributes: { item: "item one" } } }
     faker_lazy = {
       data: { id: 1, type: "article", attributes: { item: "item one" },
-        relationships: { "tags": { links: {
-          self: "http://www.example.com/articles/1/relationships/tags",
-          related: "http://www.example.com/articles/1/tags" } }
+        relationships: {
+          "tags": { links: {
+            self: "http://www.example.com/articles/1/relationships/tags",
+            related: "http://www.example.com/articles/1/tags" }
+          },
+          "author": { links: {
+            self: "http://www.example.com/articles/1/relationships/author",
+            related: "http://www.example.com/articles/1/author" }
+          }
         }
       }
     }
-    faker = { data: { id: 1, type: "article", attributes: { item: "item one" } } }
-    tag_faker = { data: [ { id: 1, type: "tag", attributes: { item: "item one" } } ] }
 
     get :find_lazy, "/articles/:id", fake: faker_lazy.to_json, fake_content_type: "application/vnd.api+json"
-    get :find_tags, "/articles/:id/tags", fake: tag_faker.to_json, fake_content_type: "application/vnd.api+json"
     get :find, "/articles/:id", fake: faker.to_json, fake_content_type: "application/vnd.api+json"
     post :create, "/articles", fake_content_type: "application/vnd.api+json"
     patch :update, "/articles/:id", fake_content_type: "application/vnd.api+json"
@@ -80,14 +96,16 @@ end
 describe "JSON API" do
   let(:subject) { JsonAPIExampleArticle }
   let(:article) { JsonAPIExample::Article }
+  let(:tags) { JsonAPIExample::Tag }
+  let(:author) { JsonAPIExample::Author }
 
   context "responses" do
     it "should return the data object if the response contains only one data instance" do
-      expect(subject.find(1)).to be_a(JsonAPIExampleArticle)
+      expect(subject.find(1)).to be_an_instance_of(JsonAPIExampleArticle)
     end
 
     it "should return a Flexirest::ResultIterator if the response contains more than one data instance" do
-      expect(subject.find_all).to be_a(Flexirest::ResultIterator)
+      expect(subject.find_all).to be_an_instance_of(Flexirest::ResultIterator)
     end
   end
 
@@ -107,22 +125,26 @@ describe "JSON API" do
     end
 
     it "should retrieve the response object if the relationship type is singular" do
-      expect(subject.find_single_author(id: 1, include: [:author]).author).to be_a(JsonAPIAssociationExampleAuthor)
+      expect(subject.find_single_author(id: 1, include: [:author]).author).to be_an_instance_of(JsonAPIAssociationExampleAuthor)
     end
 
     it "should retrieve a Flexirest::ResultIterator if the relationship type is plural" do
-      expect(subject.find(id: 1, include: [:tags]).tags).to be_a(Flexirest::ResultIterator)
+      expect(subject.find(id: 1, include: [:tags]).tags).to be_an_instance_of(Flexirest::ResultIterator)
     end
   end
 
   context "lazy loading" do
-
     it "should fetch association lazily" do
-      stub_request(:get, /www.example.com\/articles\/1\/tags/).
-        to_return(body: article.find_tags(1).to_json)
+      stub_request(:get, /www.example.com\/articles\/1\/tags/)
+        .to_return(body: tags.find_tags(article_id: 1).to_json)
+      stub_request(:get, /www.example.com\/articles\/1\/author/)
+        .to_return(body: author.find_author(article_id: 1).to_json)
 
-      expect(article.find_lazy(1).tags).to be_a(Flexirest::LazyAssociationLoader)
+      expect(article.find_lazy(1).tags).to be_an_instance_of(Flexirest::LazyAssociationLoader)
+      expect(article.find_lazy(1).tags.count).to be_an(Integer)
       expect(article.find_lazy(1).tags.first.id).to_not be_nil
+      expect(article.find_lazy(1).author).to be_an_instance_of(JsonAPIExample::Author)
+      expect(article.find_lazy(1).author.id).to_not be_nil
     end
   end
 
