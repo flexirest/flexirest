@@ -115,21 +115,21 @@ describe "JSON API" do
     end
 
     it "should return the association's attributes as part of the association instance" do
-      expect(subject.find_single_author(id: 1, include: [:author]).author.item).to_not be_nil
+      expect(subject.includes(:author).find_single_author(1).author.item).to_not be_nil
     end
   end
 
   context "associations" do
     it "should retrieve the resource's associations via its relationships object" do
-      expect(subject.find(id: 1, include: [:tags]).tags.size).to eq(2)
+      expect(subject.includes(:tags).find(1).tags.size).to eq(2)
     end
 
     it "should retrieve the response object if the relationship type is singular" do
-      expect(subject.find_single_author(id: 1, include: [:author]).author).to be_an_instance_of(JsonAPIAssociationExampleAuthor)
+      expect(subject.includes(:author).find_single_author(1).author).to be_an_instance_of(JsonAPIAssociationExampleAuthor)
     end
 
     it "should retrieve a Flexirest::ResultIterator if the relationship type is plural" do
-      expect(subject.find(id: 1, include: [:tags]).tags).to be_an_instance_of(Flexirest::ResultIterator)
+      expect(subject.includes(:tags).find(1).tags).to be_an_instance_of(Flexirest::ResultIterator)
     end
   end
 
