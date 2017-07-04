@@ -13,10 +13,10 @@ module Flexirest
           raise Flexirest::Logger.error("Cannot contain different instances for #{k}!") if v.map(&:class).count > 1
 
           v.each do |el|
-            _params.add_relationship(k, type(el), el[:id])
+            _params.add_relationship(k, type(el), el.id)
           end
         elsif v.is_a?(Flexirest::Base)
-          _params.add_relationship(k, type(v), v[:id])
+          _params.add_relationship(k, type(v), v.id)
         else
           _params.add_attribute(k, v)
         end
@@ -155,7 +155,7 @@ module Flexirest
     def build_lazy_loader(name, url)
       klass = @@object.is_a?(Class) ? object : object.class
       association_klass = klass._associations[name.to_sym]
-      request = Flexirest::Request.new({ method: :get }, association_klass)
+      request = Flexirest::Request.new({ url: url, method: :get }, association_klass.new)
       request.headers = @@headers
       request.url = request.forced_url = url
       return Flexirest::LazyAssociationLoader.new(name, url, request)
