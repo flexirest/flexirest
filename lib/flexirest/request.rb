@@ -332,7 +332,18 @@ module Flexirest
     end
 
     def prepare_request_body(params = nil)
-      if http_method == :get
+      if request_body_type == :json_api
+        @body ||=
+        if http_method == :get || http_method == :delete 
+          ""
+        else
+          json_api_create_params(params || @post_params || {}, @object)
+        end.to_json
+
+        headers["Content-Type"] = "application/vnd.api+json"
+        headers["Accept"] = "application/vnd.api+json"
+        json_api_preserve_headers(headers)
+      elsif http_method == :get
         @body = ""
       elsif request_body_type == :form_encoded
         @body ||= (params || @post_params || {}).to_query
@@ -340,15 +351,6 @@ module Flexirest
       elsif request_body_type == :json
         @body ||= (params || @post_params || {}).to_json
         headers["Content-Type"] ||= "application/json; charset=utf-8"
-      elsif request_body_type == :json_api
-        @body ||=
-          if http_method == :delete
-            {}
-          else
-            json_api_create_params(params || @post_params || {}, @object)
-          end.to_json
-        headers["Content-Type"] ||= "application/vnd.api+json"
-        headers["Accept"] ||= "application/vnd.api+json"
       end
     end
 
@@ -637,7 +639,7 @@ module Flexirest
         end
 
         if is_json_api_response?
-          body = json_api_parse_response(body)
+          body = json_api_parse_response(body, @object)
         end
 
         if options[:ignore_root]
