@@ -110,12 +110,11 @@ module Flexirest
         end
 
         relations = record[rel].map do |subrecord|
-          next subrecord unless subrecord["relationships"]
-
-          subrels = subrecord["relationships"].keys
-          next subrecord if subrels.empty?
-
-          retrieve_attributes_and_relations(base, subrecord, included, subrels)
+          if subrecord["relationships"] && subrecord["relationships"].keys.present?
+            retrieve_attributes_and_relations(base, subrecord, included, subrecord["relationships"].keys)
+          else
+            retrieve_attributes(subrecord)
+          end
         end
 
         record[rel] = singular?(rel) ? relations.first : relations
@@ -131,6 +130,7 @@ module Flexirest
       end
 
       delete_json_api_keys(record)
+      return record
     end
 
     def singular?(word)
