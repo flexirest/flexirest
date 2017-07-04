@@ -332,15 +332,14 @@ module Flexirest
 
     def prepare_request_body(params = nil)
       if request_body_type == :json_api
-        @body ||=
         if http_method == :get || http_method == :delete
-          ""
+          @body = ""
         else
-          json_api_create_params(params || @post_params || {}, @object)
-          headers["Content-Type"] = "application/vnd.api+json"
-        end.to_json
+          headers["Content-Type"] ||= "application/vnd.api+json"
+          @body = json_api_create_params(params || @post_params || {}, @object).to_json
+        end
 
-        headers["Accept"] = "application/vnd.api+json"
+        headers["Accept"] ||= "application/vnd.api+json"
         json_api_preserve_headers(headers)
       elsif http_method == :get
         @body = ""
