@@ -9,18 +9,18 @@ class JsonAPIExampleArticle < Flexirest::Base
   has_one :author, JsonAPIAssociationExampleAuthor
 
   faker1 = {
-    data: { id: 1, type: "article", attributes: { item: "item one" }, relationships: { "tags": { data: [ { id: 1, type: "tag" }, { id: 2, type: "tag" } ] } } },
+    data: { id: 1, type: "article", attributes: { item: "item one" }, relationships: { "tags" => { data: [ { id: 1, type: "tag" }, { id: 2, type: "tag" } ] } } },
     included: [ { id: 1, type: "tag", attributes: { item: "item two" } }, { id: 2, type: "tag", attributes: { item: "item three" } } ]
   }
   faker2 = {
     data: [
-      { id: 1, type: "article", attributes: { item: "item one" }, relationships: { "tags": { data: [ { id: 1, type: "tag" }, { id: 2, type: "tag" } ] } } },
-      { id: 2, type: "article", attributes: { item: "item four" }, relationships: { "tags": { data: [ { id: 2, type: "tag" } ] } } }
+      { id: 1, type: "article", attributes: { item: "item one" }, relationships: { "tags" => { data: [ { id: 1, type: "tag" }, { id: 2, type: "tag" } ] } } },
+      { id: 2, type: "article", attributes: { item: "item four" }, relationships: { "tags" => { data: [ { id: 2, type: "tag" } ] } } }
     ],
     included: [ { id: 1, type: "tag", attributes: { item: "item two" } }, { id: 2, type: "tag", attributes: { item: "item three" } } ]
   }
   faker3 = {
-    data: { id: 1, type: "article", attributes: { item: "item one" }, relationships: { "author": { data: { id: 1, type: "author" } } } },
+    data: { id: 1, type: "article", attributes: { item: "item one" }, relationships: { "author" => { data: { id: 1, type: "author" } } } },
     included: [ { id: 1, type: "author", attributes: { item: "item two" } } ]
   }
 
@@ -58,11 +58,11 @@ module JsonAPIExample
     faker_lazy = {
       data: { id: 1, type: "article", attributes: { item: "item one" },
         relationships: {
-          "tags": { links: {
+          "tags" => { links: {
             self: "http://www.example.com/articles/1/relationships/tags",
             related: "http://www.example.com/articles/1/tags" }
           },
-          "author": { links: {
+          "author" => { links: {
             self: "http://www.example.com/articles/1/relationships/author",
             related: "http://www.example.com/articles/1/author" }
           }
