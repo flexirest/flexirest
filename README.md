@@ -25,6 +25,8 @@ If you are a previous user of ActiveRestClient, there's some more information on
 		- [Association Type 2 - Lazy Loading From Other URLs](#association-type-2-lazy-loading-from-other-urls)
 		- [Association Type 3 - HAL Auto-loaded Resources](#association-type-3-hal-auto-loaded-resources)
 		- [Association Type 4 - Nested Resources](#association-type-4-nested-resources)
+    - [Association Type 5 - JSON API Auto-loaded Resources](#association-type-5-json-api-auto-loaded-resources)
+    - [Combined Example](#combined-example)
 	- [Caching](#caching)
 	- [Using callbacks](#using-callbacks)
 	- [Lazy Loading](#lazy-loading)
@@ -39,6 +41,7 @@ If you are a previous user of ActiveRestClient, there's some more information on
 	- [Automatic Conversion of Fields to Date/DateTime](#automatic-conversion-of-fields-to-datedatetime)
 	- [Raw Requests](#raw-requests)
 	- [Plain Requests](#plain-requests)
+  - [JSON API](#json-api)
 	- [Proxying APIs](#proxying-apis)
 	- [Translating APIs](#translating-apis)
 	- [Default Parameters](#default-parameters)
@@ -348,6 +351,28 @@ You can then access Ads by specifying their magazine IDs:
 ```ruby
 Ad.all(magazine_id: 1)
 Ad.create(magazine_id: 1, title: "My Add Title")
+```
+
+#### Association Type 5 - JSON API Auto-loaded Resources
+
+If attributes are defined using [JSON API](http://jsonapi.org), you don't need to define lazy attributes. If your resource has a `links` object with a `related` item, it will automatically treat the linked resources as if they were defined using `:lazy`.
+
+You need to activate JSON API by specifying the `json_api` proxy:
+
+```ruby
+class Article < Flextirest::Base
+  proxy :json_api
+end
+```
+
+If you want to embed linked resources directly in the response (i.e. request a JSON API compound document), use the `includes` class method. The linked resource is accessed in the same was as if it was lazily loaded, but without the extra request:
+
+```ruby
+# Makes a call to /articles with parameters: include=images
+Article.includes(:images).all
+
+# For nested resources, the include parameter becomes: include=images.tags,images.photographer
+Article.includes(:images => [:tags, :photographer]).all
 ```
 
 #### Combined Example
@@ -785,6 +810,44 @@ end
 ```
 
 The response of a plain request (from either source) is a `Flexirest::PlainResponse` which acts like a string containing the response's body, but it also has a `_headers` method that returns the HTTP response headers and a `_status` method containing the response's HTTP method.
+
+### JSON API
+
+If you are working with a [JSON API](http://jsonapi.org), you need to activate JSON API by specifying the `json_api` proxy:
+
+```ruby
+class Article < Flextirest::Base
+  proxy :json_api
+end
+```
+
+This proxy translates requests according to the JSON API specifications, parses responses, and retrieves linked resources. It also adds the `Accept: application/vnd.api+json` header for all requests.
+
+It supports lazy loading by default. Unless a compound document is returned from the connected JSON API service, it will make another request to the service for the specified linked resource.
+
+To reduce the number of requests to the service, you can ask the service to include the linked resources in the response. Such responses are called "compound documents". To do this, use the `includes` method:
+
+```ruby
+# Makes a call to /articles with parameters: include=images
+Article.includes(:images).all
+
+# For nested resources, the include parameter becomes: include=images.tags,images.photographer
+Article.includes(:images => [:tags, :photographer]).all
+```
+
+For post and patch requests, the proxy formats a JSON API complied request, and adds a `Content-Type: application/vnd.api+json` header. It guesses the `type` value in the resource object from the class name, but it can be set specifically with `alias_type`:
+
+```ruby
+class Photographer < Flexirest::Base
+  proxy :json_api
+  # Sets the type in the resource object to "people"
+  alias_type :people
+
+  patch :update, '/photographers/:id'
+end
+```
+
+NB: Updating relationships is not yet supported.
 
 ### Proxying APIs
 
