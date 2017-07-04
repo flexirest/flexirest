@@ -153,8 +153,9 @@ module Flexirest
     end
 
     def build_lazy_loader(name, url)
-      klass = @@object.class._associations[name]
-      request = Flexirest::Request.new({ method: :get }, klass)
+      klass = @@object.is_a?(Class) ? object : object.class
+      association_klass = klass._associations[name.to_sym]
+      request = Flexirest::Request.new({ method: :get }, association_klass)
       request.headers = @@headers
       request.url = request.forced_url = url
       return Flexirest::LazyAssociationLoader.new(name, url, request)
