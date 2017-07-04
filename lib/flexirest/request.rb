@@ -233,7 +233,7 @@ module Flexirest
 
       # Format includes parameter for jsonapi
       if request_body_type == :json_api
-        params = json_api_format_params(params)
+        params = json_api_format_params(params, @object._include_associations)
       end
 
       if @method[:options][:defaults].respond_to?(:call)

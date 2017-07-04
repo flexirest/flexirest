@@ -25,12 +25,11 @@ module Flexirest
       _params.to_hash
     end
 
-    def json_api_format_params(params)
-      if params[:include].present?
+    def json_api_format_params(params, include_associations)
+      if params.present? && include_associations.present?
         include_params = []
-        params[:include] = [params[:include]] unless params[:include].is_a?(Array)
 
-        params[:include].each do |key|
+        include_associations.each do |key|
           if key.is_a?(Hash)
             key.each do |k, v|
               v.each { |_v| include_params << "#{k}.#{_v}" }
