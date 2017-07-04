@@ -40,7 +40,7 @@ module Flexirest
     end
 
     def _copy_from(result)
-      @attributes =  result._attributes
+      @attributes = result._attributes
       @_status = result._status
     end
 
