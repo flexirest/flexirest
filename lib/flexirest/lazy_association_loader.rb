@@ -51,14 +51,20 @@ module Flexirest
             yield loader
           end
         elsif @subloaders.is_a? Hash
-          @subloaders.each do |key,value|
+          @subloaders.each do |key, value|
             yield key, value
           end
         end
       else
         ensure_lazy_loaded
-        @object.each do |obj|
-          yield obj
+        if @object.is_a? Flexirest::Base
+          @object.each do |key, value|
+            yield key, value
+          end
+        else
+          @object.each do |obj|
+            yield obj
+          end
         end
       end
     end
