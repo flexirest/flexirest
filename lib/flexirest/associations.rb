@@ -59,8 +59,13 @@ module Flexirest
         @_date_fields.uniq
       end
 
+      def _associations
+        @_associations
+      end
+
       def inherited(subclass)
         subclass.instance_variable_set(:@_date_fields, [])
+        subclass.instance_variable_set(:@_associations, {})
         super
       end
     end

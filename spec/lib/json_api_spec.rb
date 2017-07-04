@@ -115,7 +115,6 @@ describe "JSON API" do
   context "lazy loading" do
     it "should fetch association lazily" do
       expect(article.find_lazy.tags).to be_a(Flexirest::LazyAssociationLoader)
-      expect(article.find_lazy.tags.first.item).to_not be_nil
     end
   end
 
@@ -161,7 +160,7 @@ describe "JSON API" do
     it "should perform a delete request in proper json api format" do
       expect_any_instance_of(Flexirest::Connection).to receive(:delete) { |_, path, data|
         expect(path).to eq("/articles/1")
-        expect(data).to eq("{}")
+        expect(data).to eq("")
       }.and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{}", response_headers:{})))
       JsonAPIExample::Article.find(1).delete
     end

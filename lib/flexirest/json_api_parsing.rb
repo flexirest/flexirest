@@ -25,30 +25,6 @@ module Flexirest
       _params.to_hash
     end
 
-    def json_api_parse_response(body, object)
-      @@object = object
-
-      included = body["included"]
-      records = body["data"]
-
-      return records unless records.present?
-
-      is_singular_record = records.is_a?(Hash)
-      records = [records] if is_singular_record
-
-      base = records.first["type"]
-
-      if records.first["relationships"]
-        rels = records.first["relationships"].keys
-      end
-
-      bucket = records.map do |record|
-        retrieve_attributes_and_relations(base, record, included, rels)
-      end
-
-      is_singular_record ? bucket.first : bucket
-    end
-
     def json_api_format_params(params)
       if params[:include].present?
         include_params = []
@@ -72,6 +48,30 @@ module Flexirest
 
     def json_api_preserve_headers(headers)
       @@headers = headers
+    end
+
+    def json_api_parse_response(body, object)
+      @@object = object
+
+      included = body["included"]
+      records = body["data"]
+
+      return records unless records.present?
+
+      is_singular_record = records.is_a?(Hash)
+      records = [records] if is_singular_record
+
+      base = records.first["type"]
+
+      if records.first["relationships"]
+        rels = records.first["relationships"].keys
+      end
+
+      bucket = records.map do |record|
+        retrieve_attributes_and_relations(base, record, included, rels)
+      end
+
+      is_singular_record ? bucket.first : bucket
     end
 
     private
@@ -153,7 +153,8 @@ module Flexirest
     end
 
     def build_lazy_loader(name, url)
-      request = Flexirest::Request.new({ method: :get }, @@object)
+      klass = @@object.class._associations[name]
+      request = Flexirest::Request.new({ method: :get }, klass)
       request.headers = @@headers
       request.url = request.forced_url = url
       return Flexirest::LazyAssociationLoader.new(name, url, request)
