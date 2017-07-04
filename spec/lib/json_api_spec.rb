@@ -24,14 +24,17 @@ class JsonAPIExampleArticle < Flexirest::Base
     included: [ { id: 1, type: "author", attributes: { item: "item two" } } ]
   }
 
-  get :find, "/articles", fake: faker1.to_json, fake_content_type: "application/vnd.api+json"
+  get :find, "/articles/:id", fake: faker1.to_json, fake_content_type: "application/vnd.api+json"
   get :find_all, "/articles", fake: faker2.to_json, fake_content_type: "application/vnd.api+json"
-  get :find_single_author, "/articles", fake: faker3.to_json, fake_content_type: "application/vnd.api+json"
+  get :find_single_author, "/articles/:id", fake: faker3.to_json, fake_content_type: "application/vnd.api+json"
 end
 
 module JsonAPIExample
   class Author < Flexirest::Base; end
-  class Tag < Flexirest::Base; end
+  class Tag < Flexirest::Base
+    request_body_type :json_api
+    base_url "http://www.example.com"
+  end
 
   class Article < Flexirest::Base
     base_url "http://www.example.com"
@@ -53,9 +56,9 @@ module JsonAPIExample
     get :find_lazy, "/articles/:id", fake: faker_lazy.to_json, fake_content_type: "application/vnd.api+json"
     get :find_tags, "/articles/:id/tags", fake: tag_faker.to_json, fake_content_type: "application/vnd.api+json"
     get :find, "/articles/:id", fake: faker.to_json, fake_content_type: "application/vnd.api+json"
-    post :create, "/articles"
-    patch :update, "/articles/:id"
-    delete :delete, "/articles/:id"
+    post :create, "/articles", fake_content_type: "application/vnd.api+json"
+    patch :update, "/articles/:id", fake_content_type: "application/vnd.api+json"
+    delete :delete, "/articles/:id", fake_content_type: "application/vnd.api+json"
   end
 
   class ArticleAlias < Flexirest::Base
@@ -75,12 +78,12 @@ module JsonAPIExample
 end
 
 describe "JSON API" do
-  let(:subject) { JsonAPIExampleArticle.new }
-  let(:article) { JsonAPIExample::Article.new }
+  let(:subject) { JsonAPIExampleArticle }
+  let(:article) { JsonAPIExample::Article }
 
   context "responses" do
     it "should return the data object if the response contains only one data instance" do
-      expect(subject.find).to be_a(JsonAPIExampleArticle)
+      expect(subject.find(1)).to be_a(JsonAPIExampleArticle)
     end
 
     it "should return a Flexirest::ResultIterator if the response contains more than one data instance" do
@@ -90,31 +93,36 @@ describe "JSON API" do
 
   context "attributes" do
     it "should return the attributes as part of the data instance" do
-      expect(subject.find.item).to_not be_nil
+      expect(subject.find(1).item).to_not be_nil
     end
 
     it "should return the association's attributes as part of the association instance" do
-      expect(subject.find_single_author(include: [:author]).author.item).to_not be_nil
+      expect(subject.find_single_author(id: 1, include: [:author]).author.item).to_not be_nil
     end
   end
 
   context "associations" do
     it "should retrieve the resource's associations via its relationships object" do
-      expect(subject.find(include: [:tags]).tags.size).to eq(2)
+      expect(subject.find(id: 1, include: [:tags]).tags.size).to eq(2)
     end
 
     it "should retrieve the response object if the relationship type is singular" do
-      expect(subject.find_single_author(include: [:author]).author).to be_a(JsonAPIAssociationExampleAuthor)
+      expect(subject.find_single_author(id: 1, include: [:author]).author).to be_a(JsonAPIAssociationExampleAuthor)
     end
 
     it "should retrieve a Flexirest::ResultIterator if the relationship type is plural" do
-      expect(subject.find(include: [:tags]).tags).to be_a(Flexirest::ResultIterator)
+      expect(subject.find(id: 1, include: [:tags]).tags).to be_a(Flexirest::ResultIterator)
     end
   end
 
   context "lazy loading" do
+
     it "should fetch association lazily" do
-      expect(article.find_lazy.tags).to be_a(Flexirest::LazyAssociationLoader)
+      stub_request(:get, /www.example.com\/articles\/1\/tags/).
+        to_return(body: article.find_tags(1).to_json)
+
+      expect(article.find_lazy(1).tags).to be_a(Flexirest::LazyAssociationLoader)
+      expect(article.find_lazy(1).tags.first.id).to_not be_nil
     end
   end
 
