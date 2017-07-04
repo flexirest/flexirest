@@ -1,60 +1,63 @@
 # Flexirest
 
-[![Build Status](https://travis-ci.org/flexirest/flexirest.svg?branch=master)](https://travis-ci.org/flexirest/flexirest)
-[![Coverage Status](https://coveralls.io/repos/github/flexirest/flexirest/badge.svg?branch=master)](https://coveralls.io/github/flexirest/flexirest?branch=master)
-[![Code Climate](https://codeclimate.com/github/flexirest/flexirest.png)](https://codeclimate.com/github/flexirest/flexirest)
-[![Gem Version](https://badge.fury.io/rb/flexirest.png)](http://badge.fury.io/rb/flexirest)
-[![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/flexirest/flexirest.svg)](http://isitmaintained.com/project/flexirest/flexirest "Average time to resolve an issue")
-[![Percentage of issues still open](http://isitmaintained.com/badge/open/flexirest/flexirest.svg)](http://isitmaintained.com/project/flexirest/flexirest "Percentage of issues still open")
+[![Build Status](https://travis-ci.org/flexirest/flexirest.svg?branch=master)](https://travis-ci.org/flexirest/flexirest) [![Coverage Status](https://coveralls.io/repos/github/flexirest/flexirest/badge.svg?branch=master)](https://coveralls.io/github/flexirest/flexirest?branch=master) [![Code Climate](https://codeclimate.com/github/flexirest/flexirest.png)](https://codeclimate.com/github/flexirest/flexirest) [![Gem Version](https://badge.fury.io/rb/flexirest.png)](http://badge.fury.io/rb/flexirest) [![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/flexirest/flexirest.svg)](http://isitmaintained.com/project/flexirest/flexirest "Average time to resolve an issue") [![Percentage of issues still open](http://isitmaintained.com/badge/open/flexirest/flexirest.svg)](http://isitmaintained.com/project/flexirest/flexirest "Percentage of issues still open")
 
-This gem is for accessing REST services in an ActiveRecord style.  ActiveResource already exists for this, but it doesn't work where the resource naming doesn't follow Rails conventions, it doesn't have in-built caching and it's not as flexible in general.
+This gem is for accessing REST services in an ActiveRecord style. ActiveResource already exists for this, but it doesn't work where the resource naming doesn't follow Rails conventions, it doesn't have in-built caching and it's not as flexible in general.
 
 If you are a previous user of ActiveRestClient, there's some more information on [why I created this fork and how to upgrade](https://github.com/flexirest/flexirest/blob/master/Migrating-from-ActiveRestClient.md).
 
 - [Installation](#installation)
 - [Basic Usage](#usage)
+
   - [Create a new person](#create-a-new-person)
   - [Find a person](#find-a-person-not-needed-after-creating)
   - [Update a person](#update-a-person)
   - [Get all people](#get-all-people)
   - [Ruby on Rails Integration](#ruby-on-rails-integration)
+
 - [Advanced Features](#advanced-features)
-	- [Faraday Configuration](#faraday-configuration)
-	- [Associations](#associations)
-		- [Association Type 1 - Loading Other Classes](#association-type-1-loading-other-classes)
-		- [Association Type 2 - Lazy Loading From Other URLs](#association-type-2-lazy-loading-from-other-urls)
-		- [Association Type 3 - HAL Auto-loaded Resources](#association-type-3-hal-auto-loaded-resources)
-		- [Association Type 4 - Nested Resources](#association-type-4-nested-resources)
+
+  - [Faraday Configuration](#faraday-configuration)
+  - [Associations](#associations)
+
+    - [Association Type 1 - Loading Other Classes](#association-type-1-loading-other-classes)
+    - [Association Type 2 - Lazy Loading From Other URLs](#association-type-2-lazy-loading-from-other-urls)
+    - [Association Type 3 - HAL Auto-loaded Resources](#association-type-3-hal-auto-loaded-resources)
+    - [Association Type 4 - Nested Resources](#association-type-4-nested-resources)
     - [Association Type 5 - JSON API Auto-loaded Resources](#association-type-5-json-api-auto-loaded-resources)
-    - [Combined Example](#combined-example)
-	- [Caching](#caching)
-	- [Using callbacks](#using-callbacks)
-	- [Lazy Loading](#lazy-loading)
-	- [Authentication](#authentication)
-		- [Basic](#basic)
-		- [Api-Auth](#api-auth)
-	- [Body Types](#body-types)
-	- [Parallel Requests](#parallel-requests)
-	- [Faking Calls](#faking-calls)
-	- [Per-request Timeouts](#per-request-timeouts)
-	- [Per-request Params Encoding](#per-request-params-encoding)
-	- [Automatic Conversion of Fields to Date/DateTime](#automatic-conversion-of-fields-to-datedatetime)
-	- [Raw Requests](#raw-requests)
-	- [Plain Requests](#plain-requests)
+
+  - [Combined Example](#combined-example)
+  - [Caching](#caching)
+  - [Using callbacks](#using-callbacks)
+  - [Lazy Loading](#lazy-loading)
+  - [Authentication](#authentication)
+
+    - [Basic](#basic)
+    - [Api-Auth](#api-auth)
+
+  - [Body Types](#body-types)
+  - [Parallel Requests](#parallel-requests)
+  - [Faking Calls](#faking-calls)
+  - [Per-request Timeouts](#per-request-timeouts)
+  - [Per-request Params Encoding](#per-request-params-encoding)
+  - [Automatic Conversion of Fields to Date/DateTime](#automatic-conversion-of-fields-to-datedatetime)
+  - [Raw Requests](#raw-requests)
+  - [Plain Requests](#plain-requests)
   - [JSON API](#json-api)
-	- [Proxying APIs](#proxying-apis)
-	- [Translating APIs](#translating-apis)
-	- [Default Parameters](#default-parameters)
-	- [Root element removal](#root-element-removal)
-	- [Required Parameters](#required-parameters)
-	- [Updating Only Changed/Dirty](#updating-only-changed-dirty)
-	- [HTTP/Parse Error Handling](#httpparse-error-handling)
-	- [Validation](#validation)
-		- [Permitting nil values](#permitting-nil-values)
+  - [Proxying APIs](#proxying-apis)
+  - [Translating APIs](#translating-apis)
+  - [Default Parameters](#default-parameters)
+  - [Root element removal](#root-element-removal)
+  - [Required Parameters](#required-parameters)
+  - [Updating Only Changed/Dirty](#updating-only-changed-dirty)
+  - [HTTP/Parse Error Handling](#httpparse-error-handling)
+  - [Validation](#validation)
+
+    - [Permitting nil values](#permitting-nil-values)
+
 - [Debugging](#debugging)
 - [XML Responses](#xml-responses)
 - [Contributing](#contributing)
-
 
 ## Installation
 
@@ -66,11 +69,15 @@ gem 'flexirest'
 
 And then execute:
 
-    $ bundle
+```
+$ bundle
+```
 
 Or install it yourself as:
 
-    $ gem install flexirest
+```
+$ gem install flexirest
+```
 
 ## Usage
 
@@ -94,7 +101,7 @@ class Person < Flexirest::Base
 end
 ```
 
-Note I've specified the base_url in the class above.  This is useful where you want to be explicit or use different APIs for some classes and be explicit. If you have one server that's generally used, you can set it once with a simple line in a `config/initializer/{something}.rb` file:
+Note I've specified the base_url in the class above. This is useful where you want to be explicit or use different APIs for some classes and be explicit. If you have one server that's generally used, you can set it once with a simple line in a `config/initializer/{something}.rb` file:
 
 ```ruby
 Flexirest::Base.base_url = "https://www.example.com/api/v1"
@@ -135,7 +142,7 @@ If an API returns an array of results and you have [will_paginate](https://rubyg
 end
 ```
 
-Note, you can assign to any attribute, whether it exists or not before and read from any attribute (which will return nil if not found).  If you pass a string or a number to a method it will assume that it's for the "id" field.  Any other field values must be passed as a hash and you can't mix passing a string/number and a hash.
+Note, you can assign to any attribute, whether it exists or not before and read from any attribute (which will return nil if not found). If you pass a string or a number to a method it will assume that it's for the "id" field. Any other field values must be passed as a hash and you can't mix passing a string/number and a hash.
 
 ```ruby
 @person = Person.find(1234)  # valid
@@ -145,7 +152,7 @@ Note, you can assign to any attribute, whether it exists or not before and read 
 @person = Person.find(1234, :name => "Billy")  # invalid
 ```
 
-You can also call any mapped method as an instance variable which will pass the current attribute set in as parameters (either GET or POST depending on the mapped method type).  If the method returns a single instance it will assign the attributes of the calling object and return itself.  If the method returns a list of instances, it will only return the list. So, we could rewrite the create call above as:
+You can also call any mapped method as an instance variable which will pass the current attribute set in as parameters (either GET or POST depending on the mapped method type). If the method returns a single instance it will assign the attributes of the calling object and return itself. If the method returns a list of instances, it will only return the list. So, we could rewrite the create call above as:
 
 ```ruby
 @person = Person.new
@@ -157,7 +164,7 @@ puts @person.id
 
 The response of the #create call set the attributes at that point (any manually set attributes before that point are removed).
 
-If you have attributes beginning with a number, Ruby doesn't like this.  So, you can use hash style notation to read/write the attributes:
+If you have attributes beginning with a number, Ruby doesn't like this. So, you can use hash style notation to read/write the attributes:
 
 ```ruby
 @tv = Tv.find(model:"UE55U8000") # { "properties" : {"3d" : false} }
@@ -165,7 +172,7 @@ puts @tv.properties["3d"]
 @tv.properties["3d"] = true
 ```
 
-If you want to debug the response, using inspect on the response object may well be useful.  However, if you want a simpler output, then you can call `#to_json` on the response object:
+If you want to debug the response, using inspect on the response object may well be useful. However, if you want a simpler output, then you can call `#to_json` on the response object:
 
 ```ruby
 @person = Person.find(email:"something@example.com")
@@ -190,7 +197,7 @@ Flexirest::Base.adapter = :patron
 
 In versions before 1.2.0 the adapter was hardcoded to `:patron`, so if you want to ensure it still uses Patron, you should set this setting.
 
-If you want more control you can pass a **complete** configuration block ("complete" means that the block does not *override* [the default configuration](https://github.com/flexirest/flexirest/blob/5b1953d89e26c02ca74f74464ccb7cd4c9439dcc/lib/flexirest/configuration.rb#L184-L201), but rather *replaces* it). For available config variables look into the Faraday documentation.
+If you want more control you can pass a **complete** configuration block ("complete" means that the block does not _override_ [the default configuration](https://github.com/flexirest/flexirest/blob/5b1953d89e26c02ca74f74464ccb7cd4c9439dcc/lib/flexirest/configuration.rb#L184-L201), but rather _replaces_ it). For available config variables look into the Faraday documentation.
 
 ```ruby
 Flexirest::Base.faraday_config do |faraday|
@@ -199,13 +206,14 @@ Flexirest::Base.faraday_config do |faraday|
   faraday.headers['User-Agent'] = "Flexirest/#{Flexirest::VERSION}"
 end
 ```
+
 ### Associations
 
-There are two types of association.  One assumes when you call a method you actually want it to call the method on a separate class (as that class has other methods that are useful).  The other is lazy loading related classes from a separate URL.
+There are two types of association. One assumes when you call a method you actually want it to call the method on a separate class (as that class has other methods that are useful). The other is lazy loading related classes from a separate URL.
 
 #### Association Type 1 - Loading Other Classes
 
-If the call would return a single instance or a list of instances that should be considered another object, you can also specify this when mapping the method using the `:has_one` or `:has_many` options respectively.  It doesn't call anything on that object except for instantiate it, but it does let you have objects of a different class to the one you initially called.
+If the call would return a single instance or a list of instances that should be considered another object, you can also specify this when mapping the method using the `:has_one` or `:has_many` options respectively. It doesn't call anything on that object except for instantiate it, but it does let you have objects of a different class to the one you initially called.
 
 ```ruby
 class Expense < Flexirest::Base
@@ -229,7 +237,7 @@ puts @person.expenses.reduce {|e| e.inc_vat}
 puts @person.address.full_string
 ```
 
-You can also use `has_one`/`has_many` on the class level to allow chaining of classes.  You can specify the class name or allow the system to automatically convert it to the singular class. For example:
+You can also use `has_one`/`has_many` on the class level to allow chaining of classes. You can specify the class name or allow the system to automatically convert it to the singular class. For example:
 
 ```ruby
 class Expense < Flexirest::Base
@@ -286,7 +294,7 @@ When the `:array` option includes an attribute, it is assumed the values were re
 
 #### Association Type 2 - Lazy Loading From Other URLs
 
-When mapping the method, passing a list of attributes will cause any requests for those attributes to mapped to the URLs given in their responses.  The response for the attribute may be one of the following:
+When mapping the method, passing a list of attributes will cause any requests for those attributes to mapped to the URLs given in their responses. The response for the attribute may be one of the following:
 
 ```ruby
 "attribute" : "URL"
@@ -296,9 +304,9 @@ When mapping the method, passing a list of attributes will cause any requests fo
 "attribute" : { "something" : "URL"}
 ```
 
-The difference between the last 3 examples is that a key of `url` or `href` signifies it's a single object that is lazy loaded from the value specified.  Any other keys assume that it's a nested set of URLs (like in the array situation, but accessible via the keys - e.g. object.attribute.something in the above example).
+The difference between the last 3 examples is that a key of `url` or `href` signifies it's a single object that is lazy loaded from the value specified. Any other keys assume that it's a nested set of URLs (like in the array situation, but accessible via the keys - e.g. object.attribute.something in the above example).
 
-It is required that the URL is a complete URL including a protocol starting with "http".  To configure this use code like:
+It is required that the URL is a complete URL including a protocol starting with "http". To configure this use code like:
 
 ```ruby
 class Person < Flexirest::Base
@@ -319,9 +327,9 @@ And use it like this:
 
 #### Association Type 3 - HAL Auto-loaded Resources
 
-You don't need to define lazy attributes if they are defined using [HAL](http://stateless.co/hal_specification.html) (with an optional embedded representation).  If your resource has an `_links` item (and optionally an `_embedded` item) then it will automatically treat the linked resources (with the `_embedded` cache) as if they were defined using `:lazy` as per type 2 above.
+You don't need to define lazy attributes if they are defined using [HAL](http://stateless.co/hal_specification.html) (with an optional embedded representation). If your resource has an `_links` item (and optionally an `_embedded` item) then it will automatically treat the linked resources (with the `_embedded` cache) as if they were defined using `:lazy` as per type 2 above.
 
-If you need to, you can access properties of the HAL association.  By default just using the HAL association gets the embedded resource (or requests the remote resource if not available in the `_embedded` list).
+If you need to, you can access properties of the HAL association. By default just using the HAL association gets the embedded resource (or requests the remote resource if not available in the `_embedded` list).
 
 ```ruby
 @person = Person.find(1)
@@ -332,10 +340,10 @@ If you need to, you can access properties of the HAL association.  By default ju
 
 It's common to have resources that are logically children of other resources. For example, suppose that your API includes these endpoints:
 
-| HTTP Verb | Path                        |                                          |
-|-----------|-----------------------------|------------------------------------------|
-| POST      | /magazines/:magazine_id/ads | create a new ad belonging to a magazine  |
-| GET       | /magazines/:magazine_id/ads | display a list of all ads for a magazine |
+| HTTP Verb | Path                        |
+| --------- | --------------------------- | ----------------------------------------
+| POST      | /magazines/:magazine_id/ads | create a new ad belonging to a magazine
+| GET       | /magazines/:magazine_id/ads | display a list of all ads for a magazine
 
 In these cases, your child class will contain the following:
 
@@ -377,7 +385,7 @@ Article.includes(:images => [:tags, :photographer]).all
 
 #### Combined Example
 
-OK, so let's say you have an API for getting articles.  Each article has a property called `title` (which is a string) and a property `images` which includes a list of URIs.  Following this URI would take you to a image API that returns the image's `filename` and `filesize`.  We'll also assume this is a HAL compliant API. We would declare our two models (one for articles and one for images) like the following:
+OK, so let's say you have an API for getting articles. Each article has a property called `title` (which is a string) and a property `images` which includes a list of URIs. Following this URI would take you to a image API that returns the image's `filename` and `filesize`. We'll also assume this is a HAL compliant API. We would declare our two models (one for articles and one for images) like the following:
 
 ```ruby
 class Article < Flexirest::Base
@@ -426,7 +434,7 @@ When it comes time to use it, you would do something like this:
 end
 ```
 
-At this point, only the HTTP call to '/articles/1' has been made.  When you actually start using properties of the images list/image object then it makes a call to the URL given in the images list and you can use the properties as if it was a nested JSON object in the original response instead of just a URL:
+At this point, only the HTTP call to '/articles/1' has been made. When you actually start using properties of the images list/image object then it makes a call to the URL given in the images list and you can use the properties as if it was a nested JSON object in the original response instead of just a URL:
 
 ```ruby
 @image = @article.images.first
@@ -436,7 +444,7 @@ puts @image.filesize
 # => 123456
 ```
 
-You can also treat `@image` looks like an Image class (and you should 100% treat it as one) it's technically a lazy loading proxy.  So, if you cache the views for your application should only make HTTP API requests when actually necessary.
+You can also treat `@image` looks like an Image class (and you should 100% treat it as one) it's technically a lazy loading proxy. So, if you cache the views for your application should only make HTTP API requests when actually necessary.
 
 ```ruby
 puts @image.nice_size
@@ -467,7 +475,7 @@ Flexirest::Base.cache_store = Redis::Store.new("redis://localhost:6379/0/cache")
 
 ### Using callbacks
 
-You can use callbacks to alter get/post parameters, the URL or set the post body (doing so overrides normal parameter insertion in to the body) before a request or to adjust the response after a request.  This can either be a block or a named method (like ActionController's `before_callback`/`before_action` methods).
+You can use callbacks to alter get/post parameters, the URL or set the post body (doing so overrides normal parameter insertion in to the body) before a request or to adjust the response after a request. This can either be a block or a named method (like ActionController's `before_callback`/`before_action` methods).
 
 The callback is passed the name of the method (e.g. `:save`) and an object (a request object for `before_request` and a response object for `after_request`). The request object has four public attributes `post_params` (a Hash of the POST parameters), `get_params` (a Hash of the GET parameters), `headers` and `url` (a `String` containing the full URL without GET parameters appended).
 
@@ -574,7 +582,6 @@ end
 
 This will return an array of the named method for each object or the response from the block and will have loaded the objects in to the resource.
 
-
 ### Authentication
 
 #### Basic
@@ -603,6 +610,7 @@ Flexirest::Base.api_auth_credentials(@access_id, @secret_key)
 ```
 
 You can also specify different credentials for different models just like configuring base_url
+
 ```ruby
 class Person < Flexirest::Base
   api_auth_credentials('123456', 'abcdef')
@@ -621,7 +629,7 @@ end
 
 ### Body Types
 
-By default Flexirest puts the body in to normal CGI parameters in K=V&K2=V2 format.  However, if you want to use JSON for your PUT/POST requests, you can use either (the other option, the default, is `:form_encoded`):
+By default Flexirest puts the body in to normal CGI parameters in K=V&K2=V2 format. However, if you want to use JSON for your PUT/POST requests, you can use either (the other option, the default, is `:form_encoded`):
 
 ```ruby
 class Person < Flexirest::Base
@@ -651,12 +659,14 @@ end
 ### Parallel Requests
 
 Sometimes you know you will need to make a bunch of requests and you don't want to wait for one to finish to start the next. When using parallel requests there is the potential to finish many requests all at the same time taking only as long as the single longest request. To use parallel requests you will need to set Flexirest to use a Faraday adapter that supports parallel requests [(such as Typhoeus)](https://github.com/lostisland/faraday/wiki/Parallel-requests).
+
 ```ruby
 # Set adapter to Typhoeus to use parallel requests
 Flexirest::Base.adapter = :typhoeus
 ```
 
 Now you just need to get ahold of the connection that is going to make the requests by specifying the same host that the models will be using. When inside the `in_parallel` block call request methods as usual and access the results after the `in_parallel` block ends.
+
 ```ruby
 Flexirest::ConnectionManager.in_parallel('https://www.example.com') do
     @person = Person.find(1234)
@@ -672,7 +682,7 @@ puts @employers.size #=> 7
 
 ### Faking Calls
 
-There are times when an API hasn't been developed yet, so you want to fake the API call response.  To do this, you can simply pass a `fake` option when mapping the call containing the response.
+There are times when an API hasn't been developed yet, so you want to fake the API call response. To do this, you can simply pass a `fake` option when mapping the call containing the response.
 
 ```ruby
 class Person < Flexirest::Base
@@ -680,7 +690,7 @@ class Person < Flexirest::Base
 end
 ```
 
-You may want to run a proc when faking data (to put information from the parameters in to the response or return different responses depending on the parameters).  To do this just pass a proc to :fake:
+You may want to run a proc when faking data (to put information from the parameters in to the response or return different responses depending on the parameters). To do this just pass a proc to :fake:
 
 ```ruby
 class Person < Flexirest::Base
@@ -690,7 +700,7 @@ end
 
 ### Per-request Timeouts
 
-There are times when an API is generally quick, but one call is very intensive.  You don't want to set a global timeout in the Faraday configuration block, you just want to increase the timeout for this single call. To do this, you can simply pass a `timeout` option when mapping the call containing the response (in seconds).
+There are times when an API is generally quick, but one call is very intensive. You don't want to set a global timeout in the Faraday configuration block, you just want to increase the timeout for this single call. To do this, you can simply pass a `timeout` option when mapping the call containing the response (in seconds).
 
 ```ruby
 class Person < Flexirest::Base
@@ -728,7 +738,7 @@ would output the following url
 
 ### Automatic Conversion of Fields to Date/DateTime
 
-By default Flexirest will attempt to convert all fields to a Date or DateTime object if it's a string and the value matches a pair of regular expressions. However, on large responses this can be computationally expensive.  You can disable this automatic conversion completely with:
+By default Flexirest will attempt to convert all fields to a Date or DateTime object if it's a string and the value matches a pair of regular expressions. However, on large responses this can be computationally expensive. You can disable this automatic conversion completely with:
 
 ```ruby
 Flexirest::Base.disable_automatic_date_parsing = true
@@ -759,7 +769,7 @@ This system respects `disable_automatic_date_parsing`, and will default to mappi
 
 ### Raw Requests
 
-Sometimes you have have a URL that you just want to force through, but have the response handled in the same way as normal objects or you want to have the callbacks run (say for authentication).  The easiest way to do that is to call `_request` on the class:
+Sometimes you have have a URL that you just want to force through, but have the response handled in the same way as normal objects or you want to have the callbacks run (say for authentication). The easiest way to do that is to call `_request` on the class:
 
 ```ruby
 class Person < Flexirest::Base
@@ -771,13 +781,13 @@ people = Person._request('http://api.example.com/v1/people') # Defaults to get w
 Person._request('http://api.example.com/v1/people', :post, {id:1234,name:"John"}) # Post with parameters
 ```
 
-If you want to use a lazy loaded request instead (so it will create an object that will only call the API if you use it), you can use `_lazy_request` instead of `_request`.  If you want you can create a construct that creates and object that lazy loads itself from a given method (rather than a URL):
+If you want to use a lazy loaded request instead (so it will create an object that will only call the API if you use it), you can use `_lazy_request` instead of `_request`. If you want you can create a construct that creates and object that lazy loads itself from a given method (rather than a URL):
 
 ```ruby
 @person = Person._lazy_request(Person._request_for(:find, 1234))
 ```
 
-This initially creates an Flexirest::Request object as if you'd called `Person.find(1234)` which is then passed in to the `_lazy_request` method to return an object that will call the request if any properties are actually used.  This may be useful at some point, but it's actually easier to just prefix the `find` method call with `lazy_` like:
+This initially creates an Flexirest::Request object as if you'd called `Person.find(1234)` which is then passed in to the `_lazy_request` method to return an object that will call the request if any properties are actually used. This may be useful at some point, but it's actually easier to just prefix the `find` method call with `lazy_` like:
 
 ```ruby
 @person = Person.lazy_find(1234)
@@ -851,7 +861,7 @@ NB: Updating relationships is not yet supported.
 
 ### Proxying APIs
 
-Sometimes you may be working with an old API that returns JSON in a less than ideal format or the URL or parameters required have changed.  In this case you can define a descendent of `Flexirest::ProxyBase`, pass it to your model as the proxy and have it rework URLs/parameters on the way out and the response on the way back in (already converted to a Ruby hash/array). By default any non-proxied URLs are just passed through to the underlying connection layer. For example:
+Sometimes you may be working with an old API that returns JSON in a less than ideal format or the URL or parameters required have changed. In this case you can define a descendent of `Flexirest::ProxyBase`, pass it to your model as the proxy and have it rework URLs/parameters on the way out and the response on the way back in (already converted to a Ruby hash/array). By default any non-proxied URLs are just passed through to the underlying connection layer. For example:
 
 ```ruby
 class ArticleProxy < Flexirest::ProxyBase
@@ -878,8 +888,8 @@ Article.all.first_name == "Billy"
 
 This example does two things:
 
-1. It rewrites the incoming URL for any requests matching "*/all*" to "/all_people"
-2. It uses the `translate` method to move the "fname" attribute from the response body to be called "first_name".  The translate method must return the new object at the end (either the existing object alterered, or a new object to replace it with)
+1. It rewrites the incoming URL for any requests matching "_/all_" to "/all_people"
+2. It uses the `translate` method to move the "fname" attribute from the response body to be called "first_name". The translate method must return the new object at the end (either the existing object alterered, or a new object to replace it with)
 
 As the comment shows, you can use `url value` to set the request URL to a particular value, or you can call `gsub!` on the url to replace parts of it using more complicated regular expressions.
 
@@ -892,7 +902,7 @@ get "/list" do
 end
 ```
 
-This example renames the get_parameter for the request from `identifier` to `id` (the same would have worked with post_params if it was a POST/PUT request).  The `passthrough` method will take care of automatically recombining them in to the URL or encoding them in to the body as appropriate.
+This example renames the get_parameter for the request from `identifier` to `id` (the same would have worked with post_params if it was a POST/PUT request). The `passthrough` method will take care of automatically recombining them in to the URL or encoding them in to the body as appropriate.
 
 If you want to manually set the body for the API yourself you can use the `body` method
 
@@ -911,7 +921,7 @@ The proxy block expects one of three things to be the return value of the block.
 2. The second option is to save the response from `passthrough` and use `translate` on it to alter the structure.
 3. The third option is to use `render` if you want to completely fake an API and return the JSON yourself
 
-To completely fake the API, you can do the following.  Note, this is also achievable using the `fake` setting when mapping a method, however by doing it in a Proxy block means you can dynamically generate the JSON rather than just a hard coded string.
+To completely fake the API, you can do the following. Note, this is also achievable using the `fake` setting when mapping a method, however by doing it in a Proxy block means you can dynamically generate the JSON rather than just a hard coded string.
 
 ```ruby
 put "/fake" do
@@ -921,9 +931,9 @@ end
 
 ### Translating APIs
 
-**IMPORTANT: This functionality has been deprecated in favour of the "Proxying APIs" functionality above.  You should aim to remove this from your code as soon as possible.**
+**IMPORTANT: This functionality has been deprecated in favour of the "Proxying APIs" functionality above. You should aim to remove this from your code as soon as possible.**
 
-Sometimes you may be working with an API that returns JSON in a less than ideal format.  In this case you can define a barebones class and pass it to your model.  The Translator class must have class methods that are passed the JSON object and should return an object in the correct format.  It doesn't need to have a method unless it's going to translate that mapping though (so in the example below there's no list method). For example:
+Sometimes you may be working with an API that returns JSON in a less than ideal format. In this case you can define a barebones class and pass it to your model. The Translator class must have class methods that are passed the JSON object and should return an object in the correct format. It doesn't need to have a method unless it's going to translate that mapping though (so in the example below there's no list method). For example:
 
 ```ruby
 class ArticleTranslator
@@ -997,7 +1007,7 @@ class Person < Flexirest::Base
   get :all, '/people', :requires => [:active]
 end
 
-@people = Person.all # raises Flexirest::MissingParametersException
+@people = Person.all # raises Flexirest::MissingParametersException
 @people = Person.all(active:false)
 ```
 
@@ -1029,13 +1039,14 @@ end
 
 #### Additional Notes:
 
-* The above examples specifically showed PATCH methods, but this is also available for POST and PUT methods for flexibility purposes (even though they break typical REST methodology).
-* This logic is currently evaluated before Required Parameters, so it is possible to ensure that requirements are met by some clever usage.
- - This means that if a method is `:requires => [:active], :only_changed => {active: false}` then `active` will always have a value and would always pass the `:requires` directive (so you need to be very careful because the answer may end up being `nil` if you didn't specifically set it).
+- The above examples specifically showed PATCH methods, but this is also available for POST and PUT methods for flexibility purposes (even though they break typical REST methodology).
+- This logic is currently evaluated before Required Parameters, so it is possible to ensure that requirements are met by some clever usage.
+
+  - This means that if a method is `:requires => [:active], :only_changed => {active: false}` then `active` will always have a value and would always pass the `:requires` directive (so you need to be very careful because the answer may end up being `nil` if you didn't specifically set it).
 
 ### HTTP/Parse Error Handling
 
-Sometimes the backend server may respond with a non-200/304 header, in which case the code will raise an `Flexirest::HTTPClientException` for 4xx errors or an `Flexirest::HTTPServerException` for 5xx errors.  These both have a `status` accessor and a `result` accessor (for getting access to the parsed body):
+Sometimes the backend server may respond with a non-200/304 header, in which case the code will raise an `Flexirest::HTTPClientException` for 4xx errors or an `Flexirest::HTTPServerException` for 5xx errors. These both have a `status` accessor and a `result` accessor (for getting access to the parsed body):
 
 ```ruby
 begin
@@ -1049,7 +1060,7 @@ If the response is unparsable (e.g. not in the desired content type), then it wi
 
 ### Validation
 
-You can create validations on your objects just like Rails' built in ActiveModel validations.  For example:
+You can create validations on your objects just like Rails' built in ActiveModel validations. For example:
 
 ```ruby
 class Person < Flexirest::Base
@@ -1084,6 +1095,7 @@ validates :name, :presence, message: "must be given please"
 ```
 
 #### Permitting nil values
+
 The default behavior for `:length`, `:numericality` and `:inclusion` validators is to fail when a `nil` value is encountered. You can prevent `nil` attribute values from triggering validation errors for attributes that may permit `nil` by adding the `:allow_nil => true` option. Adding this option with a `true` value to `:length`, `:numericality` and `:inclusion` validators will permit `nil` values and not trigger errors. Some examples are:
 
 ```ruby
@@ -1145,7 +1157,7 @@ class Person < Flexirest::Base
 end
 ```
 
-By default verbose logging isn't enabled, so it's up to the developer to enable it (and remember to disable it afterwards).  It does use debug level logging, so it shouldn't fill up a correctly configured production server anyway.
+By default verbose logging isn't enabled, so it's up to the developer to enable it (and remember to disable it afterwards). It does use debug level logging, so it shouldn't fill up a correctly configured production server anyway.
 
 If you prefer to record the output of an API call in a more automated fashion you can use a callback called `record_response` like this:
 
@@ -1161,7 +1173,7 @@ end
 
 ## XML Responses
 
-Flexirest uses Crack to allow parsing of XML responses.  For example, given an XML response of (with a content type of `application/xml` or `text/xml`):
+Flexirest uses Crack to allow parsing of XML responses. For example, given an XML response of (with a content type of `application/xml` or `text/xml`):
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
