@@ -183,7 +183,7 @@ module Flexirest
         end
 
         response = (
-          if proxy
+          if proxy && proxy.is_a?(Class)
             proxy.handle(self) do |request|
               request.do_request(etag)
             end
@@ -232,7 +232,7 @@ module Flexirest
       end
 
       # Format includes parameter for jsonapi
-      if request_body_type == :json_api
+      if proxy == :json_api
         params = json_api_format_params(params, @object._include_associations)
         @object._reset_include_associations!
       end
@@ -332,7 +332,7 @@ module Flexirest
     end
 
     def prepare_request_body(params = nil)
-      if request_body_type == :json_api
+      if proxy == :json_api
         if http_method == :get || http_method == :delete
           @body = ""
         else

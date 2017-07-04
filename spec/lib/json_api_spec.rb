@@ -4,7 +4,7 @@ class JsonAPIAssociationExampleTag < Flexirest::Base; end
 class JsonAPIAssociationExampleAuthor < Flexirest::Base; end
 
 class JsonAPIExampleArticle < Flexirest::Base
-  request_body_type :json_api
+  proxy :json_api
   has_many :tags, JsonAPIAssociationExampleTag
   has_one :author, JsonAPIAssociationExampleAuthor
 
@@ -31,7 +31,7 @@ end
 
 module JsonAPIExample
   class Author < Flexirest::Base
-    request_body_type :json_api
+    proxy :json_api
     base_url "http://www.example.com"
 
     author_faker = { data: { id: 1, type: "author", attributes: { item: "item three" } } }
@@ -40,7 +40,7 @@ module JsonAPIExample
   end
 
   class Tag < Flexirest::Base
-    request_body_type :json_api
+    proxy :json_api
     base_url "http://www.example.com"
 
     tags_faker = { data: [ { id: 1, type: "tag", attributes: { item: "item two" } } ] }
@@ -50,7 +50,7 @@ module JsonAPIExample
 
   class Article < Flexirest::Base
     base_url "http://www.example.com"
-    request_body_type :json_api
+    proxy :json_api
     has_one :author, Author
     has_many :tags, Tag
 
@@ -80,7 +80,7 @@ module JsonAPIExample
   class ArticleAlias < Flexirest::Base
     alias_type :article
     base_url "http://www.example.com"
-    request_body_type :json_api
+    proxy :json_api
     has_one :author, Author
     has_many :tags, Tag
 
