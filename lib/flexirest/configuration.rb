@@ -253,6 +253,13 @@ module Flexirest
       def proxy(value = nil)
         @proxy ||= nil
         value ? @proxy = value : @proxy || nil
+
+        if !@proxy.nil?
+          return @proxy
+        elsif self.superclass.respond_to?(:proxy)
+          return self.superclass.proxy
+        end
+        nil
       end
 
       def _reset_configuration!
