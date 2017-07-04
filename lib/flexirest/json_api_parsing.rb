@@ -155,7 +155,6 @@ module Flexirest
     def build_lazy_loader(name, url)
       request = Flexirest::Request.new({ url: url, method: :get }, @@object)
       request.headers = @@headers
-      require 'byebug'; byebug
       return Flexirest::LazyAssociationLoader.new(name, url, request)
     end
 
