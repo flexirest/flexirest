@@ -110,7 +110,6 @@ module Flexirest
         end
 
         relations = record[rel].map do |subrecord|
-          retrieve_attributes(subrecord)
           next subrecord unless subrecord["relationships"]
 
           subrels = subrecord["relationships"].keys
@@ -141,6 +140,7 @@ module Flexirest
 
     def delete_json_api_keys(r)
       r.delete("type")
+      r.delete("links")
       r.delete("attributes")
       r.delete("relationships")
     end
