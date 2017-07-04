@@ -84,7 +84,7 @@ module Flexirest
             end
           end
         end
-        if validation[:block]
+        if validation[:block]          
           validation[:block].call(self, validation[:field_name], value)
         end
       end

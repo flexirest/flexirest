@@ -493,7 +493,6 @@ module Flexirest
           raise TimeoutException.new("Timed out getting #{response.url}")
         end
       end
-
       result
     end
 
