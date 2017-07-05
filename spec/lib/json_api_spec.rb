@@ -1,7 +1,16 @@
 require 'spec_helper'
 
-class JsonAPIAssociationExampleTag < Flexirest::Base; end
 class JsonAPIAssociationExampleAuthor < Flexirest::Base; end
+
+class JsonAPIAssociationExampleTag < Flexirest::Base
+  proxy :json_api
+  has_many :authors, JsonAPIAssociationExampleAuthor
+end
+
+class JsonAPIAssociationExampleAuthor < Flexirest::Base
+  proxy :json_api
+  has_one :tag, JsonAPIAssociationExampleTag
+end
 
 class JsonAPIExampleArticle < Flexirest::Base
   proxy :json_api
@@ -9,24 +18,40 @@ class JsonAPIExampleArticle < Flexirest::Base
   has_one :author, JsonAPIAssociationExampleAuthor
 
   faker1 = {
-    data: { id: 1, type: "article", attributes: { item: "item one" }, relationships: { "tags" => { data: [ { id: 1, type: "tag" }, { id: 2, type: "tag" } ] } } },
-    included: [ { id: 1, type: "tag", attributes: { item: "item two" } }, { id: 2, type: "tag", attributes: { item: "item three" } } ]
+    data: { id: 1, type: "articles", attributes: { item: "item one" }, relationships: { "tags" => { data: [ { id: 1, type: "tags" }, { id: 2, type: "tags" } ] } } },
+    included: [ { id: 1, type: "tags", attributes: { item: "item two" } }, { id: 2, type: "tags", attributes: { item: "item three" } } ]
   }
   faker2 = {
     data: [
-      { id: 1, type: "article", attributes: { item: "item one" }, relationships: { "tags" => { data: [ { id: 1, type: "tag" }, { id: 2, type: "tag" } ] } } },
-      { id: 2, type: "article", attributes: { item: "item four" }, relationships: { "tags" => { data: [ { id: 2, type: "tag" } ] } } }
+      { id: 1, type: "articles", attributes: { item: "item one" }, relationships: { "tags" => { data: [ { id: 1, type: "tags" }, { id: 2, type: "tags" } ] } } },
+      { id: 2, type: "articles", attributes: { item: "item four" }, relationships: { "tags" => { data: [ { id: 2, type: "tags" } ] } } }
     ],
-    included: [ { id: 1, type: "tag", attributes: { item: "item two" } }, { id: 2, type: "tag", attributes: { item: "item three" } } ]
+    included: [ { id: 1, type: "tags", attributes: { item: "item two" } }, { id: 2, type: "tags", attributes: { item: "item three" } } ]
   }
   faker3 = {
-    data: { id: 1, type: "article", attributes: { item: "item one" }, relationships: { "author" => { data: { id: 1, type: "author" } } } },
-    included: [ { id: 1, type: "author", attributes: { item: "item two" } } ]
+    data: { id: 1, type: "articles", attributes: { item: "item one" }, relationships: { "author" => { data: { id: 1, type: "authors" } } } },
+    included: [ { id: 1, type: "authors", attributes: { item: "item two" } } ]
+  }
+  faker4 = {
+    data: { id: 1, type: "articles", attributes: { item: "item one" }, relationships: { "author" => { data: { id: 1, type: "authors" } } } },
+    included: [
+      { id: 1, type: "authors", attributes: { item: "item two" }, relationships: { "tag" => { data: { id: 1, type: "tags" } } } },
+      { id: 1, type: "tags", attributes: { item: "item three" } }
+    ]
+  }
+  faker5 = {
+    data: { id: 1, type: "articles", attributes: { item: "item one" }, relationships: { "tags" => { data: [ { id: 1, type: "tags" } ] } } },
+    included: [
+      { id: 1, type: "tags", attributes: { item: "item three" }, relationships: { "authors" => { data: [ { id: 1, type: "tags" } ] } } },
+      { id: 1, type: "authors", attributes: { item: "item two" } }
+    ]
   }
 
   get :find, "/articles/:id", fake: faker1.to_json, fake_content_type: "application/vnd.api+json"
   get :find_all, "/articles", fake: faker2.to_json, fake_content_type: "application/vnd.api+json"
   get :find_single_author, "/articles/:id", fake: faker3.to_json, fake_content_type: "application/vnd.api+json"
+  get :find_single_nested, "/articles/:id", fake: faker4.to_json, fake_content_type: "application/vnd.api+json"
+  get :find_multi_nested, "/articles/:id", fake: faker5.to_json, fake_content_type: "application/vnd.api+json"
 end
 
 module JsonAPIExample
@@ -34,7 +59,7 @@ module JsonAPIExample
     proxy :json_api
     base_url "http://www.example.com"
 
-    author_faker = { data: { id: 1, type: "author", attributes: { item: "item three" } } }
+    author_faker = { data: { id: 1, type: "authors", attributes: { item: "item three" } } }
 
     get :find_author, "/articles/:article_id/author", fake: author_faker.to_json, fake_content_type: "application/vnd.api+json"
   end
@@ -43,7 +68,7 @@ module JsonAPIExample
     proxy :json_api
     base_url "http://www.example.com"
 
-    tags_faker = { data: [ { id: 1, type: "tag", attributes: { item: "item two" } } ] }
+    tags_faker = { data: [ { id: 1, type: "tags", attributes: { item: "item two" } } ] }
 
     get :find_tags, "/articles/:article_id/tags", fake: tags_faker.to_json, fake_content_type: "application/vnd.api+json"
   end
@@ -54,9 +79,9 @@ module JsonAPIExample
     has_one :author, Author
     has_many :tags, Tag
 
-    faker = { data: { id: 1, type: "article", attributes: { item: "item one" } } }
+    faker = { data: { id: 1, type: "articles", attributes: { item: "item one" } } }
     faker_lazy = {
-      data: { id: 1, type: "article", attributes: { item: "item one" },
+      data: { id: 1, type: "articles", attributes: { item: "item one" },
         relationships: {
           "tags" => { links: {
             self: "http://www.example.com/articles/1/relationships/tags",
@@ -85,7 +110,7 @@ module JsonAPIExample
     has_many :tags, Tag
 
     faker = {
-      data: { id: 1, type: "article", attributes: { item: "item one" } }
+      data: { id: 1, type: "articles", attributes: { item: "item one" } }
     }
 
     get :find, "/articles/:id", fake: faker.to_json, fake_content_type: "application/vnd.api+json"
@@ -130,6 +155,13 @@ describe "JSON API" do
 
     it "should retrieve a Flexirest::ResultIterator if the relationship type is plural" do
       expect(subject.includes(:tags).find(1).tags).to be_an_instance_of(Flexirest::ResultIterator)
+    end
+
+    it "should retrieve nested linked resources" do
+      expect(subject.includes(author: [:tag]).find_single_nested(1).author.tag).to be_an_instance_of(JsonAPIAssociationExampleTag)
+      expect(subject.includes(author: [:tag]).find_single_nested(1).author.tag.id).to_not be_nil
+      expect(subject.includes(tags: [:authors]).find_multi_nested(1).tags.first.authors.first).to be_an_instance_of(JsonAPIAssociationExampleAuthor)
+      expect(subject.includes(tags: [:authors]).find_multi_nested(1).tags.first.authors.first.id).to_not be_nil
     end
   end
 
