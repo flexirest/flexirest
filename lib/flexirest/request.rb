@@ -7,7 +7,7 @@ module Flexirest
 
   class Request
     include AttributeParsing
-    include JsonAPIParsing
+    include JsonAPIProxy
     attr_accessor :post_params, :get_params, :url, :path, :headers, :method, :object, :body, :forced_url, :original_url
 
     def initialize(method, object, params = {})
@@ -233,7 +233,7 @@ module Flexirest
 
       # Format includes parameter for jsonapi
       if proxy == :json_api
-        params = json_api_format_params(params, @object._include_associations)
+        JsonAPIProxy::Request::Params.translate(params, @object._include_associations)
         @object._reset_include_associations!
       end
 
@@ -337,11 +337,11 @@ module Flexirest
           @body = ""
         else
           headers["Content-Type"] ||= "application/vnd.api+json"
-          @body = json_api_create_params(params || @post_params || {}, @object).to_json
+          @body = JsonAPIProxy::Request::Params.create(params || @post_params || {}, @object).to_json
         end
 
         headers["Accept"] ||= "application/vnd.api+json"
-        json_api_preserve_headers(headers)
+        JsonAPIProxy::Headers.save(headers)
       elsif http_method == :get
         @body = ""
       elsif request_body_type == :form_encoded
@@ -637,7 +637,7 @@ module Flexirest
         end
 
         if is_json_api_response?
-          body = json_api_parse_response(body, @object)
+          body = JsonAPIProxy::Response.parse(body, @object)
         end
 
         if options[:ignore_root]
