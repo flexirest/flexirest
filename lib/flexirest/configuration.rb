@@ -110,10 +110,6 @@ module Flexirest
         end
       end
 
-      def alias_type=(value)
-        @@alias_type = value
-      end
-
       def request_body_type(value = nil)
         @request_body_type ||= nil
         if value.nil?
