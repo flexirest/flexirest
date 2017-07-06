@@ -501,6 +501,7 @@ describe Flexirest::Request do
       with("/create", "first_name=John&should_disappear=true", an_instance_of(Hash)).
       and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"first_name\":\"John\", \"id\":1234}", response_headers:{}, status:200)))
     expect(Flexirest::Logger).to receive(:info).with(%r'Requesting http://www.example.com/create')
+    allow(Flexirest::Logger).to receive(:debug)
     expect(Flexirest::Logger).to receive(:debug).at_least(1).times.with(%r'(Response received \d+ bytes|Trying to read from cache)')
 
     object = ExampleClient.new(first_name:"John", should_disappear:true)
@@ -514,6 +515,7 @@ describe Flexirest::Request do
       with("/create", "first_name=John&should_disappear=true", an_instance_of(Hash)).
       and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"first_name\":\"John\", \"id\":1234}", response_headers:{}, status:200)))
     expect(Flexirest::Logger).to receive(:info).with(%r'Requesting http://www.example.com/create')
+    allow(Flexirest::Logger).to receive(:debug)
     expect(Flexirest::Logger).to receive(:debug).at_least(1).times.with(%r'(Response received \d+ bytes|Trying to read from cache)')
 
     object = ExampleClient.new(first_name:"John", should_disappear:true)
@@ -526,7 +528,7 @@ describe Flexirest::Request do
       with("/create", "first_name=John&should_disappear=true", an_instance_of(Hash)).
       and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"first_name\":\"John\", \"id\":1234}", response_headers:{}, status:200)))
     expect(Flexirest::Logger).to receive(:debug).with(/ POST /)
-    allow(Flexirest::Logger).to receive(:debug).with(any_args)
+    allow(Flexirest::Logger).to receive(:debug)
 
     object = VerboseExampleClient.new(first_name:"John", should_disappear:true)
     object.create

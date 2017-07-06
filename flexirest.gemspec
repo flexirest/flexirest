@@ -24,10 +24,11 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rspec", "~> 3"
   if Gem::Version.new(RUBY_VERSION) < Gem::Version.new('2.1.0')
     spec.add_development_dependency "webmock", "~> 2.1.0"
+    spec.add_development_dependency "rspec_junit_formatter", "= 0.2.3"
   else
     spec.add_development_dependency "webmock"
+    spec.add_development_dependency "rspec_junit_formatter"
   end
-  spec.add_development_dependency "rspec_junit_formatter"
   spec.add_development_dependency "simplecov"
   spec.add_development_dependency "simplecov-rcov"
   spec.add_development_dependency 'coveralls'
