@@ -78,6 +78,12 @@ class JsonAPIExampleArticle < Flexirest::Base
       { id: 1, type: 'authors', attributes: { item: 'item two' } }
     ]
   }
+  faker6 = {
+    data: {
+      id: 1, type: 'articles', attributes: { item: 'item one' },
+      relationships: { 'tags' => { data: [] }, 'author' => { data: nil } }
+    }
+  }
 
   get(
     :find,
@@ -111,6 +117,13 @@ class JsonAPIExampleArticle < Flexirest::Base
     :find_multi_nested,
     '/articles/:id',
     fake: faker5.to_json,
+    fake_content_type: 'application/vnd.api+json'
+  )
+
+  get(
+    :no_assocs,
+    '/articles/:id',
+    fake: faker6.to_json,
     fake_content_type: 'application/vnd.api+json'
   )
 end
@@ -277,6 +290,14 @@ describe 'JSON API' do
       expect(subject.includes(author: [:tag]).find_single_nested(1).author.tag.id).to_not be_nil
       expect(subject.includes(tags: [:authors]).find_multi_nested(1).tags.first.authors.first).to be_an_instance_of(JsonAPIAssociationExampleAuthor)
       expect(subject.includes(tags: [:authors]).find_multi_nested(1).tags.first.authors.first.id).to_not be_nil
+    end
+
+    it 'should retrieve a nil if the singular relationship type is empty' do
+      expect(subject.includes(:author).no_assocs(1).author).to be_nil
+    end
+
+    it 'should retrieve empty array if the plural relationship type is empty' do
+      expect(subject.includes(:tags).no_assocs(1).tags).to be_empty
     end
   end
 
