@@ -102,12 +102,16 @@ module JsonAPIExample
     delete :delete, "/articles/:id", fake_content_type: "application/vnd.api+json"
   end
 
+  class AuthorAlias < Flexirest::Base
+    alias_type :authors
+    proxy :json_api
+  end
+
   class ArticleAlias < Flexirest::Base
-    alias_type :article
+    alias_type :articles
     base_url "http://www.example.com"
     proxy :json_api
-    has_one :author, Author
-    has_many :tags, Tag
+    has_one :author, AuthorAlias
 
     faker = {
       data: { id: 1, type: "articles", attributes: { item: "item one" } }
@@ -195,7 +199,9 @@ describe "JSON API" do
         expect(path).to eq("/articles")
         expect(hash["data"]).to_not be_nil
         expect(hash["data"]["id"]).to be_nil
-        expect(hash["data"]["type"]).to_not be_nil
+        expect(hash["data"]["type"]).to eq("articles")
+        expect(hash["data"]["relationships"]["author"]["data"]["type"]).to eq("authors")
+        expect(hash["data"]["relationships"]["tags"]["data"].first["type"]).to eq("tags")
       }.and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{}", response_headers:{})))
       author = JsonAPIExample::Author.new
       tag = JsonAPIExample::Tag.new
@@ -240,10 +246,14 @@ describe "JSON API" do
       expect_any_instance_of(Flexirest::Connection).to receive(:patch) { |_, _, data|
         hash = MultiJson.load(data)
         expect(hash["data"]["type"]).to eq(JsonAPIExample::ArticleAlias.alias_type.to_s)
+        expect(hash["data"]["relationships"]["author"]["data"]["type"]).to eq(JsonAPIExample::AuthorAlias.alias_type.to_s)
       }.and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{}", response_headers:{})))
-      author = JsonAPIExample::ArticleAlias.find(1)
-      author.item = "item one"
-      author.update
+      author = JsonAPIExample::AuthorAlias.new
+      author.id = 1
+      article = JsonAPIExample::ArticleAlias.find(1)
+      article.item = "item one"
+      article.author = author
+      article.update
     end
 
   end

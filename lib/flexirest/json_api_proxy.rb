@@ -19,7 +19,10 @@ module Flexirest
         name = object.alias_type || object.class.alias_type
 
         # If not, guess the type value from the class name itself
-        return object.class.name.underscore.split('/').last unless name
+        unless name
+          return object.class.name.underscore.split('/').last.pluralize
+        end
+
         name
       end
     end
