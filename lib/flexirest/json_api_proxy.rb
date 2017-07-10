@@ -163,9 +163,7 @@ module Flexirest
           end
 
           def raise_params_error!
-            raise Flexirest::Logger.error(
-              "Cannot contain different instances for #{k}!"
-            )
+            raise Exception.new("Cannot contain different instance types!")
           end
         end
       end

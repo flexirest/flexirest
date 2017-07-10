@@ -206,6 +206,15 @@ describe "JSON API" do
       article.create
     end
 
+    it "should raise a Flexirest error when two different classes are in one relationship" do
+      author = JsonAPIExample::Author.new
+      tag = JsonAPIExample::Tag.new
+      article = JsonAPIExample::Article.new
+      article.item = "item one"
+      article.tags = [tag, author]
+      expect(lambda { article.create }).to raise_error(Exception)
+    end
+
     it "should perform a patch request in proper json api format" do
       expect_any_instance_of(Flexirest::Connection).to receive(:patch) { |_, path, data|
         hash = MultiJson.load(data)
@@ -236,5 +245,6 @@ describe "JSON API" do
       author.item = "item one"
       author.update
     end
+
   end
 end
