@@ -51,6 +51,19 @@ module Flexirest
         end
       end
 
+      def includes(*keys)
+        @_include_associations = keys
+        self
+      end
+
+      def _include_associations
+        @_include_associations
+      end
+
+      def _reset_include_associations!
+        @_include_associations = []
+      end
+
       def parse_date(*keys)
         keys.each { |key| @_date_fields << key }
       end
@@ -59,8 +72,15 @@ module Flexirest
         @_date_fields.uniq
       end
 
+      def _associations
+        @_associations
+      end
+
+
       def inherited(subclass)
         subclass.instance_variable_set(:@_date_fields, [])
+        subclass.instance_variable_set(:@_associations, {})
+        subclass.instance_variable_set(:@_include_associations, [])
         super
       end
     end

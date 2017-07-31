@@ -7,6 +7,7 @@ module Flexirest
 
   class Request
     include AttributeParsing
+    include JsonAPIProxy
     attr_accessor :post_params, :get_params, :url, :path, :headers, :method, :object, :body, :forced_url, :original_url
 
     def initialize(method, object, params = {})
@@ -106,6 +107,8 @@ module Flexirest
     def request_body_type
       if @method[:options][:request_body_type]
         @method[:options][:request_body_type]
+      elsif @object.nil?
+        nil
       elsif object_is_class?
         @object.request_body_type
       else
@@ -180,7 +183,7 @@ module Flexirest
         end
 
         response = (
-          if proxy
+          if proxy && proxy.is_a?(Class)
             proxy.handle(self) do |request|
               request.do_request(etag)
             end
@@ -226,6 +229,12 @@ module Flexirest
       params = @params || @object._attributes rescue {}
       if params.is_a?(String) || params.is_a?(Integer)
         params = {id:params}
+      end
+
+      # Format includes parameter for jsonapi
+      if proxy == :json_api
+        JsonAPIProxy::Request::Params.translate(params, @object._include_associations)
+        @object._reset_include_associations!
       end
 
       if @method[:options][:defaults].respond_to?(:call)
@@ -323,7 +332,17 @@ module Flexirest
     end
 
     def prepare_request_body(params = nil)
-      if http_method == :get
+      if proxy == :json_api
+        if http_method == :get || http_method == :delete
+          @body = ""
+        else
+          headers["Content-Type"] ||= "application/vnd.api+json"
+          @body = JsonAPIProxy::Request::Params.create(params || @post_params || {}, @object).to_json
+        end
+
+        headers["Accept"] ||= "application/vnd.api+json"
+        JsonAPIProxy::Headers.save(headers)
+      elsif http_method == :get
         @body = ""
       elsif request_body_type == :form_encoded
         @body ||= (params || @post_params || {}).to_query
@@ -475,7 +494,6 @@ module Flexirest
           raise TimeoutException.new("Timed out getting #{response.url}")
         end
       end
-
       result
     end
 
@@ -600,6 +618,10 @@ module Flexirest
       @response.response_headers['Content-Type'].nil? || @response.response_headers['Content-Type'].include?('json')
     end
 
+    def is_json_api_response?
+      @response.response_headers['Content-Type'] && @response.response_headers['Content-Type'].include?('application/vnd.api+json')
+    end
+
     def is_xml_response?
       @response.response_headers['Content-Type'].include?('xml')
     end
@@ -610,8 +632,12 @@ module Flexirest
       elsif is_json_response?
         begin
           body = @response.body.blank? ? {} : MultiJson.load(@response.body)
-        rescue MultiJson::ParseError => exception
+        rescue MultiJson::ParseError
           raise ResponseParseException.new(status:@response.status, body:@response.body, headers:@response.headers)
+        end
+
+        if is_json_api_response?
+          body = JsonAPIProxy::Response.parse(body, @object)
         end
 
         if options[:ignore_root]
