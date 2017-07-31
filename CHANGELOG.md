@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.4.1
+
+Bugfix:
+
+- Pluses in URL params are now escaped to %2B (thanks to jan-vitek for the bug report and pull request)
+
 ## 1.4.0
 
 Feature:
