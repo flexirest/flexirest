@@ -364,7 +364,7 @@ If attributes are defined using [JSON API](http://jsonapi.org), you don't need t
 You need to activate JSON API by specifying the `json_api` proxy:
 
 ```ruby
-class Article < Flextirest::Base
+class Article < Flexirest::Base
   proxy :json_api
 end
 ```
@@ -822,7 +822,7 @@ The response of a plain request (from either source) is a `Flexirest::PlainRespo
 If you are working with a [JSON API](http://jsonapi.org), you need to activate JSON API by specifying the `json_api` proxy:
 
 ```ruby
-class Article < Flextirest::Base
+class Article < Flexirest::Base
   proxy :json_api
 end
 ```
