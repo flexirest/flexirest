@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.4.0
+
+Feature:
+
+- New JSON API support - thanks to Mike Voets for all his hard work!
+
 ## 1.3.35
 
 Bugfix:
