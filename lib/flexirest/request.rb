@@ -314,8 +314,10 @@ module Flexirest
           token = token.first[1,999]
           # pull URL path variables out of @get_params/@post_params
           target = @get_params.delete(token.to_sym) || @post_params.delete(token.to_sym) || @get_params.delete(token.to_s) || @post_params.delete(token.to_s) || ""
-          # it's possible the URL path variable may not be part of the request, in that case, try to resolve it from the object attributes
-          target = @object._attributes[token.to_sym] || "" if target == ""
+          unless object_is_class?
+            # it's possible the URL path variable may not be part of the request, in that case, try to resolve it from the object attributes
+            target = @object._attributes[token.to_sym] || "" if target == ""
+          end
           @url.gsub!(":#{token}", URI.escape(target.to_s).gsub("/", "%2F").gsub("+", "%2B"))
         end
       end

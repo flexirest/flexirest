@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.4.2
+
+Bugfix:
+
+- Breakage in path parameters where the value isn't specified
+
 ## 1.4.1
 
 Bugfix:
