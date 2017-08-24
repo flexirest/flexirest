@@ -536,7 +536,10 @@ After callbacks work in exactly the same way:
 
 ```ruby
 class Person < Flexirest::Base
+  get :all, "/people"
+
   after_request :fix_empty_content
+  after_request :cache_all_people
 
   private
 
@@ -545,10 +548,16 @@ class Person < Flexirest::Base
       response.body = '{"empty": true}'
     end
   end
+
+  def cache_all_people(name, response)
+    if name == :all
+      response.response_headers["Expires"] = 1.hour.from_now.iso8601
+    end
+  end
 end
 ```
 
-**Note:** since v1.3.21 this isn't necessary, empty responses for 204 are accepted normally (the method returns `true`), but this is hear to show an example of an `after_request` callback.
+**Note:** since v1.3.21 the empty response trick above isn't necessary, empty responses for 204 are accepted normally (the method returns `true`), but this is here to show an example of an `after_request` callback adjusting the body. The `cache_all_people` example shows how to cache a response even if the server doesn't send the correct headers.
 
 ### Lazy Loading
 
