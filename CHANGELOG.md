@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.4.3
+
+Feature:
+
+- Added more client exceptions to allow fine grained exception trapping
+
 ## 1.4.2
 
 Bugfix:

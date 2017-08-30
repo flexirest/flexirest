@@ -488,6 +488,14 @@ module Flexirest
           raise HTTPForbiddenClientException.new(status:status, result:error_response, raw_response: @response.body, url:@url, method: http_method)
         elsif status == 404
           raise HTTPNotFoundClientException.new(status:status, result:error_response, raw_response: @response.body, url:@url, method: http_method)
+        elsif status == 405
+          raise HTTPMethodNotAllowedClientException.new(status:status, result:error_response, raw_response: @response.body, url:@url, method: http_method)
+        elsif status == 406
+          raise HTTPNotAcceptableClientException.new(status:status, result:error_response, raw_response: @response.body, url:@url, method: http_method)
+        elsif status == 408
+          raise HTTPTimeoutClientException.new(status:status, result:error_response, raw_response: @response.body, url:@url, method: http_method)
+        elsif status == 409
+          raise HTTPConflictClientException.new(status:status, result:error_response, raw_response: @response.body, url:@url, method: http_method)
         elsif (400..499).include? status
           raise HTTPClientException.new(status:status, result:error_response, raw_response: @response.body, url:@url, method: http_method)
         elsif (500..599).include? status
@@ -712,6 +720,10 @@ module Flexirest
   class HTTPUnauthorisedClientException < HTTPClientException ; end
   class HTTPBadRequestClientException < HTTPClientException ; end
   class HTTPForbiddenClientException < HTTPClientException ; end
+  class HTTPMethodNotAllowedClientException < HTTPClientException ; end
+  class HTTPNotAcceptableClientException < HTTPClientException ; end
+  class HTTPTimeoutClientException < HTTPClientException ; end
+  class HTTPConflictClientException < HTTPClientException ; end
   class HTTPNotFoundClientException < HTTPClientException ; end
   class HTTPServerException < HTTPException ; end
 
