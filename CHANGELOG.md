@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.4.5
+
+Bugfix:
+
+- DELETE requests shouldn't send a request body, the body semantics are undefined.
+
 ## 1.4.4
 
 Feature:
