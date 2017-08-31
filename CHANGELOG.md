@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.4.4
+
+Feature:
+
+- Handling 202s without any content the same as a 204.
+
 ## 1.4.3
 
 Feature:

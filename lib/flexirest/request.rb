@@ -461,7 +461,7 @@ module Flexirest
       if (200..399).include?(status)
         if @method[:options][:plain]
           return @response = Flexirest::PlainResponse.from_response(response)
-        elsif status == 204 && @response.body.blank?
+        elsif [202, 204].include?(status) && @response.body.blank?
           return true
         elsif is_json_response? || is_xml_response?
           if @response.respond_to?(:proxied) && @response.proxied
