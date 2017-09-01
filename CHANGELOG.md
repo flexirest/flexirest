@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.4.6
+
+Feature:
+
+- You can define how to handle the body of `delete` requests now with the mapping option `send_delete_body`.
+
 ## 1.4.5
 
 Bugfix:

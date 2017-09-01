@@ -249,6 +249,9 @@ module Flexirest
       if http_method == :get
         @get_params = default_params.merge(params || {})
         @post_params = nil
+      elsif http_method == :delete && @method[:options][:send_delete_body]
+        @post_params = default_params.merge(params || {})
+        @get_params = {}
       else
         @post_params = default_params.merge(params || {})
         @get_params = {}
@@ -335,7 +338,7 @@ module Flexirest
 
     def prepare_request_body(params = nil)
       if proxy == :json_api
-        if http_method == :get || http_method == :delete
+        if http_method == :get || (http_method == :delete && !@method[:options][:send_delete_body])
           @body = ""
         else
           headers["Content-Type"] ||= "application/vnd.api+json"
@@ -344,7 +347,7 @@ module Flexirest
 
         headers["Accept"] ||= "application/vnd.api+json"
         JsonAPIProxy::Headers.save(headers)
-      elsif http_method == :get || http_method == :delete
+      elsif http_method == :get || (http_method == :delete && !@method[:options][:send_delete_body])
         @body = ""
       elsif request_body_type == :form_encoded
         @body ||= (params || @post_params || {}).to_query

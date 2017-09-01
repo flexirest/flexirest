@@ -37,6 +37,7 @@ describe Flexirest::Request do
       put :update, "/put/:id"
       put :conversion, "/put/:id", parse_fields: [:converted]
       delete :remove, "/remove/:id"
+      delete :remove_body, "/remove/:id", send_delete_body: true
       get :hal, "/hal", fake:"{\"_links\":{\"child\": {\"href\": \"/child/1\"}, \"other\": {\"href\": \"/other/1\"}, \"cars\":[{\"href\": \"/car/1\", \"name\":\"car1\"}, {\"href\": \"/car/2\", \"name\":\"car2\"}, {\"href\": \"/car/not-embed\", \"name\":\"car_not_embed\"} ], \"lazy\": {\"href\": \"/lazy/load\"}, \"invalid\": [{\"href\": \"/invalid/1\"}]}, \"_embedded\":{\"other\":{\"name\":\"Jane\"},\"child\":{\"name\":\"Billy\"}, \"cars\":[{\"_links\": {\"self\": {\"href\": \"/car/1\"} }, \"make\": \"Bugatti\", \"model\": \"Veyron\"}, {\"_links\": {\"self\": {\"href\": \"/car/2\"} }, \"make\": \"Ferrari\", \"model\": \"F458 Italia\"} ], \"invalid\": [{\"present\":true, \"_links\": {} } ] } }", has_many:{other:ExampleOtherClient}
       get :fake, "/fake", fake:"{\"result\":true, \"list\":[1,2,3,{\"test\":true}], \"child\":{\"grandchild\":{\"test\":true}}}"
       get :fake_proc, "/fake", fake:->(request) { "{\"result\":#{request.get_params[:id]}}" }
@@ -148,6 +149,16 @@ describe Flexirest::Request do
   it "should get an HTTP connection when called and call delete on it" do
     expect_any_instance_of(Flexirest::Connection).to receive(:delete).with("/remove/1", "", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:'{"result":true}', response_headers:{})))
     ExampleClient.remove(id:1)
+  end
+
+  it "should get an HTTP connection when called and call delete with a body if send_delete_body is specified" do
+    expect_any_instance_of(Flexirest::Connection).to receive(:delete).with("/remove/1", "something=else", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:'{"result":true}', response_headers:{})))
+    ExampleClient.remove_body(id:1, something: "else")
+  end
+
+  it "should get an HTTP connection when called and call delete without a body if send_delete_body is not specified" do
+    expect_any_instance_of(Flexirest::Connection).to receive(:delete).with("/remove/1", "", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:'{"result":true}', response_headers:{})))
+    ExampleClient.remove(id:1, something: "else")
   end
 
   it "should work with faraday response objects" do

@@ -94,6 +94,7 @@ class Person < Flexirest::Base
   get :find, "/people/:id"
   put :save, "/people/:id"
   post :create, "/people"
+  delete :remove, "/people/:id"
 end
 ```
 
@@ -127,6 +128,12 @@ id = @person.id
 @people.each do |person|
   puts "Hi " + person.first_name
 end
+```
+
+For `delete` requests whether an API can handle a body or not is undefined. The default is to ignore any parameters not sent in the URL named parameters, but you can optionally specify `send_delete_body` and it will encode them in your chosen way into the body.
+
+```
+  delete :remove, "/people/:id", send_delete_body: true
 ```
 
 If an API returns an array of results and you have [will_paginate](https://rubygems.org/gems/will_paginate) installed then you can call the paginate method to return a particular page of the results (note: this doesn't reduce the load on the server, but it can help with pagination if you have a cached response).
