@@ -348,7 +348,11 @@ module Flexirest
         headers["Accept"] ||= "application/vnd.api+json"
         JsonAPIProxy::Headers.save(headers)
       elsif http_method == :get || (http_method == :delete && !@method[:options][:send_delete_body])
-        headers["Content-Type"] ||= "application/x-www-form-urlencoded"
+        if request_body_type == :form_encoded
+          headers["Content-Type"] ||= "application/x-www-form-urlencoded"
+        elsif request_body_type == :json
+          headers["Content-Type"] ||= "application/json; charset=utf-8"
+        end
         @body = ""
       elsif request_body_type == :form_encoded
         @body ||= (params || @post_params || {}).to_query
