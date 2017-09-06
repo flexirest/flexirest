@@ -34,6 +34,7 @@ describe Flexirest::Request do
       get :plain, "/plain/:id", plain: true
       post :create, "/create"
       post :test_encoding, "/encoding", request_body_type: :json
+      post :testing_no_content_headers, "/no-content"
       put :update, "/put/:id"
       put :conversion, "/put/:id", parse_fields: [:converted]
       delete :remove, "/remove/:id"
@@ -554,6 +555,16 @@ describe Flexirest::Request do
     expect(Flexirest::Logger).to receive(:debug).with(/ << /).at_least(:twice)
     allow(Flexirest::Logger).to receive(:debug).with(any_args)
     VerboseExampleClient.all
+  end
+
+  it "should return the headers still for 202 responses" do
+    fake_location = "https://foo.example.com/123"
+    expect_any_instance_of(Flexirest::Connection).
+      to receive(:post).
+      with("/no-content", "", an_instance_of(Hash)).
+      and_return(::FaradayResponseMock.new(OpenStruct.new(body:"", response_headers:{"location" => fake_location}, status:202)))
+    response = ExampleClient.testing_no_content_headers
+    expect(response._headers["location"]).to eq(fake_location)
   end
 
   it "should raise an unauthorised exception for 401 errors" do

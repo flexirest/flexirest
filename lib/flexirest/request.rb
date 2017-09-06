@@ -470,7 +470,8 @@ module Flexirest
         if @method[:options][:plain]
           return @response = Flexirest::PlainResponse.from_response(response)
         elsif [202, 204].include?(status) && @response.body.blank?
-          return true
+          @response.body = "{}"
+          return @response = Flexirest::PlainResponse.from_response(response)
         elsif is_json_response? || is_xml_response?
           if @response.respond_to?(:proxied) && @response.proxied
             Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest.name}\033[0m #{@instrumentation_name} - Response was proxied, unable to determine size"

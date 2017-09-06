@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.4.7
+
+Bugfix:
+
+- Responses without content (202, 204) will still make the headers available in `_headers`.
+
 ## 1.4.6
 
 Feature:
