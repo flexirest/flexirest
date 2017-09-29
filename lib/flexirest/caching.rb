@@ -49,7 +49,7 @@ module Flexirest
       end
 
       def read_cached_response(request)
-        if cache_store && perform_caching
+        if cache_store && perform_caching && request.method[:method] == :get
           key = "#{request.class_name}:#{request.original_url}"
           Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest.name}\033[0m #{key} - Trying to read from cache"
           value = cache_store.read(key)

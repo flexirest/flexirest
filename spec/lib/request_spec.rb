@@ -29,7 +29,7 @@ describe Flexirest::Request do
       get :headers, "/headers"
       put :headers_default, "/headers_default"
       put :headers_json, "/headers_json", request_body_type: :json
-      get :find, "/:id"
+      get :find, "/:id", required: [:id]
       get :change, "/change"
       get :plain, "/plain/:id", plain: true
       post :create, "/create"

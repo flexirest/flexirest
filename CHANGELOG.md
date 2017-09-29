@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.5.0
+
+Bugfix:
+
+- GET requests with the same URL as PUT requests shouldn't use the etag cached version.
+
+## 1.4.8/1.4.9
+
+Bugfix:
+
+- Responses without content (202, 204) will return an empty object.
+
 ## 1.4.7
 
 Bugfix:

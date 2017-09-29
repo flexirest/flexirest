@@ -119,6 +119,7 @@ describe Flexirest::Caching do
         perform_caching true
         base_url "http://www.example.com"
         get :all, "/"
+        put :save_all, "/"
       end
 
       Person.cache_store = CachingExampleCacheStore5.new
@@ -139,6 +140,16 @@ describe Flexirest::Caching do
       }.and_return(::FaradayResponseMock.new(OpenStruct.new(status:304, response_headers:{})))
       ret = Person.all
       expect(ret.first_name).to eq("Johnny")
+    end
+
+    it "should not read from the cache store to check for an etag unless it's a GET request" do
+      cached_response = Flexirest::CachedResponse.new(
+        status:200,
+        result:@cached_object,
+        etag:@etag)
+      expect_any_instance_of(CachingExampleCacheStore5).to_not receive(:read)
+      expect_any_instance_of(Flexirest::Connection).to receive(:put).and_return(::FaradayResponseMock.new(OpenStruct.new(status:200, body: {result: "foo"}.to_json, response_headers:{})))
+      ret = Person.save_all
     end
 
     it 'queries the server when the cache has expired' do
