@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.5.1
+
+Bugfix:
+
+- PUT/POST/PATCH methods called on an instantiated object should merge the objects attributes with specified params.
+
 ## 1.5.0
 
 Bugfix:

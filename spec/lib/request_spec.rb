@@ -768,6 +768,12 @@ describe Flexirest::Request do
     expect{request.call}.to raise_error(Flexirest::InvalidRequestException)
   end
 
+  it "should send all object's attributes and params through class mapped methods" do
+    expect_any_instance_of(Flexirest::Connection).to receive(:post).with("/create", "arg=2&prop=1", anything).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"first_name\":\"Johnny\", \"expenses\":[{\"amount\":1}, {\"amount\":2}]}", status:200, response_headers:{})))
+    client = ExampleClient.new(prop: "1")
+    client.create(arg: "2")
+  end
+
   it "should send all class mapped methods through _callback_request" do
     expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"first_name\":\"Johnny\", \"expenses\":[{\"amount\":1}, {\"amount\":2}]}", status:200, response_headers:{})))
     expect(ExampleClient).to receive(:_callback_request).with(any_args).exactly(2).times

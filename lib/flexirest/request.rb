@@ -226,7 +226,11 @@ module Flexirest
     end
 
     def prepare_params
-      params = @params || @object._attributes rescue {}
+      if http_method == :post || http_method == :put || http_method == :patch
+        params = (@object._attributes rescue {}).merge(@params || {}) rescue {}
+      else
+        params = @params || @object._attributes rescue {}
+      end
       if params.is_a?(String) || params.is_a?(Integer)
         params = {id:params}
       end
