@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.5.2
+
+Bugfix:
+
+- Some APIs return an empty response body even on 200s, so any valid status with an empty body should be handled nicely
+
 ## 1.5.1
 
 Bugfix:
