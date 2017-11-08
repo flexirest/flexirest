@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.5.3
+
+Feature:
+
+- Allow passing custom headers as an option to raw requests.
+
 ## 1.5.2
 
 Bugfix:

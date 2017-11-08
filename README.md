@@ -793,6 +793,12 @@ people = Person._request('http://api.example.com/v1/people') # Defaults to get w
 Person._request('http://api.example.com/v1/people', :post, {id:1234,name:"John"}) # Post with parameters
 ```
 
+When you need to specify custom headers (for example for authentication) you can do this with a fourth option to the `_request` method. If you are using the default paramaters you'll need to specify them. For example:
+
+```ruby
+Person._request("http://api.example.com/v1/people", :get, {}, {"X-Something": "foo/bar"})
+```
+
 If you want to use a lazy loaded request instead (so it will create an object that will only call the API if you use it), you can use `_lazy_request` instead of `_request`. If you want you can create a construct that creates and object that lazy loads itself from a given method (rather than a URL):
 
 ```ruby

@@ -57,17 +57,17 @@ describe Flexirest::Base do
   end
 
   it "should save attributes passed in constructor" do
-    client = EmptyExample.new(:test => "Something")
+    client = EmptyExample.new(test: "Something")
     expect(client._attributes[:test]).to be_a(String)
   end
 
   it "should allow attribute reading using missing method names" do
-    client = EmptyExample.new(:test => "Something")
+    client = EmptyExample.new(test: "Something")
     expect(client.test).to eq("Something")
   end
 
   it "should allow attribute reading using [] array notation" do
-    client = EmptyExample.new(:test => "Something")
+    client = EmptyExample.new(test: "Something")
     expect(client["test"]).to eq("Something")
   end
 
@@ -85,37 +85,37 @@ describe Flexirest::Base do
 
   it "should automatically parse ISO 8601 format date and time" do
     t = Time.now
-    client = EmptyExample.new(:test => t.iso8601)
+    client = EmptyExample.new(test: t.iso8601)
     expect(client["test"]).to be_an_instance_of(DateTime)
     expect(client["test"].to_s).to eq(t.to_datetime.to_s)
   end
 
   it "should automatically parse ISO 8601 format date and time with milliseconds" do
     t = Time.now
-    client = EmptyExample.new(:test => t.iso8601(3))
+    client = EmptyExample.new(test: t.iso8601(3))
     expect(client["test"]).to be_an_instance_of(DateTime)
     expect(client["test"].to_s).to eq(t.to_datetime.to_s)
   end
 
   it "should automatically parse ISO 8601 format dates" do
     d = Date.today
-    client = EmptyExample.new(:test => d.iso8601)
+    client = EmptyExample.new(test: d.iso8601)
     expect(client["test"]).to be_an_instance_of(Date)
     expect(client["test"]).to eq(d)
   end
 
   it "should automatically parse date/time strings regardless if the date portion has no delimiters" do
-    client = EmptyExample.new(:test => "20151230T09:48:50-05:00")
+    client = EmptyExample.new(test: "20151230T09:48:50-05:00")
     expect(client["test"]).to be_an_instance_of(DateTime)
   end
 
   it "should allow strings of 4 digits and not intepret them as dates" do
-    client = EmptyExample.new(:test => "2015")
+    client = EmptyExample.new(test: "2015")
     expect(client["test"]).to be_an_instance_of(String)
   end
 
   it "should allow strings of 8 digits and not intepret them as dates" do
-    client = EmptyExample.new(:test => "1266129")
+    client = EmptyExample.new(test: "1266129")
     expect(client["test"]).to be_an_instance_of(String)
   end
 
@@ -163,7 +163,7 @@ describe Flexirest::Base do
   end
 
   it "should overwrite attributes already set and mark them as dirty" do
-    client = EmptyExample.new(:hello => "World")
+    client = EmptyExample.new(hello: "World")
     client._clean!
     expect(client).to_not be_dirty
 
@@ -172,7 +172,7 @@ describe Flexirest::Base do
   end
 
   it 'should respond_to? attributes defined in the response' do
-    client = EmptyExample.new(:hello => "World")
+    client = EmptyExample.new(hello: "World")
     expect(client.respond_to?(:hello)).to be_truthy
     expect(client.respond_to?(:world)).to be_falsey
   end
@@ -311,6 +311,13 @@ describe Flexirest::Base do
       EmptyExample._request("http://api.example.com/")
     end
 
+    it "passes headers" do
+      stub_request(:get, "http://api.example.com/v1").
+        with(headers: {'Accept'=>'application/hal+json, application/json;q=0.5', 'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 'Connection'=>'Keep-Alive', 'X-Something'=>'foo/bar', 'User-Agent'=>'Flexirest/1.5.2'}).
+        to_return(status: 200, body: "", headers: {})
+      EmptyExample._request("http://api.example.com/v1", :get, {}, {"X-Something": "foo/bar"})
+    end
+
     it "runs callbacks as usual" do
       expect_any_instance_of(Flexirest::Request).to receive(:do_request).with(any_args).and_return(::FaradayResponseMock.new(OpenStruct.new(status:200, response_headers:{}, body:"{\"first_name\":\"Billy\"}")))
       expect(EmptyExample).to receive(:_callback_request).with(any_args).exactly(2).times
@@ -418,7 +425,7 @@ describe Flexirest::Base do
 
     it "should be able to use mapped methods to create a request to pass in to _lazy_request" do
       expect_any_instance_of(Flexirest::Connection).to receive(:get).with('/find/1', anything).and_return(::FaradayResponseMock.new(OpenStruct.new(status:200, response_headers:{}, body:"{\"first_name\":\"Billy\"}")))
-      request = AlteringClientExample._request_for(:find, :id => 1)
+      request = AlteringClientExample._request_for(:find, id: 1)
       example = AlteringClientExample._lazy_request(request)
       expect(example.first_name).to eq("Billy")
     end

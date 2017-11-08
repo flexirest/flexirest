@@ -21,6 +21,9 @@ module Flexirest
       @response_delegate          = Flexirest::RequestDelegator.new(nil)
       @params                     = params
       @headers                    = HeadersList.new
+      (@method[:options][:headers] || {}).each do |k,v|
+        @headers[k] = v
+      end
       @forced_url                 = nil
     end
 
@@ -463,6 +466,7 @@ module Flexirest
     def handle_response(response, cached = nil)
       @response = response
       status = @response.status || 200
+      @response.body = "{}" if @response.body.blank?
 
       if cached && response.status == 304
         Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest.name}\033[0m #{@instrumentation_name}" +
@@ -471,12 +475,8 @@ module Flexirest
       end
 
       if (200..399).include?(status)
-        if @response.body.blank?
-          @response.body = "{}"
-        end
-
         if @method[:options][:plain]
-          return @response = Flexirest::PlainResponse.from_response(response)
+          return @response = Flexirest::PlainResponse.from_response(@response)
         elsif is_json_response? || is_xml_response?
           if @response.respond_to?(:proxied) && @response.proxied
             Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest.name}\033[0m #{@instrumentation_name} - Response was proxied, unable to determine size"

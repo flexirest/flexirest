@@ -66,16 +66,16 @@ module Flexirest
       @attributes[:errors] || (_errors != {} ? _errors : nil)
     end
 
-    def self._request(request, method = :get, params = nil)
-      prepare_direct_request(request, method).call(params)
+    def self._request(request, method = :get, params = nil, headers = {})
+      prepare_direct_request(request, method, headers: headers).call(params)
     end
 
-    def self._plain_request(request, method = :get, params = nil)
-      prepare_direct_request(request, method, plain:true).call(params)
+    def self._plain_request(request, method = :get, params = nil, headers = {})
+      prepare_direct_request(request, method, plain:true, headers: headers).call(params)
     end
 
-    def self._lazy_request(request, method = :get, params = nil)
-      Flexirest::LazyLoader.new(prepare_direct_request(request, method), params)
+    def self._lazy_request(request, method = :get, params = nil, headers = {})
+      Flexirest::LazyLoader.new(prepare_direct_request(request, method, headers: headers), params)
     end
 
     def self.prepare_direct_request(request, method = :get, options={})
