@@ -313,9 +313,9 @@ describe Flexirest::Base do
 
     it "passes headers" do
       stub_request(:get, "http://api.example.com/v1").
-        with(headers: {'Accept'=>'application/hal+json, application/json;q=0.5', 'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 'Connection'=>'Keep-Alive', 'X-Something'=>'foo/bar', 'User-Agent'=>'Flexirest/1.5.2'}).
+        with(headers: {'Accept'=>'application/hal+json, application/json;q=0.5', 'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 'Connection'=>'Keep-Alive', 'Content-Type'=>'application/x-www-form-urlencoded', 'X-Something'=>'foo/bar', 'User-Agent'=>/Flexirest\//}).
         to_return(status: 200, body: "", headers: {})
-      EmptyExample._request("http://api.example.com/v1", :get, {}, {"X-Something": "foo/bar"})
+      EmptyExample._request("http://api.example.com/v1", :get, {}, {headers: {"X-Something": "foo/bar"}})
     end
 
     it "runs callbacks as usual" do
