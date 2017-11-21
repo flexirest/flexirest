@@ -311,6 +311,18 @@ describe Flexirest::Base do
       EmptyExample._request("http://api.example.com/")
     end
 
+    it "allows already encoded bodies" do
+      Flexirest::ConnectionManager.reset!
+      connection = double("Connection")
+      allow(connection).to receive(:base_url).and_return("http://api.example.com")
+      expect(Flexirest::ConnectionManager).to receive(:get_connection).with("http://api.example.com/").and_return(connection)
+      expect(connection).
+        to receive(:post).
+        with("http://api.example.com/", "{\"test\":\"value\"}",an_instance_of(Hash)).
+        and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"first_name\":\"John\", \"id\":1234}", response_headers:{}, status:200)))
+      EmptyExample._request("http://api.example.com/", :post, {test: "value"}.to_json, request_body_type: :json)
+    end
+
     it "passes headers" do
       stub_request(:get, "http://api.example.com/v1").
         with(headers: {'Accept'=>'application/hal+json, application/json;q=0.5', 'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 'Connection'=>'Keep-Alive', 'Content-Type'=>'application/x-www-form-urlencoded', 'X-Something'=>'foo/bar', 'User-Agent'=>/Flexirest\//}).

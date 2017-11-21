@@ -259,8 +259,11 @@ module Flexirest
       elsif http_method == :delete && @method[:options][:send_delete_body]
         @post_params = default_params.merge(params || {})
         @get_params = {}
+      elsif params.is_a? String
+        @post_params = params
+        @get_params = {}
       else
-        @post_params = default_params.merge(params || {})
+        @post_params = (default_params || {}).merge(params || {})
         @get_params = {}
       end
 
@@ -362,10 +365,22 @@ module Flexirest
         end
         @body = ""
       elsif request_body_type == :form_encoded
-        @body ||= (params || @post_params || {}).to_query
+        @body ||= if params.is_a?(String)
+          params
+        elsif @post_params.is_a?(String)
+          @post_params
+        else
+          (params || @post_params || {}).to_query
+        end
         headers["Content-Type"] ||= "application/x-www-form-urlencoded"
       elsif request_body_type == :json
-        @body ||= (params || @post_params || {}).to_json
+        @body ||= if params.is_a?(String)
+          params
+        elsif @post_params.is_a?(String)
+          @post_params
+        else
+          (params || @post_params || {}).to_json
+        end
         headers["Content-Type"] ||= "application/json; charset=utf-8"
       end
     end
