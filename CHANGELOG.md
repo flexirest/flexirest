@@ -1,5 +1,23 @@
 # Changelog
 
+## 1.5.6
+
+Feature:
+
+- Allow deleting of default headers in `before_request` callbacks
+
+## 1.5.5
+
+Bugfix:
+
+- Fixing already encoded bodies in plain requests
+
+## 1.5.4
+
+Feature:
+
+- Changing `_request` to accept options, including `:headers`, rather than headers directly
+
 ## 1.5.3
 
 Feature:

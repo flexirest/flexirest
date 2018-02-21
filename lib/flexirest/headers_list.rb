@@ -1,6 +1,7 @@
 module Flexirest
   class HeadersList
     STORE_MULTIPLE_VALUES = ["set-cookie"]
+
     def initialize
       @store = {}
     end
@@ -31,6 +32,15 @@ module Flexirest
           yield(key, value)
         end
       end
+    end
+
+    def delete(key)
+      key = find_existing(key)
+      @store.delete(key)
+    end
+
+    def keys
+      @store.keys
     end
 
     private

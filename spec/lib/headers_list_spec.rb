@@ -9,6 +9,13 @@ describe Flexirest::HeadersList do
     expect(headers_list["X-My-Header"]).to eq(url)
   end
 
+  it "should allow deleting stored headers" do
+    url = "http://www.google.com"
+    headers_list.delete("X-My-Header")
+    expect(headers_list["X-My-Header"]).to eq(nil)
+    expect(headers_list.keys).to_not include("X-My-Header")
+  end
+
   it "should remember overwrite normal headers" do
     url = "http://www.google.com"
     headers_list["X-My-Header"] = "SHOULD NEVER BE SEEN"
