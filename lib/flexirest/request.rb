@@ -742,7 +742,8 @@ module Flexirest
     end
 
     def message
-      "Sending #{@method.upcase} to '#{@request_url}' returned a #{@status} with the body of - #{@raw_response}"
+      method = @method.try(:upcase)
+      "Sending #{method} to '#{@request_url}' returned a #{@status} with the body of - #{@raw_response}"
     end
   end
   class HTTPClientException < HTTPException ; end

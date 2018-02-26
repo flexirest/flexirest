@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.5.7
+
+Bugfix:
+
+- Exceptions don't display a message if no method was set (internal exception?)
+
 ## 1.5.6
 
 Feature:
