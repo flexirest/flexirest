@@ -71,6 +71,30 @@ describe Flexirest::Request do
       end)
     end
 
+    class RetryingExampleClient < Flexirest::Base
+      base_url "http://www.example.com"
+
+      after_request :handle_retries
+
+      def self.incr_retries
+        @retries ||= 0
+        @retries += 1
+      end
+
+      def self.retries
+        @retries
+      end
+
+      def handle_retries(name, response)
+        if name == :do_me_twice
+          self.class.incr_retries
+          return :retry
+        end
+      end
+
+      get :do_me_twice, "/do_me_twice"
+    end
+
     class LazyLoadedExampleClient < ExampleClient
       base_url "http://www.example.com"
       lazy_load!
@@ -802,6 +826,14 @@ describe Flexirest::Request do
     obj = ExampleClient.change
     expect(obj.test).to eq(1)
   end
+
+  it "should retry if an after_request callback returns :retry" do
+    stub_request(:get, "http://www.example.com/do_me_twice").
+      to_return(:status => 200, :body => "", :headers => {})
+    RetryingExampleClient.do_me_twice
+    expect(RetryingExampleClient.retries).to eq(2)
+  end
+
 
   context "Direct URL requests" do
     class SameServerExampleClient < Flexirest::Base

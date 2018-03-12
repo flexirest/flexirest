@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.5.8
+
+Feature:
+
+- Allow retrying after a failure in an `after_request` callback
+
 ## 1.5.7
 
 Bugfix:

@@ -27,13 +27,16 @@ module Flexirest
         callbacks.each do |callback|
           if callback.is_a? Symbol
             if self.respond_to?(callback)
-              self.send(callback, name, param)
+              result = self.send(callback, name, param)
             else
               instance = self.new
-              instance.send(callback, name, param)
+              result = instance.send(callback, name, param)
             end
           else
-            callback.call(name, param)
+            result = callback.call(name, param)
+          end
+          if result == :retry
+            return :retry
           end
         end
       end

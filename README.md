@@ -566,6 +566,26 @@ end
 
 **Note:** since v1.3.21 the empty response trick above isn't necessary, empty responses for 204 are accepted normally (the method returns `true`), but this is here to show an example of an `after_request` callback adjusting the body. The `cache_all_people` example shows how to cache a response even if the server doesn't send the correct headers.
 
+If you want to trap an error in an `after_request` callback and retry the request, this can be done - but retries will only happen once for each request (so we'd recommend checking all conditions in a single `after_request` and then retrying after fixing them all). You achieve this by returning `:retry` from the callback.
+
+```ruby
+class Person < Flexirest::Base
+  get :all, "/people"
+
+  after_request :fix_invalid_request
+
+  private
+
+  def fix_invalid_request(name, response)
+    if response.status == 401
+      # Do something to fix the state of caches/variables used in the 
+      # before_request, etc
+      return :retry
+    end
+  end
+end
+```
+
 ### Lazy Loading
 
 Flexirest supports lazy loading (delaying the actual API call until the response is actually used, so that views can be cached without still causing API calls).

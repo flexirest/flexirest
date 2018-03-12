@@ -8,7 +8,7 @@ module Flexirest
   class Request
     include AttributeParsing
     include JsonAPIProxy
-    attr_accessor :post_params, :get_params, :url, :path, :headers, :method, :object, :body, :forced_url, :original_url
+    attr_accessor :post_params, :get_params, :url, :path, :headers, :method, :object, :body, :forced_url, :original_url, :retrying
 
     def initialize(method, object, params = {})
       @method                     = method
@@ -211,9 +211,16 @@ module Flexirest
             @object.record_response(self.url, response_env)
           end
           if object_is_class?
-            @object.send(:_callback_request, :after, @method[:name], response_env)
+            callback_result = @object.send(:_callback_request, :after, @method[:name], response_env)
           else
-            @object.class.send(:_callback_request, :after, @method[:name], response_env)
+            callback_result = @object.class.send(:_callback_request, :after, @method[:name], response_env)
+          end
+
+          if callback_result == :retry
+            if self.retrying != true
+              self.retrying = true
+              return call()
+            end
           end
 
           result = handle_response(response_env, cached)
