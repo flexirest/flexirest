@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.6.1
+
+Feature:
+
+- Added `where` filtering to result iterators (thanks to Jeljer te Wies for the feature).
+
 ## 1.6.0
 
 Feature:

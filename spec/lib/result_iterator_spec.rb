@@ -109,7 +109,30 @@ describe Flexirest::ResultIterator do
     expect(result.items).to eq(["a"])
   end
 
+  it "can filter results by simple matching criteria" do
+    class Something < Flexirest::Base
+    end
 
+    results = Flexirest::ResultIterator.new
+    results << Something.new(type: "foo")
+    results << Something.new(type: "foo")
+    results << Something.new(type: "bar")
+
+    expect(results.where(type: "foo").count).to eq(2)
+  end
+
+  it "can filter results using regular expression matching criteria" do
+    class Something < Flexirest::Base
+    end
+
+    results = Flexirest::ResultIterator.new
+    results << Something.new(type: "fooo")
+    results << Something.new(type: "foo")
+    results << Something.new(type: "fo")
+    results << Something.new(type: "bar")
+
+    expect(results.where(type: /foo+/).count).to eq(2)
+  end
 
   it "can parallelise calls to each item" do
     result = Flexirest::ResultIterator.new

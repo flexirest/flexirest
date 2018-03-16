@@ -1201,7 +1201,19 @@ The following attributes will pass validation since they explicitly `allow_nil`:
 - `:retirement_age`
 - `:favorite_authors`
 
-### Debugging
+### Filtering result lists
+
+If the API returns a JSON list of items, this is retured to you as a `Flexirest::ResultIterator` object. A `ResultIterator` sorts simple filtering of the list based on values matching a specified criteria (or matching using regular expressions):
+
+```ruby
+class Article < Flexirest::Base
+  get :all, "/articles"
+end
+
+Article.all.where(published: true, department: /technical\-/)
+```
+
+## Debugging
 
 You can turn on verbose debugging to see what is sent to the API server and what is returned in one of these two ways:
 

@@ -63,6 +63,20 @@ module Flexirest
       self
     end
 
+    def where(criteria={})
+      @items.select do |object|
+        select = true
+        criteria.each do |k, v|
+          if v.is_a?(Regexp)
+            select = false if !object[k][v]
+          else
+            select = false if object[k] != v
+          end
+        end
+        select
+      end
+    end
+
     def parallelise(method=nil)
       collected_responses = []
       threads = []
