@@ -32,7 +32,7 @@ describe Flexirest::Request do
       get :find, "/:id", required: [:id]
       get :change, "/change"
       get :plain, "/plain/:id", plain: true
-      post :create, "/create"
+      post :create, "/create", rubify_names: true
       post :test_encoding, "/encoding", request_body_type: :json
       post :testing_no_content_headers, "/no-content"
       put :update, "/put/:id"
@@ -468,6 +468,7 @@ describe Flexirest::Request do
     object.debug = true
     object.only_changed_1
   end
+
   it "should only send changed attributes within the :only_changed array if :only_changed is an array" do
     expect_any_instance_of(Flexirest::Connection).to receive(:patch).with("/changed2", "debug2=true", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"[{\"first_name\":\"Johnny\"}, {\"first_name\":\"Billy\"}, {\"debug\":\"true\"}]", status:200, response_headers:{})))
     object = ExampleClient.new
@@ -478,6 +479,7 @@ describe Flexirest::Request do
     object.debug2 = true
     object.only_changed_2
   end
+
   it "should only send changed attributes marked true within the :only_changed hash when :only_changed is a hash" do
     expect_any_instance_of(Flexirest::Connection).to receive(:patch).with("/changed3", "debug1=false&debug2=true", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"[{\"first_name\":\"Johnny\"}, {\"first_name\":\"Billy\"}, {\"debug\":\"true\"}]", status:200, response_headers:{})))
     object = ExampleClient.new
@@ -489,6 +491,7 @@ describe Flexirest::Request do
     object.debug2 = true
     object.only_changed_3
   end
+
   it "should always send changed attributes marked false within the :only_changed hash when :only_changed is an hash" do
     expect_any_instance_of(Flexirest::Connection).to receive(:patch).with("/changed3", "debug1=true", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"[{\"first_name\":\"Johnny\"}, {\"first_name\":\"Billy\"}, {\"debug\":\"true\"}]", status:200, response_headers:{})))
     object = ExampleClient.new
@@ -498,7 +501,6 @@ describe Flexirest::Request do
     object.bad_debug2 = true
     object.only_changed_3
   end
-
 
   it "should instantiate other classes using has_many when required to do so" do
     expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"first_name\":\"Johnny\", \"expenses\":[{\"amount\":1}, {\"amount\":2}]}", status:200, response_headers:{})))
@@ -534,6 +536,16 @@ describe Flexirest::Request do
     expect(object.first_name).to eq("John")
     expect(object.should_disappear).to eq(nil)
     expect(object.id).to eq(1234)
+  end
+
+  it "should rubify attribute names" do
+    expect_any_instance_of(Flexirest::Connection).
+      to receive(:post).
+      with("/create", "", an_instance_of(Hash)).
+      and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"firstName\":\"John\", \"OtherProperty\":1234}", response_headers:{})))
+    object = ExampleClient.create
+    expect(object.first_name).to eq("John")
+    expect(object.other_property).to eq(1234)
   end
 
   it "should expose etag if available" do

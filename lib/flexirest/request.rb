@@ -8,6 +8,7 @@ module Flexirest
   class Request
     include AttributeParsing
     include JsonAPIProxy
+    include ActiveSupport::Inflector
     attr_accessor :post_params, :get_params, :url, :path, :headers, :method, :object, :body, :forced_url, :original_url, :retrying
 
     def initialize(method, object, params = {})
@@ -584,7 +585,11 @@ module Flexirest
       end
 
       attributes.each do |k,v|
-        k = k.to_sym
+        if @method[:options][:rubify_names]
+          k = rubify_name(k)
+        else
+          k = k.to_sym
+        end
         overridden_name = select_name(k, overridden_name)
         if @method[:options][:lazy].include?(k)
           object._attributes[k] = Flexirest::LazyAssociationLoader.new(overridden_name, v, self, overridden_name:(overridden_name))
@@ -755,6 +760,10 @@ module Flexirest
           result << new_object(json_object, @overridden_name)
         end
       end
+    end
+
+    def rubify_name(k)
+      k.underscore.to_sym
     end
   end
 

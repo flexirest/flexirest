@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.6.4
+
+Feature:
+
+- Added the ability to automatically change attributes returned from an API like `SomeName` or `someName` to Ruby-style `some_name` by setting `:rubify_names` when mapping an API call.
+
 ## 1.6.3
 
 Bugfix:

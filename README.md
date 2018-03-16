@@ -900,7 +900,19 @@ NB: Updating relationships is not yet supported.
 
 ### Proxying APIs
 
-Sometimes you may be working with an old API that returns JSON in a less than ideal format or the URL or parameters required have changed. In this case you can define a descendent of `Flexirest::ProxyBase`, pass it to your model as the proxy and have it rework URLs/parameters on the way out and the response on the way back in (already converted to a Ruby hash/array). By default any non-proxied URLs are just passed through to the underlying connection layer. For example:
+Sometimes you may be working with an old API that returns JSON in a less than ideal format or the URL or parameters required have changed.
+
+If it's simply that you want attribute names like `SomeName` or `someName` to be more Ruby-style `some_name` then you can simply do that by setting `:rubify_names` when mapping an API call.
+
+```ruby
+class Article < Flexirest::Base
+  base_url "http://www.example.com"
+
+  get :all, "/all", rubify_names: true
+end
+```
+
+In more complex cases you can define a descendent of `Flexirest::ProxyBase`, pass it to your model as the proxy and have it rework URLs/parameters on the way out and the response on the way back in (already converted to a Ruby hash/array). By default any non-proxied URLs are just passed through to the underlying connection layer. For example:
 
 ```ruby
 class ArticleProxy < Flexirest::ProxyBase
