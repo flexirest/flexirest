@@ -149,6 +149,22 @@ module Flexirest
       @method[:method]
     end
 
+    def get?
+      http_method == :get
+    end
+
+    def post?
+      http_method == :post
+    end
+
+    def put?
+      http_method == :put
+    end
+
+    def delete?
+      http_method == :delete
+    end
+
     def call(explicit_parameters=nil)
       @instrumentation_name = "#{class_name}##{@method[:name]}"
       result = nil

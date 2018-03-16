@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.5.9
+
+Bugfix:
+
+- Added missing `get?`, `post?`, `put?` and `delete?` methods to request as they were used in the documentation.
+
 ## 1.5.8
 
 Feature:
