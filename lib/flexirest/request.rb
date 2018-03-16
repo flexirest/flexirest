@@ -375,7 +375,10 @@ module Flexirest
           @body = ""
         else
           headers["Content-Type"] ||= "application/vnd.api+json"
-          @body = JsonAPIProxy::Request::Params.create(params || @post_params || {}, @object).to_json
+          @body = JsonAPIProxy::Request::Params.create(
+            params || @post_params || {},
+            object_is_class? ? @object.new : @object
+          ).to_json
         end
 
         headers["Accept"] ||= "application/vnd.api+json"

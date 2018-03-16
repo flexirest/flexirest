@@ -321,8 +321,34 @@ describe 'JSON API' do
       expect_any_instance_of(Flexirest::Connection).to receive(:post) { |_, _, _, options|
         expect(options[:headers]).to include('Content-Type' => 'application/vnd.api+json')
         expect(options[:headers]).to include('Accept' => 'application/vnd.api+json')
-      }.and_return(::FaradayResponseMock.new(OpenStruct.new(body:'{}', response_headers:{})))
+      }.and_return(::FaradayResponseMock.new(OpenStruct.new(body: '{}', response_headers: {})))
       JsonAPIExample::Article.new.create
+    end
+
+    it 'should be able to call #.create on class' do
+      expect_any_instance_of(Flexirest::Connection).to receive(:post) { |_, path, data|
+        hash = MultiJson.load(data)
+        expect(path).to eq('/articles')
+        expect(hash['data']).to_not be_nil
+        expect(hash['data']['id']).to be_nil
+        expect(hash['data']['type']).to eq('articles')
+      }.and_return(::FaradayResponseMock.new(OpenStruct.new(body: '{}', response_headers: {})))
+      JsonAPIExample::Article.create
+    end
+
+    it 'should be able to call #.create with params on class' do
+      expect_any_instance_of(Flexirest::Connection).to receive(:post) { |_, path, data|
+        hash = MultiJson.load(data)
+        expect(path).to eq('/articles')
+        expect(hash['data']).to_not be_nil
+        expect(hash['data']['id']).to be_nil
+        expect(hash['data']['type']).to eq('articles')
+        expect(hash['data']['relationships']['author']['data']['type']).to eq('authors')
+        expect(hash['data']['relationships']['tags']['data'].first['type']).to eq('tags')
+      }.and_return(::FaradayResponseMock.new(OpenStruct.new(body: '{}', response_headers: {})))
+      author = JsonAPIExample::Author.new
+      tag = JsonAPIExample::Tag.new
+      JsonAPIExample::Article.create(item: 'item one', author: author, tags: [tag])
     end
 
     it 'should perform a post request in proper json api format' do
@@ -334,7 +360,7 @@ describe 'JSON API' do
         expect(hash['data']['type']).to eq('articles')
         expect(hash['data']['relationships']['author']['data']['type']).to eq('authors')
         expect(hash['data']['relationships']['tags']['data'].first['type']).to eq('tags')
-      }.and_return(::FaradayResponseMock.new(OpenStruct.new(body:'{}', response_headers:{})))
+      }.and_return(::FaradayResponseMock.new(OpenStruct.new(body: '{}', response_headers: {})))
       author = JsonAPIExample::Author.new
       tag = JsonAPIExample::Tag.new
       article = JsonAPIExample::Article.new
@@ -350,7 +376,7 @@ describe 'JSON API' do
       article = JsonAPIExample::Article.new
       article.item = 'item one'
       article.tags = [tag, author]
-      expect(lambda { article.create }).to raise_error(Exception)
+      expect(-> { article.create }).to raise_error(Exception)
     end
 
     it 'should perform a patch request in proper json api format' do
@@ -360,7 +386,7 @@ describe 'JSON API' do
         expect(hash['data']).to_not be_nil
         expect(hash['data']['id']).to_not be_nil
         expect(hash['data']['type']).to_not be_nil
-      }.and_return(::FaradayResponseMock.new(OpenStruct.new(body:'{}', response_headers:{})))
+      }.and_return(::FaradayResponseMock.new(OpenStruct.new(body: '{}', response_headers: {})))
       article = JsonAPIExample::Article.find(1)
       article.item = 'item one'
       article.update
@@ -370,7 +396,7 @@ describe 'JSON API' do
       expect_any_instance_of(Flexirest::Connection).to receive(:delete) { |_, path, data|
         expect(path).to eq('/articles/1')
         expect(data).to eq('')
-      }.and_return(::FaradayResponseMock.new(OpenStruct.new(body:'{}', response_headers:{})))
+      }.and_return(::FaradayResponseMock.new(OpenStruct.new(body: '{}', response_headers: {})))
       JsonAPIExample::Article.find(1).delete
     end
 
@@ -379,7 +405,7 @@ describe 'JSON API' do
         hash = MultiJson.load(data)
         expect(hash['data']['type']).to eq(JsonAPIExample::ArticleAlias.alias_type.to_s)
         expect(hash['data']['relationships']['author']['data']['type']).to eq(JsonAPIExample::AuthorAlias.alias_type.to_s)
-      }.and_return(::FaradayResponseMock.new(OpenStruct.new(body:'{}', response_headers:{})))
+      }.and_return(::FaradayResponseMock.new(OpenStruct.new(body: '{}', response_headers: {})))
       author = JsonAPIExample::AuthorAlias.new
       author.id = 1
       article = JsonAPIExample::ArticleAlias.find(1)
@@ -387,6 +413,5 @@ describe 'JSON API' do
       article.author = author
       article.update
     end
-
   end
 end
