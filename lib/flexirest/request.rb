@@ -402,7 +402,11 @@ module Flexirest
         elsif @post_params.is_a?(String)
           @post_params
         else
-          (params || @post_params || {}).to_json
+          if @method[:options][:wrap_root].present?
+            {@method[:options][:wrap_root] => (params || @post_params || {})}.to_json
+          else
+            (params || @post_params || {}).to_json
+          end
         end
         headers["Content-Type"] ||= "application/json; charset=utf-8"
       end

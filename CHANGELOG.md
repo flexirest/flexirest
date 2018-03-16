@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.6.0
+
+Feature:
+
+- APIs that expect request bodies to have a wrapping element can now have this specified at mapping time.
+
 ## 1.5.9
 
 Bugfix:

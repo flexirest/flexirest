@@ -36,6 +36,7 @@ describe Flexirest::Request do
       post :test_encoding, "/encoding", request_body_type: :json
       post :testing_no_content_headers, "/no-content"
       put :update, "/put/:id"
+      put :wrapped, "/put/:id", wrap_root: "example"
       put :conversion, "/put/:id", parse_fields: [:converted]
       delete :remove, "/remove/:id"
       delete :remove_body, "/remove/:id", send_delete_body: true
@@ -280,6 +281,12 @@ describe Flexirest::Request do
     expect_any_instance_of(Flexirest::Connection).to receive(:put).with("/put/1234", %q({"debug":true,"test":"foo"}), an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"result\":true}", response_headers:{})))
     ExampleClient.request_body_type :json
     ExampleClient.update id:1234, debug:true, test:'foo'
+  end
+
+  it "should encode the body in a JSON format if specified" do
+    expect_any_instance_of(Flexirest::Connection).to receive(:put).with("/put/1234", %q({"example":{"debug":true,"test":"foo"}}), an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"result\":true}", response_headers:{})))
+    ExampleClient.request_body_type :json
+    ExampleClient.wrapped id:1234, debug:true, test:'foo'
   end
 
   it "should not pass through an encoded empty body parameter" do
