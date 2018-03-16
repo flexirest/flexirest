@@ -45,7 +45,7 @@ If you are a previous user of ActiveRestClient, there's some more information on
   - [Proxying APIs](#proxying-apis)
   - [Translating APIs](#translating-apis)
   - [Default Parameters](#default-parameters)
-  - [Root element removal](#root-element-removal)
+  - [Root elements](#root-elements)
   - [Required Parameters](#required-parameters)
   - [Updating Only Changed/Dirty](#updating-only-changed-dirty)
   - [HTTP/Parse Error Handling](#httpparse-error-handling)
