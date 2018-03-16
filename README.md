@@ -51,6 +51,7 @@ If you are a previous user of ActiveRestClient, there's some more information on
   - [HTTP/Parse Error Handling](#httpparse-error-handling)
   - [Validation](#validation)
     - [Permitting nil values](#permitting-nil-values)
+  - [Filtering result lists](#filtering-result-lists)
 - [Debugging](#debugging)
 - [XML Responses](#xml-responses)
 - [Contributing](#contributing)
