@@ -727,9 +727,7 @@ module Flexirest
       end
       if body.is_a? Array
         result = Flexirest::ResultIterator.new(@response)
-        body.each do |json_object|
-          result << new_object(json_object, @overridden_name)
-        end
+        add_nested_body_to_iterator(result, body)
       else
         result = new_object(body, @overridden_name)
         result._status = @response.status
@@ -742,6 +740,18 @@ module Flexirest
         end
       end
       result
+    end
+
+    def add_nested_body_to_iterator(result, items)
+      items.each do |json_object|
+        if json_object.is_a?(Array)
+          iterator = ResultIterator.new
+          add_nested_body_to_iterator(iterator, json_object)
+          result << iterator
+        else
+          result << new_object(json_object, @overridden_name)
+        end
+      end
     end
   end
 

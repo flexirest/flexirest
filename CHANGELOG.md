@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.6.2
+
+Bugfix:
+
+- Flexirest wasn't supporting nested arrays in responses, it does now. Thanks to Rui Ribeiro for pointing this out.
+
 ## 1.6.1
 
 Feature:

@@ -150,7 +150,7 @@ describe Flexirest::Request do
     expect(connection).to receive(:get).with("/", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:'{"result":true}', response_headers:{})))
     servers = []
     # TODO: this next test is potentially flakey, if over 10 runs of []#sample it doesn't return both variants, but it's so unlikely...
-    10.times do
+    30.times do
       expect(Flexirest::ConnectionManager).to receive(:get_connection) do |arg|
         servers << arg
         connection
@@ -433,6 +433,15 @@ describe Flexirest::Request do
     expect(object).to be_instance_of(Flexirest::ResultIterator)
     expect(object.first.first_name).to eq("Johnny")
     expect(object[1].first_name).to eq("Billy")
+    expect(object._status).to eq(200)
+  end
+
+  it "should parse a nested array within JSON to be a result iterator" do
+    expect_any_instance_of(Flexirest::Connection).to receive(:put).with("/put/1234", "debug=true", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"[[{}, {\"first_name\":\"Johnny\"}, {\"first_name\":\"Billy\"}]]", status:200, response_headers:{})))
+    object = ExampleClient.update id:1234, debug:true
+    expect(object).to be_instance_of(Flexirest::ResultIterator)
+    expect(object[0][1].first_name).to eq("Johnny")
+    expect(object[0][2].first_name).to eq("Billy")
     expect(object._status).to eq(200)
   end
 
