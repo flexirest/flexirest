@@ -1,14 +1,14 @@
 # Flexirest (ARC) Contributing Guide
 
-## Introduction
+## Introduction
 
 This project was built at Which? Ltd in the UK as ActiveRestClient, but was released as open source in 2014 under the MIT Licence.  This is Andy Jeffries' fork of the project as the original seems not to be maintained by Which? and there's been no communication back about the project.
 
 We're happy to receive contributions from the community for features and bugfixes and hopefully this guide helps new developers to the project to understand how to get started with the internals of Flexirest.
 
-## Overview
+## Overview
 
-![Component Overview Diagram](https://raw.githubusercontent.com/andyjeffries/flexirest/master/doc/Flexirest%20Internals.png)
+![Component Overview Diagram](https://raw.githubusercontent.com/andyjeffries/flexirest/master/docs/Flexirest%20Internals.png)
 
 ## Components
 
