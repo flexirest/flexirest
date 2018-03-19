@@ -81,6 +81,7 @@ module Flexirest
     def self.prepare_direct_request(request, method = :get, options={})
       unless request.is_a? Flexirest::Request
         options[:plain] ||= false
+        options[:direct] ||= true
         request = Flexirest::Request.new({ url: request, method: method, options: options }, self)
       end
       request

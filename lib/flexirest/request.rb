@@ -454,7 +454,11 @@ module Flexirest
         base_url.gsub!(%r{//(.)}, "//#{username}:#{password}@\\1") if username && !base_url[%r{//[^/]*:[^/]*@}]
         connection = Flexirest::ConnectionManager.get_connection(base_url)
       end
-      Flexirest::Logger.info "  \033[1;4;32m#{Flexirest.name}\033[0m #{@instrumentation_name} - Requesting #{connection.base_url}#{@url}"
+      if @method[:options][:direct]
+        Flexirest::Logger.info "  \033[1;4;32m#{Flexirest.name}\033[0m #{@instrumentation_name} - Requesting #{@url}"
+      else
+        Flexirest::Logger.info "  \033[1;4;32m#{Flexirest.name}\033[0m #{@instrumentation_name} - Requesting #{connection.base_url}#{@url}"
+      end
 
       if verbose?
         Flexirest::Logger.debug "Flexirest Verbose Log:"

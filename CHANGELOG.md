@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.6.5
+
+Bugfix:
+
+- Plain requests were having the URL output to the log twice (thanks to Dan W for reporting this)
+
 ## 1.6.4
 
 Feature:
