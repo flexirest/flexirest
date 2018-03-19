@@ -1,4 +1,4 @@
-# Migrating from ActiveRestClient
+# *Flexirest:* Migrating from ActiveRestClient
 
 While contracting at Which? Ltd I wrote a library in Ruby to access REST APIs in a very flexible, almost ActiveRecord style. This was agreed (after long discussions with the legal department) to be released as open source.
 
