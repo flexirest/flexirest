@@ -1,4 +1,4 @@
-# Changelog
+# Changelog
 
 ## 1.6.5
 
@@ -66,91 +66,91 @@ Feature:
 
 - Changing `_request` to accept options, including `:headers`, rather than headers directly
 
-## 1.5.3
+## 1.5.3
 
 Feature:
 
 - Allow passing custom headers as an option to raw requests.
 
-## 1.5.2
+## 1.5.2
 
 Bugfix:
 
 - Some APIs return an empty response body even on 200s, so any valid status with an empty body should be handled nicely
 
-## 1.5.1
+## 1.5.1
 
 Bugfix:
 
 - PUT/POST/PATCH methods called on an instantiated object should merge the objects attributes with specified params.
 
-## 1.5.0
+## 1.5.0
 
 Bugfix:
 
 - GET requests with the same URL as PUT requests shouldn't use the etag cached version.
 
-## 1.4.8/1.4.9
+## 1.4.8/1.4.9
 
 Bugfix:
 
 - Responses without content (202, 204) will return an empty object.
 
-## 1.4.7
+## 1.4.7
 
 Bugfix:
 
 - Responses without content (202, 204) will still make the headers available in `_headers`.
 
-## 1.4.6
+## 1.4.6
 
 Feature:
 
 - You can define how to handle the body of `delete` requests now with the mapping option `send_delete_body`.
 
-## 1.4.5
+## 1.4.5
 
 Bugfix:
 
 - DELETE requests shouldn't send a request body, the body semantics are undefined.
 
-## 1.4.4
+## 1.4.4
 
 Feature:
 
 - Handling 202s without any content the same as a 204.
 
-## 1.4.3
+## 1.4.3
 
 Feature:
 
 - Added more client exceptions to allow fine grained exception trapping
 
-## 1.4.2
+## 1.4.2
 
 Bugfix:
 
 - Breakage in path parameters where the value isn't specified
 
-## 1.4.1
+## 1.4.1
 
 Bugfix:
 
 - Pluses in URL params are now escaped to %2B (thanks to jan-vitek for the bug report and pull request)
 
-## 1.4.0
+## 1.4.0
 
 Feature:
 
 - New JSON API support - thanks to Mike Voets for all his hard work!
 
-## 1.3.35
+## 1.3.35
 
 Bugfix:
 
 - Slashes in URL params are now escaped to %2F (thanks to davidtolsma for the bug report)
 
-## 1.3.34
+## 1.3.34
 
 Feature:
 
@@ -160,187 +160,187 @@ Bugfix:
 
 - Now can disable caching on subclasses after being enabled on a parent (thanks to yujideveloper for the PR)
 
-## 1.3.33
+## 1.3.33
 
 Feature:
 
 - Allowed specifying custom message for validation failures
 
-## 1.3.32
+## 1.3.32
 
 Bugfix:
 
 - Rolled back 1.3.31 - was an error in client code
 
-## 1.3.31
+## 1.3.31
 
 Bugfix:
 
 - Working with later versions of Faraday where the response seems to have lost response_headers
 
-## 1.3.30
+## 1.3.30
 
 Bugfix:
 
 - Restoring cached Flexirest::ResultIterators created via a Proxy wasn't restoring correctly
 
-## 1.3.29
+## 1.3.29
 
 Bugfix:
 
 - Setting `perform_caching` on `Flexirest::Base` was being ignored
 
-## 1.3.28
+## 1.3.28
 
 Feature:
 
 - Implemented delete_if on ResultIterator
 
-## 1.3.27
+## 1.3.27
 
 Bugfix:
 
 - HTTP GET requests shouldn't send any body, JSON-encoded or otherwise
 
-## 1.3.26
+## 1.3.26
 
 Bugfix:
 
 - Parameters sent within the URL (e.g. /foo/:bar) should be URI escaped or Flexirest raises an error about unparseable URLs
 
-## 1.3.25
+## 1.3.25
 
 Feature:
 
 - Improvements in performance due to date parsing (thanks to guanglunw for the PR)
 
-## 1.3.24
+## 1.3.24
 
 Bugfix:
 
 - Calling class methods on an instance where the instance is cacheable should work (thanks to johnmckinght for the bug report)
 
-## 1.3.23
+## 1.3.23
 
 Bugfix:
 
 - Should not parse multiline strings as `DateTime` when using the automatica parsing (thanks to execjosh for the PR)
 
-## 1.3.22
+## 1.3.22
 
 Bugfix:
 
 - Broke a test in v1.3.21 (according to Travis) which was passing locally, updated all my gems and then it broke locally, so reverted the test.
 
-## 1.3.21
+## 1.3.21
 
 Feature:
 
 - Now any requests returning a 204 with an empty (nil or blank) body return true instead of raising a ParseException
 
-## 1.3.20
+## 1.3.20
 
 Bugfix:
 
 - Fixed `has_one` association raising an error if there is no associated object (it should just return `nil`) (thanks to Azat Galikhanov for the PR)
 
-## 1.3.19
+## 1.3.19
 
 Feature:
 
 - Added Headers in to Flexirest::ResponseParseException to aid debugging of why it doesn't work against custom APIs.
 
-## 1.3.18
+## 1.3.18
 
 Feature:
 
 - Simplistic load balancing of API servers by supplying an array of URLs to `base_url`. It then pulls a random one out for each request.
 
-## 1.3.17
+## 1.3.17
 
 Bugfix:
 
 - Authentication credentials weren't being passed through proxied classes (thanks to Lukasz Modlinski for the contribution).
 
-## 1.3.16
+## 1.3.16
 
 Feature:
 
 - Allows disabling of the automatic date parsing with the `Flexirest::Base.disable_automatic_date_parsing` setting and/or specifying it per mapped method with the `:parse_fields` option (thanks to Michael Mealling for the request).
 
-## 1.3.15
+## 1.3.15
 
 Feature:
 
 - Allows setting of the ApiAuth `:digest` or `:override_http_method` if v2.0 or above of ApiAuth is installed (thanks to Alan Ruth for the request).
 
-## 1.3.14
+## 1.3.14
 
 Feature:
 
 - Plain Requests (both using the `plain: true` option to mapped methods and using `_plain_request`) return a `Flexirest::PlainResponse` which is string-like for all intents and purposes (it's comparable with strings using the body of the response) and also has `_status` and `_headers` methods (thanks to Rui Ribeiro for the request/inspiration).
 
-## 1.3.13
+## 1.3.13
 
 Feature:
 
 - The undocumented `plain: true` option to mapped methods was tested and documented.
 
-## 1.3.12
+## 1.3.12
 
 Bugfix:
 
 - The Travis build was breaking because Guard pulls in Listen, which only runs on Ruby 2.2 and above. So I removed Guard so the gem can be tested to work against older Ruby versions still.
 
-## 1.3.11
+## 1.3.11
 
 Feature:
 
 - Made the `Flexirest::*Exception#message` much nicer to help debugging applications, e.g. `Sending PUT to '/enable' returned a 500 with the body of - {"error":"John doesn't exist", "code":1234}`.
 
-## 1.3.10
+## 1.3.10
 
 Feature:
 
 - Added per-request params encoding so you can choose between `param[]=foo&param[]=bar` or `param=foo&param=bar` (thanks to bkubic for the PR).
 
-## 1.3.9
+## 1.3.9
 
 Feature:
 
 - Proxying now works for PATCH requests, along with the existing GET, POST, PUT and DELETE (thanks to Andrew Schaper for the PR).
 
-## 1.3.8
+## 1.3.8
 
 Bugfix:
 
 - Fixing crash when trying to parse a JSON response body for error codes and no translator present.
 
-## 1.3.7
+## 1.3.7
 
 Bugfix:
 
 - Removed some more warnings about using uninitialized variables (thanks to Joel Low for the heads-up).
 
-## 1.3.6
+## 1.3.6
 
 Bugfix:
 
 - Removed some warnings about using uninitialized variables (thanks to Joel Low for the heads-up).
 
-## 1.3.5
+## 1.3.5
 
 Bugfix:
 
 - Deeply nested has_many relationships weren't working (thanks to Lewis Buckley for the bug report, spec and fix).
 
-## 1.3.4
+## 1.3.4
 
 Features:
 
 - Allows assigning `STDOUT` to `Flexirest::Logger.logfile` which can be useful when debugging Flexirest or applications at the console (either `rails console` from a Rails app or `rake console` from within Flexirest's codebase) along with setting `verbose!` on the class.
 
-## 1.3.3
+## 1.3.3
 
 Features:
 
@@ -492,7 +492,7 @@ Bugfixes
 - Start of XML support
 - URL encoding username and password
 
-## 1.0.9
+## 1.0.9
 
 Bugfixes
 
