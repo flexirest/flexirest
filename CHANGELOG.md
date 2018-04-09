@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.6.6
+
+Feature:
+
+- Username and Password can now take a block/proc for dynamically retrieving the username and password, and will pass in the object if called in a current object context (thanks to Sam Starling for suggesting this lack of functionality)
+
 ## 1.6.5
 
 Bugfix:

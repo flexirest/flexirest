@@ -13,6 +13,33 @@ class Person < Flexirest::Base
 end
 ```
 
+You can also pass in a Proc or a block to `username` and `password` if you want to dynamically pull it from somewhere, e.g. a [Current class descending from ActiveSupport::CurrentAttributes](http://edgeapi.rubyonrails.org/classes/ActiveSupport/CurrentAttributes.html).
+
+```ruby
+class Person < Flexirest::Base
+  username -> (obj) { obj ? Account.find(obj.id).username : Current.username }
+  password do
+    Rails.configuration.x.default_password
+  end
+
+  get :all, "/people"
+  get :find, "/people/:id"
+end
+```
+
+In the above example, the `username` call handles things differently if it's called from an object context:
+
+```ruby
+person = Person.new(id: 1234)
+person.find
+```
+
+Or if it's called from a class context:
+
+```ruby
+Person.find(id: 1234)
+```
+
 ## Api-Auth
 
 Using the [Api-Auth](https://github.com/mgomes/api_auth) integration it is very easy to sign requests. Include the Api-Auth gem in your `Gemfile` and  then add it to your application. Then simply configure Api-Auth one time in your app and all requests will be signed from then on.

@@ -45,22 +45,30 @@ module Flexirest
         @@base_url = value
       end
 
-      def username(value = nil)
+      def username(value = nil, &block)
         @username ||= nil
         @@username ||= nil
         if value.nil?
-          value = if @username.nil?
-            @@username
+          if block_given?
+            @username = block
           else
-            @username
+            value = if @username.nil?
+              @@username
+            else
+              @username
+            end
+            if value.nil? && superclass.respond_to?(:username)
+              value = superclass.username
+            end
+            value
           end
-          if value.nil? && superclass.respond_to?(:username)
-            value = superclass.username
-          end
-          value
         else
-          value = CGI::escape(value) if value.present? && !value.include?("%")
-          @username = value
+          if value.respond_to?(:call)
+            @username = value
+          else
+            value = CGI::escape(value) if value.present? && !value.include?("%")
+            @username = value
+          end
         end
       end
 
@@ -70,20 +78,28 @@ module Flexirest
         @@username = value
       end
 
-      def password(value = nil)
+      def password(value = nil, &block)
         if value.nil?
-          value = if @password.nil?
-            @@password
+          if block_given?
+            @password = block
           else
-            @password
+            value = if @password.nil?
+              @@password
+            else
+              @password
+            end
+            if value.nil? && superclass.respond_to?(:password)
+              value = superclass.password
+            end
+            value
           end
-          if value.nil? && superclass.respond_to?(:password)
-            value = superclass.password
-          end
-          value
         else
-          value = CGI::escape(value) if value.present? && !value.include?("%")
-          @password = value
+          if value.respond_to?(:call)
+            @password = value
+          else
+            value = CGI::escape(value) if value.present? && !value.include?("%")
+            @password = value
+          end
         end
       end
 

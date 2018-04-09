@@ -62,6 +62,19 @@ describe Flexirest::Request do
       get :all, "/"
     end
 
+    class AuthenticatedProcExampleClient < Flexirest::Base
+      base_url "http://www.example.com"
+      username Proc.new { |obj| obj ? "bill-#{obj.id}" : "bill" }
+      password do |obj|
+        if obj
+          "jones-#{obj.id}"
+        else
+          "jones"
+        end
+      end
+      get :all, "/"
+    end
+
     class ProcDefaultExampleClient < Flexirest::Base
       base_url "http://www.example.com"
       get :all, "/", defaults: (Proc.new do |params|
@@ -165,6 +178,21 @@ describe Flexirest::Request do
     expect(Flexirest::ConnectionManager).to receive(:get_connection).with("http://john:smith@www.example.com").and_return(connection)
     expect(connection).to receive(:get).with("/", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:'{"result":true}', response_headers:{})))
     AuthenticatedExampleClient.all
+  end
+
+  it "should get an HTTP connection with authentication using procs when called in a class context" do
+    connection = double(Flexirest::Connection).as_null_object
+    expect(Flexirest::ConnectionManager).to receive(:get_connection).with("http://bill:jones@www.example.com").and_return(connection)
+    expect(connection).to receive(:get).with("/", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:'{"result":true}', response_headers:{})))
+    AuthenticatedProcExampleClient.all
+  end
+
+  it "should get an HTTP connection with authentication using procs when called in an object context" do
+    connection = double(Flexirest::Connection).as_null_object
+    expect(Flexirest::ConnectionManager).to receive(:get_connection).with("http://bill-1:jones-1@www.example.com").and_return(connection)
+    expect(connection).to receive(:get).with("/?id=1", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:'{"result":true}', response_headers:{})))
+    obj = AuthenticatedProcExampleClient.new(id: 1)
+    obj.all
   end
 
   it "should get an HTTP connection when called and call get on it" do

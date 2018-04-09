@@ -93,19 +93,27 @@ module Flexirest
     end
 
     def username
+      ret = nil
       if object_is_class?
-        @object.username
+        ret = @object.username
+        ret = ret.call if ret.respond_to?(:call)
       else
-        @object.class.username
+        ret = @object.class.username
+        ret = ret.call(@object) if ret.respond_to?(:call)
       end
+      ret
     end
 
     def password
+      ret = nil
       if object_is_class?
-        @object.password
+        ret = @object.password
+        ret = ret.call if ret.respond_to?(:call)
       else
-        @object.class.password
+       ret = @object.class.password
+       ret = ret.call(@object) if ret.respond_to?(:call)
       end
+      ret
     end
 
     def request_body_type
