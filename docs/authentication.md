@@ -27,7 +27,7 @@ class Person < Flexirest::Base
 end
 ```
 
-In the above example, the `username` call handles things differently if it's called from an object context:
+Note in the above code sample, we've used a proc in one of them and a block in the other. There's no difference at all, we just wanted to demonstrate both syntaxes. Also, both will accept a single parameter (`obj` in the above) to receive an optional parameter for the current Flexirest object (if not called from a class context). For example, the `username` call above handles things differently if it's called from an object context:
 
 ```ruby
 person = Person.new(id: 1234)
