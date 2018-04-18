@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.6.7
+
+Bugfix:
+
+- Returning the string value for a field that looks like a Date/DateTime instead of raising an error when the value can't be parsed (thanks to Give Corps for the pull request)
+
 ## 1.6.6
 
 Feature:
