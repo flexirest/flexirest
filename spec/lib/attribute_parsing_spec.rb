@@ -39,4 +39,8 @@ describe Flexirest::AttributeParsing do
   it "should return floats for float values" do
     expect(subject.test(1980.12)).to eq(1980.12)
   end
+
+  it "should return as a string a date-like string that can't be parsed" do
+    expect(subject.test("7/29/2018")).to eq("7/29/2018")
+  end
 end
