@@ -3,7 +3,14 @@ module Flexirest
     module ClassMethods
       def validates(field_name, options={}, &block)
         @_validations ||= []
-        @_validations << {field_name:field_name, options:options, block:block}
+        @_validations << { field_name: field_name, options: options, block: block }
+      end
+
+      def validates_associated(field_name, options={}, &block)
+        _associations[field_name]._validations.each do |validation|
+          @_validations ||= []
+          @_validations << validation
+        end
       end
 
       def _validations

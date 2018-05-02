@@ -280,6 +280,32 @@ describe "Flexirest::Validation" do
     end
   end
 
+  context "when validating associated models" do
+    class ChildExample < Flexirest::Base
+      validates :first_name, presence: true
+    end
+    
+    class AssociatedValidationExample < Flexirest::Base
+      include Flexirest::Validation
+      has_one :child, ChildExample
+      validates_associated :child
+    end
+
+    it "should be invalid when the associated model is invalid" do
+      child = ChildExample.new
+      child.valid?
+      expect(child._errors[:first_name].size).to eq(1)
+
+      a = AssociatedValidationExample.new(child: child)
+      a.valid?
+      expect(a.valid?).to be false
+      expect(a._errors[:first_name].size).to eq(1)
+    end
+
+    it "should be valid when the associated model is valid" do
+    end
+  end
+
   describe "#full_error_messages" do
     it "should return an array of strings that combines the attribute name and the error message" do
       a = SimpleValidationExample.new(age:"Bob", suffix: "Baz")
