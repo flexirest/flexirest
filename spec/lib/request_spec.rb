@@ -834,7 +834,7 @@ describe Flexirest::Request do
     expect(e).to be_instance_of(Flexirest::HTTPBadRequestClientException)
     expect(e.status).to eq(400)
     expect(object.first_name).to eq 'John'
-    expect(object.errors).to eq(nil)
+    expect(object.errors).to be_empty
   end
 
   it "should raise an exception if you try to pass in an unsupport method" do

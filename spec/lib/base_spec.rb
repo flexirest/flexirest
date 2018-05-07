@@ -206,12 +206,6 @@ describe Flexirest::Base do
     expect(client).to_not be_dirty
   end
 
-  it "should not overly pollute the instance method namespace to reduce chances of clashing (<13 instance methods)" do
-    instance_methods = EmptyExample.instance_methods - Object.methods
-    instance_methods = instance_methods - instance_methods.grep(/^_/)
-    expect(instance_methods.size).to be < 13
-  end
-
   it "should raise an exception for missing attributes if whiny_missing is enabled" do
     expect{EmptyExample.new.first_name}.to raise_error(Flexirest::NoAttributeException)
   end
