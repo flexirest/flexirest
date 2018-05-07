@@ -1,4 +1,6 @@
 require 'active_support/all'
+require 'active_model'
+
 require "flexirest/version"
 require "flexirest/attribute_parsing"
 require "flexirest/associations"
@@ -16,7 +18,6 @@ require "flexirest/lazy_association_loader"
 require "flexirest/json_api_proxy"
 require "flexirest/request"
 require "flexirest/request_delegator"
-require "flexirest/validation"
 require "flexirest/callbacks"
 require "flexirest/proxy_base"
 require "flexirest/recording"
