@@ -263,6 +263,11 @@ describe Flexirest::Base do
       expect(object.inspect).to match(/#<EmptyExample \[uninitialized\]/)
     end
 
+    it "truncates the long Strings" do
+      object = EmptyExample.new(id: 1, name: "x" * 100)
+      expect(object.inspect).to match(/#<EmptyExample id: 1, name: "x{51}\.\.\."/)
+    end
+
   end
 
   context "accepts a Translator to reformat JSON" do
