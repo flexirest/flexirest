@@ -1,9 +1,10 @@
 module Flexirest
   class Base
+    include ActiveModel::Validations
+
     include Mapping
     include Configuration
     include Callbacks
-    include Validation
     include Caching
     include Recording
     include AttributeParsing
@@ -60,10 +61,6 @@ module Flexirest
     # Returns hash of old and new vaules for each changed field
     def changes
       @dirty_attributes
-    end
-
-    def errors
-      @attributes[:errors] || (_errors != {} ? _errors : nil)
     end
 
     def self._request(request, method = :get, params = nil, options = {})
