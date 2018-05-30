@@ -16,24 +16,24 @@ class AssociationExampleBase < Flexirest::Base
   has_one :association_example_other
 end
 
-class DeepNestedHasManyChildExample < Flexirest::Base
+class DeepNestedHasManyChildExample < Flexirest::BaseWithoutValidation
 end
 
-class DeepNestedHasManyTopExample < Flexirest::Base
+class DeepNestedHasManyTopExample < Flexirest::BaseWithoutValidation
   has_many :entries, DeepNestedHasManyChildExample
 end
 
-class DeepNestedHasManyExample < Flexirest::Base
+class DeepNestedHasManyExample < Flexirest::BaseWithoutValidation
   has_many :results, DeepNestedHasManyTopExample
   hash = { results: [ { entries: [ { items: [ "item one", "item two" ] } ] }, { entries: [ { items: [ "item three", "item four" ] } ] } ] }
   get :find, "/iterate", fake: hash.to_json
 end
 
-class WhitelistedDateExample < Flexirest::Base
+class WhitelistedDateExample < Flexirest::BaseWithoutValidation
   parse_date :updated_at
 end
 
-class WhitelistedDateMultipleExample < Flexirest::Base
+class WhitelistedDateMultipleExample < Flexirest::BaseWithoutValidation
   parse_date :updated_at, :created_at
   parse_date :generated_at
 end
