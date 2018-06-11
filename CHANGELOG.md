@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.6.8
+
+Feature:
+
+- A refactoring to allow users to chose to use ActiveModel validation instead of the custom ActiveModel-like validation built in to Flexirest. In a future release this will become the default. (thanks to KARASZI István for the pull request)
+
 ## 1.6.7
 
 Bugfix:
