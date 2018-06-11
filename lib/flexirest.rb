@@ -20,6 +20,7 @@ require "flexirest/validation"
 require "flexirest/callbacks"
 require "flexirest/proxy_base"
 require "flexirest/recording"
+require "flexirest/base_without_validation"
 require "flexirest/base"
 require "flexirest/monkey_patching"
 require "flexirest/plain_response"
@@ -33,4 +34,8 @@ module Flexirest
   def self.name=(value)
     @@name = value
   end
+
+  class NoAttributeException < StandardError ; end
+  class ValidationFailedException < StandardError ; end
+  class MissingOptionalLibraryError < StandardError ; end
 end

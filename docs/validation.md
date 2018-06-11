@@ -1,6 +1,6 @@
 # *Flexirest:* Validation
 
-You can create validations on your objects just like Rails' built in ActiveModel validations. For example:
+Flexirest comes with its own validation. It is very similar to the Rails' built in ActiveModel validations. For example:
 
 ```ruby
 class Person < Flexirest::Base
@@ -19,6 +19,7 @@ class Person < Flexirest::Base
   get :index, '/'
 end
 ```
+
 
 Note: the block based validation is responsible for adding errors to `object._errors[name]` (and this will automatically be ready for `<<` inserting into).
 
@@ -82,6 +83,34 @@ The following attributes will pass validation since they explicitly `allow_nil`:
 - `:golf_score`
 - `:retirement_age`
 - `:favorite_authors`
+
+## ActiveModel::Validations
+
+This built-in validations have a bit different syntax than the ActiveModel validations and use a different codebase.
+
+You can opt-out from the built-in validations and use the `ActiveModel` validations instead if you inherit from the `Flexirest::BaseWithoutValidation` class instead of the `Flexirest::Base`.
+
+Here is the same example what you could see at the top but with `ActiveModel` validations:
+
+
+```ruby
+class Person < Flexirest::BaseWithoutValidation
+  include ActiveModel::Validations
+
+  validates :first_name, :last_name, presence: true # ensures that the value is present and not blank
+  validates :password, length: { within: 6..12, message: "Invalid password length, must be 6-12 characters" }
+  validates :post_code, length: { minimum: 6, maximum: 8 }
+  validates :salary, numericality: { greater_than_or_equal_to: 20_000, less_than_or_equal_to: 50_000 }
+  validates :age, numericality: { greater_than_or_equal_to: 18, less_than_or_equal_to: 65 }
+  validates :suffix, inclusion: { in: %w{Dr. Mr. Mrs. Ms.} }
+
+  validate do
+    errors.add(:name, "must be over 4 chars long") if first_name.length <= 4
+  end
+
+  get :index, '/'
+end
+```
 
 
 -----
