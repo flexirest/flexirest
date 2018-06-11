@@ -88,7 +88,7 @@ The following attributes will pass validation since they explicitly `allow_nil`:
 
 This built-in validations have a bit different syntax than the ActiveModel validations and use a different codebase.
 
-You can opt-out from the built-inv validations and use the `ActiveModel` validations instead if you inherit from the `Flexirest::BaseWithoutValidation` class instead of the `Flexirest::Base`.
+You can opt-out from the built-in validations and use the `ActiveModel` validations instead if you inherit from the `Flexirest::BaseWithoutValidation` class instead of the `Flexirest::Base`.
 
 Here is the same example what you could see at the top but with `ActiveModel` validations:
 
