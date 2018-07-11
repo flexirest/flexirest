@@ -22,6 +22,10 @@ module Flexirest
       @session.headers
     end
 
+    def basic_auth(username, password)
+      @session.basic_auth(username, password)
+    end
+
     def make_safe_request(path, &block)
       block.call
     rescue Faraday::Error::TimeoutError

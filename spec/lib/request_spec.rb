@@ -62,6 +62,13 @@ describe Flexirest::Request do
       get :all, "/"
     end
 
+    class AuthenticatedWithEmailExampleClient < Flexirest::Base
+      base_url "http://www.example.com"
+      username "john@smith.com"
+      password "smith"
+      get :all, "/"
+    end
+
     class AuthenticatedProcExampleClient < Flexirest::Base
       base_url "http://www.example.com"
       username Proc.new { |obj| obj ? "bill-#{obj.id}" : "bill" }
@@ -175,21 +182,32 @@ describe Flexirest::Request do
 
   it "should get an HTTP connection with authentication when called" do
     connection = double(Flexirest::Connection).as_null_object
-    expect(Flexirest::ConnectionManager).to receive(:get_connection).with("http://john:smith@www.example.com").and_return(connection)
+    expect(Flexirest::ConnectionManager).to receive(:get_connection).with("http://www.example.com").and_return(connection)
+    expect(connection).to receive(:basic_auth).with("john", "smith")
     expect(connection).to receive(:get).with("/", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:'{"result":true}', response_headers:{})))
     AuthenticatedExampleClient.all
   end
 
+  it "should get an HTTP connection with e-mail authentication when called" do
+    connection = double(Flexirest::Connection).as_null_object
+    expect(Flexirest::ConnectionManager).to receive(:get_connection).with("http://www.example.com").and_return(connection)
+    expect(connection).to receive(:basic_auth).with("john@smith.com", "smith")
+    expect(connection).to receive(:get).with("/", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:'{"result":true}', response_headers:{})))
+    AuthenticatedWithEmailExampleClient.all
+  end
+
   it "should get an HTTP connection with authentication using procs when called in a class context" do
     connection = double(Flexirest::Connection).as_null_object
-    expect(Flexirest::ConnectionManager).to receive(:get_connection).with("http://bill:jones@www.example.com").and_return(connection)
+    expect(Flexirest::ConnectionManager).to receive(:get_connection).with("http://www.example.com").and_return(connection)
+    expect(connection).to receive(:basic_auth).with("bill", "jones")
     expect(connection).to receive(:get).with("/", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:'{"result":true}', response_headers:{})))
     AuthenticatedProcExampleClient.all
   end
 
   it "should get an HTTP connection with authentication using procs when called in an object context" do
     connection = double(Flexirest::Connection).as_null_object
-    expect(Flexirest::ConnectionManager).to receive(:get_connection).with("http://bill-1:jones-1@www.example.com").and_return(connection)
+    expect(Flexirest::ConnectionManager).to receive(:get_connection).with("http://www.example.com").and_return(connection)
+    expect(connection).to receive(:basic_auth).with("bill-1", "jones-1")
     expect(connection).to receive(:get).with("/?id=1", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:'{"result":true}', response_headers:{})))
     obj = AuthenticatedProcExampleClient.new(id: 1)
     obj.all
