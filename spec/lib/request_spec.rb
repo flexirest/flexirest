@@ -430,6 +430,11 @@ describe Flexirest::Request do
     expect(ExampleClient.all).to be_truthy
   end
 
+  it "should return true from 200 with empty bodies even if they don't have a correct content type" do
+    expect_any_instance_of(Flexirest::Connection).to receive(:get).with(any_args).and_return(::FaradayResponseMock.new(OpenStruct.new(status:200, response_headers:{"Content-Type" => "text/plain"}, body: nil)))
+    expect(ExampleClient.all).to be_truthy
+  end
+
   it "should return a lazy loader object if lazy loading is enabled" do
     object = LazyLoadedExampleClient.fake id:1234, debug:true
     expect(object).to be_an_instance_of(Flexirest::LazyLoader)

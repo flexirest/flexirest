@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.6.9
+
+Feature:
+
+- Empty response bodies with an unparseable content-type are forced to be JSON with an empty JSON body
+
 ## 1.6.8
 
 Feature:

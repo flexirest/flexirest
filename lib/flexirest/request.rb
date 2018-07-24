@@ -524,7 +524,10 @@ module Flexirest
     def handle_response(response, cached = nil)
       @response = response
       status = @response.status || 200
-      @response.body = "{}" if @response.body.blank?
+      if @response.body.blank?
+        @response.response_headers['Content-Type'] = "application/json"
+        @response.body = "{}"
+      end
 
       if cached && response.status == 304
         Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest.name}\033[0m #{@instrumentation_name}" +
