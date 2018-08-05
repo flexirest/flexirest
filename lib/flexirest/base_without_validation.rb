@@ -13,7 +13,7 @@ module Flexirest
     attr_accessor :_headers
 
     instance_methods.each do |m|
-      next unless %w{display presence load require hash untrust trust freeze method enable_warnings with_warnings suppress capture silence quietly debugger breakpoint}.map(&:to_sym).include? m
+      next unless %w{display presence load require untrust trust freeze method enable_warnings with_warnings suppress capture silence quietly debugger breakpoint}.map(&:to_sym).include? m
       undef_method m
     end
 
