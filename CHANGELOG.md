@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.7.0
+
+Feature:
+
+- Allows using a Flexirest instance as a hash key (thanks to René from Crete Media Design for the PR)
+
 ## 1.6.9
 
 Feature:
