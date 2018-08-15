@@ -44,7 +44,7 @@ module Flexirest
           if _attributes[key].is_a?(klass)
             return _attributes[key]
           end
-          
+
           _attributes[key] = klass.new(_attributes[key])
 
           _attributes[key]
