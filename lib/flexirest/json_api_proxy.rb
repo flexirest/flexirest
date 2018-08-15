@@ -186,6 +186,7 @@ module Flexirest
     module Response
       extend self
       extend Flexirest::JsonAPIProxy::Helpers
+      ID_PFIX = '_id_'
 
       def save_resource_class(object)
         @resource_class = object.is_a?(Class) ? object : object.class
@@ -206,19 +207,20 @@ module Flexirest
         records = [records] if is_singular_record
 
         # Retrieve all names of linked relationships
-        if records.first['relationships']
-          relationships = records.first['relationships'].keys
-        end
+        relationships = records.first['relationships']
+        relationships = relationships ? relationships.keys : []
 
-        resource_type = records.first['type']
         included = body['included']
 
         # Parse the records, and retrieve all resources in a
         # (nested) array of resources that is easy to work with in Flexirest
         resources = records.map do |record|
-          fetch_attributes_and_relationships(
-            resource_type, record, included, relationships
-          )
+          fetch_attributes_and_relationships(record, included, relationships)
+        end
+
+        # Pluck all attributed and associations into hashes
+        resources = resources.map do |resource|
+          pluck_attributes_and_relationships(resource, relationships)
         end
 
         # Depending on whether we got a resource object (hash) or array
@@ -228,8 +230,9 @@ module Flexirest
 
       private
 
-      def fetch_attributes_and_relationships(base, record, included, rels)
-        rels = (rels || []) - [base]
+      def fetch_attributes_and_relationships(record, included, rels, base: nil)
+        base = Array(base) unless base.is_a?(Array)
+        rels = rels - [base.last]
         rels_object = record['relationships']
 
         rels.each do |rel_name|
@@ -241,16 +244,13 @@ module Flexirest
           if is_singular_rel
             # Fetch a linked resource from the relationships object
             # and add it as an association attribute in the resource hash
-            record[rel_name], embedded = fetch_one_to_one(
-              rels_object, rel_name, included
-            )
-
+            record[rel_name], record[ID_PFIX + rel_name], embedded =
+              fetch_one_to_one(base, rels_object, rel_name, included)
           else
             # Fetch linked resources from the relationships object
             # and add it as an array into the resource hash
-            record[rel_name], embedded = fetch_one_to_many(
-              rels_object, rel_name, included
-            )
+            record[rel_name], record[ID_PFIX + rel_name], embedded =
+              fetch_one_to_many(base, rels_object, rel_name, included)
           end
 
           # Do not try to fetch embedded results if the response is not
@@ -267,49 +267,27 @@ module Flexirest
             if nested_rels_object && nested_rels_object.keys.present?
               # Fetch the linked resources and its attributes recursively
               fetch_attributes_and_relationships(
-                record['type'], nested_record, included, nested_rels_object.keys
+                nested_record, included, nested_rels_object.keys,
+                base: base + [rel_name]
               )
-
             else
-              # If there are no nested linked resources, just fetch the
-              # resource attributes of the linked resource
-              fetch_and_delete_attributes(nested_record)
+              nested_record
             end
           end
 
-          # Depending on if the resource is singular or plural, add it as
-          # the original type (array or hash) into the record hash
-          record[rel_name] =
-            if is_singular_rel
-              linked_resources.first
-            else
-              linked_resources
-            end
+          record[rel_name] = linked_resources
         end
 
-        # Add the record attributes to the record hash
-        fetch_and_delete_attributes(record)
         record
       end
 
-      def fetch_one_to_one(relationships, name, included)
+      def fetch_one_to_one(base, relationships, name, included)
         # Parse the relationships object given the relationship name `name`,
         # and look into the included object (in case of a compound document),
         # to embed the linked resource into the response
 
         if included.blank? || relationships[name]['data'].blank?
-          begin
-            # When the response is not a compound document (i.e. there is no
-            # includes object), build a LazyAssociationLoader for lazy loading
-            return build_lazy_loader(
-              name, relationships[name]['links']['related']
-            ), false
-          rescue NoMethodError
-            # If the url for retrieving the linked resource is missing,
-            # we assume there is no linked resource available to fetch
-            # Default nulled linked resource is `nil`
-            return nil, false
-          end
+          return build_lazy_loader(base, relationships, name), nil, false
         end
 
         # Retrieve the linked resource id and its pluralized type name
@@ -322,69 +300,118 @@ module Flexirest
           i['id'] == rel_id && i['type'] == plural_name
         end
 
-        return linked_resource, true
+        return linked_resource, rel_id, true
       end
 
-      def fetch_one_to_many(relationships, name, included)
+      def fetch_one_to_many(base, relationships, name, included)
         # Parse the relationships object given the relationship name `name`,
         # and look into the included object (in case of a compound document),
         # to embed the linked resources into the response
-
         if included.blank? || relationships[name]['data'].blank?
-          begin
-            # When the response is not a compound document (i.e. there is no
-            # includes object), build a LazyAssociationLoader for lazy loading
-            return build_lazy_loader(
-              name, relationships[name]['links']['related']
-            ), false
-          rescue NoMethodError
-            # If the url for retrieving the linked resources is missing,
-            # we assume there are no linked resources available to fetch
-            # Default nulled linked resources is an empty array
-            return [], false
-          end
+          return build_lazy_loader(base, relationships, name), [], false
         end
 
         # Retrieve the linked resources ids
         rel_ids = relationships[name]['data'].map { |r| r['id'] }
+        plural_name = name.pluralize
 
         # Traverse through the included object, and find the included
         # linked resources, based on the given ids and type name
         linked_resources = included.select do |i|
-          rel_ids.include?(i['id']) && i['type'] == name
+          rel_ids.include?(i['id']) && i['type'] == plural_name
         end
 
-        return linked_resources, true
+        return linked_resources, rel_ids, true
       end
 
-      def fetch_and_delete_attributes(record)
+      def pluck_attributes_and_relationships(record, rels)
+        cleaned = { id: record['id'] }
+        relationships = Hash[rels.map { |rel| [rel, singular?(rel)] }]
+
+        relationships.each do |rel_name, is_singular|
+          safe_name = rel_name.underscore
+          id_sfix = is_singular ? '_id' : '_ids'
+          cleaned[safe_name.singularize + id_sfix] = record[ID_PFIX + rel_name]
+
+          links = record[rel_name]
+          is_lazy_loader = links.is_a?(Flexirest::LazyAssociationLoader)
+
+          linked_resources =
+            if is_lazy_loader || links.blank?
+              # Skip this relationship if it hasn't been included
+              links
+            else
+              # Probe the linked resources
+              first_linked = links.first
+
+              # Retrieve all names of linked relationships
+              nested_rels =
+                if first_linked && first_linked['relationships']
+                  first_linked['relationships'].keys
+                else
+                  []
+                end
+
+              # Recursively pluck attributes for all related resources
+              links.map do |linked_resource|
+                pluck_attributes_and_relationships(linked_resource, nested_rels)
+              end
+            end
+          # Depending on if the resource is singular or plural, add it as
+          # the original type (array or hash) into the record hash
+          cleaned[safe_name] =
+            if is_lazy_loader || !is_singular
+              linked_resources
+            else
+              linked_resources ? linked_resources.first : nil
+            end
+        end
+
         # Fetch attribute keys and values from the resource object
         # and insert into result record hash
         record['attributes'].each do |k, v|
-          record[k] = v
+          cleaned[k.underscore] = v
         end
 
-        delete_keys(record)
-        record
+        cleaned
       end
 
-      def delete_keys(record)
-        # Delete the attribute keys and values from the original response hash
-        record.delete('type')
-        record.delete('links')
-        record.delete('attributes')
-        record.delete('relationships')
+      def find_association_class(base, name)
+        stack = base + [name]
+        klass = @resource_class
+
+        until stack.empty?
+          shift = stack.shift
+          last = klass
+          klass = klass._associations[shift.underscore.to_sym]
+
+          if klass.nil?
+            raise "#{last} has no defined relation to #{shift}. " \
+              "Have you defined :has_one or :has_many :#{shift} in #{last}?"
+          end
+        end
+
+        klass
       end
 
-      def build_lazy_loader(name, url)
+      def build_lazy_loader(base, relationships, name)
+        is_singular = singular?(name)
         # Create a new request, given the linked resource `name`,
         # finding the association's class, and given the `url` to the linked
         # resource
+        begin
+          # When the response is not a compound document (i.e. there is no
+          # includes object), build a LazyAssociationLoader for lazy loading
+          url = relationships[name]['links']['related']
+        rescue NoMethodError
+          # If the url for retrieving the linked resource is missing,
+          # we assume there is no linked resource available to fetch
+          # Default nulled linked resource is `nil` or `[]` for resources
+          return is_singular ? nil : []
+        end
 
-        request = Flexirest::Request.new(
-          { url: url, method: :get },
-          @resource_class._associations[name.to_sym].new
-        )
+        klass = find_association_class(base, name)
+        request = Flexirest::Request.new({ url: url, method: :get }, klass.new)
 
         # Also add the previous request's header, which may contain
         # crucial authentication headers (or so), to connect with the service
