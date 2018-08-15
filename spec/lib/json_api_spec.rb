@@ -84,6 +84,24 @@ class JsonAPIExampleArticle < Flexirest::Base
       relationships: { 'tags' => { data: [] }, 'author' => { data: nil } }
     }
   }
+  faker7 = {
+    data: {
+      id: 1, type: 'articles', attributes: { item: 'item one' },
+      relationships: {
+        'tags' => { data: [{ id: 1, type: 'tags' }, { id: 2, type: 'tags' }] },
+        'superman' => {
+          links: {
+            self: 'http://www.example.com/articles/1/relationships/superman',
+            related: 'http://www.example.com/articles/1/superman'
+          }
+        }
+      }
+    },
+    included: [
+      { id: 1, type: 'tags', attributes: { item: 'item two' } },
+      { id: 2, type: 'tags', attributes: { item: 'item three' } }
+    ]
+  }
 
   get(
     :find,
@@ -124,6 +142,13 @@ class JsonAPIExampleArticle < Flexirest::Base
     :no_assocs,
     '/articles/:id',
     fake: faker6.to_json,
+    fake_content_type: 'application/vnd.api+json'
+  )
+
+  get(
+    :not_recognized_assoc,
+    '/articles/:id',
+    fake: faker7.to_json,
     fake_content_type: 'application/vnd.api+json'
   )
 end
@@ -313,6 +338,10 @@ describe 'JSON API' do
       expect(article.find_lazy(1).tags.first.id).to_not be_nil
       expect(article.find_lazy(1).author).to be_an_instance_of(JsonAPIExample::Author)
       expect(article.find_lazy(1).author.id).to_not be_nil
+    end
+
+    it 'should raise exception when an association in the response is not defined in base class' do
+      expect(-> { subject.includes(:tags).not_recognized_assoc(1) }).to raise_error(Exception)
     end
   end
 
