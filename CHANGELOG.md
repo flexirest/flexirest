@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.7.1
+
+Bugfix:
+
+- Fixed fetching nested associations from the compound document when using JsonAPI standard requests (thanks to Mike Voets for the PR)
+
 ## 1.7.0
 
 Feature:
