@@ -721,14 +721,11 @@ module Flexirest
       elsif is_json_response?
         begin
           body = @response.body.blank? ? {} : MultiJson.load(@response.body)
+          body = {} if body.nil?
         rescue MultiJson::ParseError
           raise ResponseParseException.new(status:@response.status, body:@response.body, headers:@response.headers)
         end
         
-        if body.nil?
-          return nil
-        end
-
         if is_json_api_response?
           body = JsonAPIProxy::Response.parse(body, @object)
         end
