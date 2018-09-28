@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.7.2
+
+Bugfix:
+
+- JSON responses containing `null` crashed Flexirest, now they return a valid but empty object (thanks to Thomas Steinhausen for the PR)
+
 ## 1.7.1
 
 Bugfix:
