@@ -192,10 +192,14 @@ module Flexirest
           return handle_response(OpenStruct.new(status:200, body:fake, response_headers:{"X-ARC-Faked-Response" => "true", "Content-Type" => content_type}))
         end
         if object_is_class?
-          @object.send(:_callback_request, :before, @method[:name], self)
+          callback_result = @object.send(:_callback_request, :before, @method[:name], self)
         else
-          @object.class.send(:_callback_request, :before, @method[:name], self)
+          callback_result = @object.class.send(:_callback_request, :before, @method[:name], self)
         end
+        if callback_result == false
+          return false
+        end
+
         append_get_parameters
         prepare_request_body
         self.original_url = self.url

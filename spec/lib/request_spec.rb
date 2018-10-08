@@ -15,6 +15,12 @@ describe Flexirest::Request do
         end
       end
 
+      before_request do |name, request|
+        if request.method[:name] == :cancel_callback
+          false
+        end
+      end
+
       after_request do |name, response|
         if name == :change
           response.body = "{\"test\": 1}"
@@ -27,6 +33,7 @@ describe Flexirest::Request do
       get :babies, "/babies", :has_many => {:children => ExampleOtherClient}
       get :single_association, "/single", :has_one => {:single => ExampleSingleClient}, :has_many => {:children => ExampleOtherClient}
       get :headers, "/headers"
+      get :cancel_callback, "/cancel-callback"
       put :headers_default, "/headers_default"
       put :headers_json, "/headers_json", request_body_type: :json
       get :find, "/:id", required: [:id]
@@ -288,6 +295,11 @@ describe Flexirest::Request do
   it "should pass through url parameters and put parameters" do
     expect_any_instance_of(Flexirest::Connection).to receive(:put).with("/put/1234", "debug=true", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"result\":true}", response_headers:{})))
     ExampleClient.update id:1234, debug:true
+  end
+
+  it "should pass through url parameters and get parameters" do
+    expect_any_instance_of(Flexirest::Connection).to_not receive(:get)
+    ExampleClient.cancel_callback
   end
 
   it "should pass through 'array type' get parameters" do

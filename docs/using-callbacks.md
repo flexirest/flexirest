@@ -108,6 +108,8 @@ class Person < Flexirest::Base
 end
 ```
 
+If you want to cancel the request from within a callback, you can simply return `false` and the mapped method result will also be `false`, however, we would normally advocate raising an exception so the reason for the callback failure is more explicit.
+
 
 -----
 

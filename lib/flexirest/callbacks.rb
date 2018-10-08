@@ -35,6 +35,9 @@ module Flexirest
           else
             result = callback.call(name, param)
           end
+          if result == false
+            return false
+          end
           if result == :retry
             return :retry
           end
