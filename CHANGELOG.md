@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.7.3
+
+Bugfix:
+
+- Form encoded requests should also honour `wrap_root` (thanks to noctivityinc for the issue report)
+
+Feature:
+
+- Returning `false` from a callback will halt the callback chain and cancel the request (thanks to noctivityinc for the feature request)
+
 ## 1.7.2
 
 Bugfix:
