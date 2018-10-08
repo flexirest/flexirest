@@ -317,6 +317,11 @@ describe Flexirest::Request do
     ExampleClient.wrapped id:1234, debug:true, test:'foo'
   end
 
+  it "should wrap elements if specified, in form-encoded format" do
+    expect_any_instance_of(Flexirest::Connection).to receive(:put).with("/put/1234", %q(example%5Bdebug%5D=true&example%5Btest%5D=foo), an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"result\":true}", response_headers:{})))
+    ExampleClient.wrapped id:1234, debug:true, test:'foo'
+  end
+
   it "should not pass through an encoded empty body parameter" do
     expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/1234", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"result\":true}", response_headers:{})))
     ExampleClient.request_body_type :json

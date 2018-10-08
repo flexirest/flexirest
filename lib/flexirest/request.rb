@@ -405,7 +405,11 @@ module Flexirest
         elsif @post_params.is_a?(String)
           @post_params
         else
-          (params || @post_params || {}).to_query
+          p = (params || @post_params || {})
+          if @method[:options][:wrap_root].present?
+            p = {@method[:options][:wrap_root] => p}
+          end
+          p.to_query
         end
         headers["Content-Type"] ||= "application/x-www-form-urlencoded"
       elsif request_body_type == :json
