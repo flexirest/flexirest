@@ -198,7 +198,7 @@ module Flexirest
 
         # Retrieve the resource(s) object or array from the data object
         records = body['data']
-        return records unless records.present?
+        return body['errors'] unless records.present?
 
         # Convert the resource object to an array,
         # because it is easier to work with an array than a single object
