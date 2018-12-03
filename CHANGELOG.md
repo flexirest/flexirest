@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.7.4
+
+Feature:
+
+- Returning `:retry` or now raising `Flexirest::CallbackRetryRequestException` from a callback will retry the current request.
+
 ## 1.7.3
 
 Bugfix:

@@ -39,7 +39,7 @@ module Flexirest
             return false
           end
           if result == :retry
-            return :retry
+            raise Flexirest::CallbackRetryRequestException.new
           end
         end
       end
@@ -66,4 +66,6 @@ module Flexirest
     end
 
   end
+
+  class CallbackRetryRequestException < Exception ; end
 end

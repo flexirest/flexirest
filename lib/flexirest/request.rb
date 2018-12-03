@@ -239,13 +239,14 @@ module Flexirest
           if object_is_class? && @object.record_response?
             @object.record_response(self.url, response_env)
           end
-          if object_is_class?
-            callback_result = @object.send(:_callback_request, :after, @method[:name], response_env)
-          else
-            callback_result = @object.class.send(:_callback_request, :after, @method[:name], response_env)
-          end
 
-          if callback_result == :retry
+          begin
+            if object_is_class?
+              callback_result = @object.send(:_callback_request, :after, @method[:name], response_env)
+            else
+              callback_result = @object.class.send(:_callback_request, :after, @method[:name], response_env)
+            end
+          rescue Flexirest::CallbackRetryRequestException
             if self.retrying != true
               self.retrying = true
               return call()

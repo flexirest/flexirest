@@ -96,6 +96,11 @@ describe Flexirest::Request do
       base_url "http://www.example.com"
 
       after_request :handle_retries
+      after_request :inner_call
+
+      def self.reset_retries
+        @retries = 0
+      end
 
       def self.incr_retries
         @retries ||= 0
@@ -113,7 +118,17 @@ describe Flexirest::Request do
         end
       end
 
+      def inner_call(name, response)
+        if name == :first_call
+          self.class.incr_retries
+          self.second_call
+          raise Flexirest::CallbackRetryRequestException.new
+        end
+      end
+
       get :do_me_twice, "/do_me_twice"
+      get :first_call, "/first_call"
+      get :second_call, "/second_call"
     end
 
     class LazyLoadedExampleClient < ExampleClient
@@ -908,7 +923,18 @@ describe Flexirest::Request do
   it "should retry if an after_request callback returns :retry" do
     stub_request(:get, "http://www.example.com/do_me_twice").
       to_return(:status => 200, :body => "", :headers => {})
+    RetryingExampleClient.reset_retries
     RetryingExampleClient.do_me_twice
+    expect(RetryingExampleClient.retries).to eq(2)
+  end
+
+  it "should allow a second call and then retry if an after_request callback returns :retry" do
+    stub_request(:get, "http://www.example.com/first_call").
+      to_return(:status => 200, :body => "", :headers => {})
+    stub_request(:get, "http://www.example.com/second_call").
+      to_return(:status => 200, :body => "", :headers => {})
+    RetryingExampleClient.reset_retries
+    RetryingExampleClient.first_call
     expect(RetryingExampleClient.retries).to eq(2)
   end
 
