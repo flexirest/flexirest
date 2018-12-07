@@ -14,6 +14,10 @@ Gem::Specification.new do |spec|
   spec.homepage      = "https://andyjeffries.co.uk/"
   spec.license       = "MIT"
 
+  if spec.respond_to?(:metadata)
+    spec.metadata["source_code_uri"] = "https://github.com/flexirest/flexirest"
+  end
+
   spec.files         = `git ls-files`.split($/)
   spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
   spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
