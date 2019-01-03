@@ -23,6 +23,10 @@ module Flexirest
       @items
     end
 
+    def join(*args)
+      @items.join(*args)
+    end
+
     def index(value)
       @items.index(value)
     end

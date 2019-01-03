@@ -34,6 +34,13 @@ describe Flexirest::ResultIterator do
     expect(result.first).to eq("a")
   end
 
+  it "should implement join" do
+    result = Flexirest::ResultIterator.new
+    result << "a"
+    result << "z"
+    expect(result.join(",")).to eq("a,z")
+  end
+
   it "should implement any?" do
     result = Flexirest::ResultIterator.new
     expect(result.any?).to be_falsey

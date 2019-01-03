@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.7.5
+
+Feature:
+
+- Implemented `Flexirest::ResultIterator#join` for closer to native handling of ActiveModel::Errors in Rails applications.
+
 ## 1.7.4
 
 Feature:
