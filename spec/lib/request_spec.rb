@@ -249,6 +249,13 @@ describe Flexirest::Request do
     ExampleClient.all debug:true
   end
 
+  it "should correctly serialise array parameters" do
+    # name: ["john", "bill"] should become name[]=john&name[]=bill (but URL-safe so %5B%5D)
+    expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/?name%5B%5D=john&name%5B%5D=bill", an_instance_of(Hash)).
+      and_return(::FaradayResponseMock.new(OpenStruct.new(body:'{"result":true}', response_headers:{})))
+    ExampleClient.all name: ["john", "bill"]
+  end
+
   it "should pass through get parameters, using defaults specified" do
     expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/defaults?overwrite=yes&persist=yes", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:'{"result":true}', response_headers:{})))
     ExampleClient.defaults overwrite:"yes"
