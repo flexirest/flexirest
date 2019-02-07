@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.7.6
+
+Feature:
+
+- Changed `Flexirest::HTTPException#message` and `#to_s` for a better description of the error than just the class name.
+
 ## 1.7.5
 
 Feature:

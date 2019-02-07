@@ -760,6 +760,7 @@ describe Flexirest::Request do
     rescue Flexirest::HTTPClientException => e
       e
     end
+    expect(e.to_s).to eq("The POST to '/create' returned a 409 status, which raised a Flexirest::HTTPConflictClientException with a body of: {\"first_name\":\"John\", \"id\":1234}")
     expect(e).to be_a(Flexirest::HTTPClientException)
     expect(e).to be_instance_of(Flexirest::HTTPConflictClientException)
     expect(e.status).to eq(409)
