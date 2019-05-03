@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.7.7
+
+Change:
+
+- Set the default charset to UTF-8 for form encoded request bodies, the same as it already was for JSON encoded request bodies.
+
 ## 1.7.6
 
 Feature:

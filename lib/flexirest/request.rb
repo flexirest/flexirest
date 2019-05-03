@@ -399,7 +399,7 @@ module Flexirest
         JsonAPIProxy::Headers.save(headers)
       elsif http_method == :get || (http_method == :delete && !@method[:options][:send_delete_body])
         if request_body_type == :form_encoded
-          headers["Content-Type"] ||= "application/x-www-form-urlencoded"
+          headers["Content-Type"] ||= "application/x-www-form-urlencoded; charset=utf-8"
         elsif request_body_type == :json
           headers["Content-Type"] ||= "application/json; charset=utf-8"
         end
