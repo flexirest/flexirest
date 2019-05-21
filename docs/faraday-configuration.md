@@ -18,6 +18,7 @@ For available configuration variables look into the [Faraday documentation](http
 Flexirest::Base.faraday_config do |faraday|
   faraday.adapter(:net_http)
   faraday.options.timeout       = 10
+  faraday.ssl.verify            = false
   faraday.headers['User-Agent'] = "Flexirest/#{Flexirest::VERSION}"
 end
 ```
