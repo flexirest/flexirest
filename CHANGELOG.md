@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.7.8
+
+Fix:
+
+- plain requests to URLs that are just the domain e.g. "https://www.example.com" should also work (i.e. without any trailing path, even a '/')
+
 ## 1.7.7
 
 Change:
