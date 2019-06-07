@@ -459,7 +459,7 @@ module Flexirest
           connection = Flexirest::ConnectionManager.get_connection(base_url)
         end
       else
-        parts = @url.match(%r{^(https?://[a-z\d\.:-]+?)(/.*)}).to_a
+        parts = @url.match(%r{^(https?://[a-z\d\.:-]+?)(/.*)?$}).to_a
         if (parts.empty?) # Not a full URL, so use hostname/protocol from existing base_url
           uri = URI.parse(base_url)
           @base_url = "#{uri.scheme}://#{uri.host}#{":#{uri.port}" if uri.port != 80 && uri.port != 443}"

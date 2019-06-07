@@ -330,14 +330,14 @@ describe Flexirest::BaseWithoutValidation do
 
     it "passes headers" do
       stub_request(:get, "http://api.example.com/v1").
-        with(headers: {'Accept'=>'application/hal+json, application/json;q=0.5', 'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 'Connection'=>'Keep-Alive', 'Content-Type'=>'application/x-www-form-urlencoded', 'X-Something'=>'foo/bar', 'User-Agent'=>/Flexirest\//}).
+        with(headers: {'Accept'=>'application/hal+json, application/json;q=0.5', 'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 'Connection'=>'Keep-Alive', 'Content-Type'=>'application/x-www-form-urlencoded; charset=utf-8', 'X-Something'=>'foo/bar', 'User-Agent'=>/Flexirest\//}).
         to_return(status: 200, body: "", headers: {})
       EmptyExample._request("http://api.example.com/v1", :get, {}, {headers: {"X-Something" => "foo/bar"}})
     end
 
     it "passes headers if the response is unparsed" do
       stub_request(:get, "http://api.example.com/v1").
-        with(headers: {'Accept'=>'application/hal+json, application/json;q=0.5', 'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 'Connection'=>'Keep-Alive', 'Content-Type'=>'application/x-www-form-urlencoded', 'X-Something'=>'foo/bar', 'User-Agent'=>/Flexirest\//}).
+        with(headers: {'Accept'=>'application/hal+json, application/json;q=0.5', 'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 'Connection'=>'Keep-Alive', 'Content-Type'=>'application/x-www-form-urlencoded; charset=utf-8', 'X-Something'=>'foo/bar', 'User-Agent'=>/Flexirest\//}).
         to_return(status: 200, body: "", headers: {})
       EmptyExample._plain_request("http://api.example.com/v1", :get, {}, {headers: {"X-Something" => "foo/bar"}})
     end
@@ -367,7 +367,13 @@ describe Flexirest::BaseWithoutValidation do
     it "should be able to pass the plain response from the directly called URL bypassing JSON loading" do
       response_body = "This is another non-JSON string"
       expect_any_instance_of(Flexirest::Connection).to receive(:post).with(any_args).and_return(::FaradayResponseMock.new(OpenStruct.new(status:200, response_headers:{}, body:response_body)))
-      expect(EmptyExample._plain_request("http://api.example.com/", :post, {id:1234})).to eq(response_body)
+      expect(EmptyExample._plain_request("http://api.example.com/v1/something", :post, {id:1234})).to eq(response_body)
+    end
+
+    it "should be able to pass the plain response from the directly called URL bypassing JSON loading" do
+      response_body = "This is another non-JSON string"
+      expect_any_instance_of(Flexirest::Connection).to receive(:post).with(any_args).and_return(::FaradayResponseMock.new(OpenStruct.new(status:200, response_headers:{}, body:response_body)))
+      expect(EmptyExample._plain_request("http://api.example.com", :post, {id:1234})).to eq(response_body)
     end
 
     it "should return a PlainResponse from the directly called URL bypassing JSON loading" do
