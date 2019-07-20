@@ -164,6 +164,20 @@ describe Flexirest::Request do
       }
     end
 
+    class IgnoredMultiLevelRootExampleClient < ExampleClient
+      get :multi_level_root, "/multi-level-root", ignore_root: [:response, "data", "object"], fake: %Q{
+        {
+          "response": {
+            "data": {
+              "object": {            
+                "title": "Example Multi Level Feed"
+              } 
+            }
+          }
+        }
+      }
+    end
+
     class WhitelistedDateClient < Flexirest::Base
       base_url "http://www.example.com"
       put :conversion, "/put/:id"
@@ -1122,6 +1136,10 @@ describe Flexirest::Request do
 
   it "should ignore a specified root element" do
     expect(IgnoredRootExampleClient.root.title).to eq("Example Feed")
+  end
+  
+  it "should ignore a specified multi-level root element" do
+    expect(IgnoredMultiLevelRootExampleClient.multi_level_root.title).to eq("Example Multi Level Feed")
   end
 
   context "Parameter preparation" do
