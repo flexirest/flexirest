@@ -740,12 +740,16 @@ module Flexirest
         end
 
         if options[:ignore_root]
-          body = body[options[:ignore_root].to_s]
+          [options[:ignore_root]].flatten.each do |key|
+            body = body[key.to_s]
+          end
         end
       elsif is_xml_response?
         body = @response.body.blank? ? {} : Crack::XML.parse(@response.body)
         if options[:ignore_root]
-          body = body[options[:ignore_root].to_s]
+          [options[:ignore_root]].flatten.each do |key|
+            body = body[key.to_s]
+          end
         elsif options[:ignore_xml_root]
           Flexirest::Logger.warn("Using `ignore_xml_root` is deprecated, please switch to `ignore_root`")
           body = body[options[:ignore_xml_root].to_s]
