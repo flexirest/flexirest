@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.7.9
+
+Features:
+
+- The `ignore_root` method now can ignore a tree of labels, rather than just one top level (thanks to gkosmr for the issue and pull request)
+
 ## 1.7.8
 
 Fix:

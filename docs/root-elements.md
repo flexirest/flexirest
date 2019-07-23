@@ -8,6 +8,14 @@ class Feed < Flexirest::Base
 end
 ```
 
+This also works if you'd want to remove a tree of root nodes:
+
+```ruby
+class Feed < Flexirest::Base
+  post :list, "/feed", ignore_root: ["feed", "items"]
+end
+```
+
 Alternatively if you want to wrap your JSON request body in a root element, e.g.:
 
 ```json
