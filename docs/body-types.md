@@ -27,6 +27,16 @@ class Person < Flexirest::Base
 end
 ```
 
+If your API expects some weird formatting on the requests, but you still want to use Flexirest for caching, response parsing, other models, etc you can pass `:plain` as the request body type either at the class level or method mapping level, and this will be passed through to the API. By default `plain` requests are sent with the `Content-Type: text/plain` header, but you can override this with `:content_type` when calling the mapped method.
+
+```ruby
+class Person < Flexirest::Base
+  put :save, '/person/:id/logs', request_body_type: :plain
+end
+
+Person.save(id: 1, body: '["Something here"]', 
+            content_type: "application/json")
+```
 
 -----
 

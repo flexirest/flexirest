@@ -430,6 +430,10 @@ module Flexirest
           end
         end
         headers["Content-Type"] ||= "application/json; charset=utf-8"
+      elsif request_body_type == :plain && @post_params[:body].present?
+        @body = @post_params[:body]
+        headers["Content-Type"] ||= "text/plain"
+        headers["Content-Type"] = @post_params[:content_type] if @post_params[:content_type].present?
       end
     end
 

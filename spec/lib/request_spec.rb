@@ -27,11 +27,11 @@ describe Flexirest::Request do
         end
       end
 
-      get :all, "/", :has_many => {:expenses => ExampleOtherClient}
-      get :flat, "/", :params_encoder => :flat
+      get :all, "/", has_many: {expenses: ExampleOtherClient}
+      get :flat, "/", params_encoder: :flat
       get :array, "/johnny", array: [:likes, :dislikes]
-      get :babies, "/babies", :has_many => {:children => ExampleOtherClient}
-      get :single_association, "/single", :has_one => {:single => ExampleSingleClient}, :has_many => {:children => ExampleOtherClient}
+      get :babies, "/babies", has_many: {children: ExampleOtherClient}
+      get :single_association, "/single", has_one: {single: ExampleSingleClient}, has_many: {children: ExampleOtherClient}
       get :headers, "/headers"
       get :cancel_callback, "/cancel-callback"
       put :headers_default, "/headers_default"
@@ -54,12 +54,12 @@ describe Flexirest::Request do
       get :requires, "/requires", requires:[:name, :age]
       patch :only_changed_1, "/changed1", only_changed: true
       patch :only_changed_2, "/changed2", only_changed: [:debug1, :debug2]
-      patch :only_changed_3, "/changed3", only_changed: { :debug1 => false, :debug2 => true }
+      patch :only_changed_3, "/changed3", only_changed: { debug1: false, debug2: true }
     end
 
     class ExampleLoadBalancedClient < Flexirest::Base
       base_url ["http://api1.example.com", "http://api2.example.com"]
-      get :all, "/", :has_many => {:expenses => ExampleOtherClient}
+      get :all, "/", has_many: {expenses: ExampleOtherClient}
     end
 
     class AuthenticatedExampleClient < Flexirest::Base
@@ -135,7 +135,7 @@ describe Flexirest::Request do
       base_url "http://www.example.com"
       lazy_load!
       get :fake, "/fake", fake:"{\"result\":true, \"list\":[1,2,3,{\"test\":true}], \"child\":{\"grandchild\":{\"test\":true}}}"
-      get :lazy_test, "/does-not-matter", fake:"{\"people\":[\"http://www.example.com/some/url\"]}", :lazy => [:people]
+      get :lazy_test, "/does-not-matter", fake:"{\"people\":[\"http://www.example.com/some/url\"]}", lazy: [:people]
     end
 
     class VerboseExampleClient < ExampleClient
@@ -169,9 +169,9 @@ describe Flexirest::Request do
         {
           "response": {
             "data": {
-              "object": {            
+              "object": {
                 "title": "Example Multi Level Feed"
-              } 
+              }
             }
           }
         }
@@ -340,12 +340,12 @@ describe Flexirest::Request do
 
   it "should pass through 'array type' get parameters" do
     expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/?include%5B%5D=your&include%5B%5D=friends", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"result\":true}", response_headers:{})))
-    ExampleClient.all :include => [:your,:friends]
+    ExampleClient.all include: [:your,:friends]
   end
 
   it "should pass through 'array type' get parameters using the same parameter name if a flat param_encoder is chosen" do
     expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/?include=your&include=friends", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"result\":true}", response_headers:{})))
-    ExampleClient.flat :include => [:your,:friends]
+    ExampleClient.flat include: [:your,:friends]
   end
 
   it "should encode the body in a form-encoded format by default" do
@@ -359,10 +359,26 @@ describe Flexirest::Request do
     ExampleClient.update id:1234, debug:true, test:'foo'
   end
 
-  it "should encode the body in a JSON format if specified" do
+  it "should encode the body wrapped in a root element in a JSON format if specified" do
     expect_any_instance_of(Flexirest::Connection).to receive(:put).with("/put/1234", %q({"example":{"debug":true,"test":"foo"}}), an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"result\":true}", response_headers:{})))
     ExampleClient.request_body_type :json
     ExampleClient.wrapped id:1234, debug:true, test:'foo'
+  end
+
+  it "should pass the body untouched if plain format is specified on the class" do
+    header_expectation = {headers: {"Accept"=>"application/hal+json, application/json;q=0.5", "Content-Type"=>"text/plain"}, api_auth: {api_auth_access_id: "id123", api_auth_secret_key: "secret123", api_auth_options: {}}}
+    expect_any_instance_of(Flexirest::Connection).to receive(:put).with("/put/1234", "debug:true|test:'foo'", header_expectation).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"result\":true}", response_headers:{})))
+    ExampleClient.request_body_type :plain
+    ExampleClient.update id:1234, body: "debug:true|test:'foo'"
+  end
+
+  it "should use the content type specified if plain format is specified on the class" do
+    header_expectation = {headers: {"Accept"=>"application/hal+json, application/json;q=0.5", "Content-Type"=>"application/flexirest"}, api_auth: {api_auth_access_id: "id123", api_auth_secret_key: "secret123", api_auth_options: {}}}
+    expect_any_instance_of(Flexirest::Connection).to receive(:put).
+      with("/put/1234", "debug:true|test:'foo'", header_expectation).
+      and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"result\":true}", response_headers:{})))
+    ExampleClient.request_body_type :plain
+    ExampleClient.update id:1234, body: "debug:true|test:'foo'", content_type: "application/flexirest"
   end
 
   it "should wrap elements if specified, in form-encoded format" do
@@ -897,7 +913,7 @@ describe Flexirest::Request do
   end
 
   it "should raise an exception if you try to pass in an unsupport method" do
-    method = {:method => :wiggle, url:"/"}
+    method = {method: :wiggle, url:"/"}
     class RequestFakeObject < Flexirest::Base
       base_url "http://www.example.com/"
 
@@ -944,7 +960,7 @@ describe Flexirest::Request do
 
   it "should retry if an after_request callback returns :retry" do
     stub_request(:get, "http://www.example.com/do_me_twice").
-      to_return(:status => 200, :body => "", :headers => {})
+      to_return(status: 200, body: "", headers: {})
     RetryingExampleClient.reset_retries
     RetryingExampleClient.do_me_twice
     expect(RetryingExampleClient.retries).to eq(2)
@@ -952,9 +968,9 @@ describe Flexirest::Request do
 
   it "should allow a second call and then retry if an after_request callback returns :retry" do
     stub_request(:get, "http://www.example.com/first_call").
-      to_return(:status => 200, :body => "", :headers => {})
+      to_return(status: 200, body: "", headers: {})
     stub_request(:get, "http://www.example.com/second_call").
-      to_return(:status => 200, :body => "", :headers => {})
+      to_return(status: 200, body: "", headers: {})
     RetryingExampleClient.reset_retries
     RetryingExampleClient.first_call
     expect(RetryingExampleClient.retries).to eq(2)
@@ -1023,7 +1039,7 @@ describe Flexirest::Request do
     end
 
     it "should recognise a HAL response" do
-      method = {:method => :get, url:"/"}
+      method = {method: :get, url:"/"}
       class RequestFakeObject
         def base_url
           "http://www.example.com/"
@@ -1137,7 +1153,7 @@ describe Flexirest::Request do
   it "should ignore a specified root element" do
     expect(IgnoredRootExampleClient.root.title).to eq("Example Feed")
   end
-  
+
   it "should ignore a specified multi-level root element" do
     expect(IgnoredMultiLevelRootExampleClient.multi_level_root.title).to eq("Example Multi Level Feed")
   end

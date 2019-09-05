@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.8.0
+
+Features:
+
+- For the weird situations where the remote API expects some weird formatted input, you can now specify a `request_body_type` of plain and pass in to the call `body` (and optionally `content_type`) to pass it untouched to the API. The [docs](docs/body-types.md) have been updated.
+
 ## 1.7.9
 
 Features:
