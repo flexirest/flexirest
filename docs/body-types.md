@@ -17,7 +17,16 @@ Flexirest::Base.request_body_type = :json
 
 This will also set the header `Content-Type` to `application/x-www-form-urlencoded` by default or `application/json; charset=utf-8` when `:json`. You can override this using the callback `before_request`.
 
-You can also use `:form_multipart` if your API requires file uploads. Any parameters set to `File` like object (supporting `#path` and `#read`) will be automatically uploaded with the parameters, in a normal form submission style.
+You can also use `:form_multipart` if your API requires file uploads. Any parameters set to `File` like object (supporting `#path` and `#read`) will be automatically uploaded with the parameters, in a normal form submission style:
+
+```ruby
+class Person < Flexirest::Base
+  request_body_type :form_multipart
+  put :update, "/people/:id"
+end
+
+Person.update(id: 1, avatar: File.open("avatar.png"))
+```
 
 If you have an API that is inconsistent in its body type requirements, you can also specify it on the individual method mapping:
 
