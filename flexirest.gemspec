@@ -40,6 +40,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'typhoeus'
   spec.add_development_dependency 'activemodel'
 
+  spec.add_runtime_dependency "mime-types"
   spec.add_runtime_dependency "multi_json"
   spec.add_runtime_dependency "crack"
   spec.add_runtime_dependency "faraday"
