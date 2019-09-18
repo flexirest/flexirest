@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.8.3
+
+Fix:
+
+- Missed dependency that should have been specified.
+
 ## 1.8.2
 
 Features:
