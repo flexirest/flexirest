@@ -353,6 +353,28 @@ describe Flexirest::Request do
     ExampleClient.update id:1234, debug:true, test:'foo'
   end
 
+  it "should encode the body in a form-encoded format by default" do
+    body = "--FLEXIRESTBOUNDARY-20190918-FLEXIRESTBOUNDARY\r\n" +
+      "Content-Disposition: form-data; name=\"debug\"\r\n" +
+      "\r\n" +
+      "true\r\n" +
+      "--FLEXIRESTBOUNDARY-20190918-FLEXIRESTBOUNDARY\r\n" +
+      "Content-Disposition: form-data; name=\"test\"\r\n" +
+      "\r\n" +
+      "foo\r\n" +
+      "--FLEXIRESTBOUNDARY-20190918-FLEXIRESTBOUNDARY\r\n" +
+      "Content-Disposition: form-data; name=\"file\"; filename=\"#{File.dirname(__FILE__)}/../../spec/samples/file.txt\"\r\n" +
+      "Content-Type: text/plain\r\n" +
+      "\r\n" +
+      "The quick brown fox jumps over the lazy dog\n\r\n" +
+      "--FLEXIRESTBOUNDARY-20190918-FLEXIRESTBOUNDARY--"
+    expect_any_instance_of(Flexirest::Connection).to receive(:put).with(
+      "/put/1234", body, hash_including(headers: hash_including("Content-Type"=>"multipart/form-data; boundary=FLEXIRESTBOUNDARY-20190918-FLEXIRESTBOUNDARY"))
+    ).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"result\":true}", response_headers:{})))
+    ExampleClient.request_body_type :form_multipart
+    ExampleClient.update id:1234, debug:true, test:'foo', file: File.open("#{File.dirname(__FILE__)}/../../spec/samples/file.txt")
+  end
+
   it "should encode the body in a JSON format if specified" do
     expect_any_instance_of(Flexirest::Connection).to receive(:put).with("/put/1234", %q({"debug":true,"test":"foo"}), an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"result\":true}", response_headers:{})))
     ExampleClient.request_body_type :json

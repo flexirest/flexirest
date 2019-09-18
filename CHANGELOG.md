@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.8.2
+
+Features:
+
+- Allowed use of `:form_multipart` as a `request_body_type` to allow uploading files to an API.
+
 ## 1.8.1
 
 Features:

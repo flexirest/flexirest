@@ -400,6 +400,8 @@ module Flexirest
       elsif http_method == :get || (http_method == :delete && !@method[:options][:send_delete_body])
         if request_body_type == :form_encoded
           headers["Content-Type"] ||= "application/x-www-form-urlencoded; charset=utf-8"
+        elsif request_body_type == :form_multipart
+          headers["Content-Type"] ||= "multipart/form-data; charset=utf-8"
         elsif request_body_type == :json
           headers["Content-Type"] ||= "application/json; charset=utf-8"
         end
@@ -417,6 +419,23 @@ module Flexirest
           p.to_query
         end
         headers["Content-Type"] ||= "application/x-www-form-urlencoded"
+      elsif request_body_type == :form_multipart
+        headers["Content-Type"] ||= "multipart/form-data; charset=utf-8"
+        @body ||= if params.is_a?(String)
+          params
+        elsif @post_params.is_a?(String)
+          @post_params
+        else
+          p = (params || @post_params || {})
+          if @method[:options][:wrap_root].present?
+            p = {@method[:options][:wrap_root] => p}
+          end
+          data, mp_headers = Flexirest::Multipart::Post.prepare_query(p)
+          mp_headers.each do |k,v|
+            headers[k] = v
+          end
+          data
+        end
       elsif request_body_type == :json
         @body ||= if params.is_a?(String)
           params
