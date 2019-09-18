@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.8.1
+
+Features:
+
+- Added a specific `Flexirest::HTTPTooManyRequestsClientException` for 429 errors, to enable easier trapping
+
 ## 1.8.0
 
 Features:

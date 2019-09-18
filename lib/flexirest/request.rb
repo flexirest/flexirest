@@ -584,6 +584,8 @@ module Flexirest
           raise HTTPTimeoutClientException.new(status:status, result:error_response, raw_response: @response.body, url:@url, method: http_method)
         elsif status == 409
           raise HTTPConflictClientException.new(status:status, result:error_response, raw_response: @response.body, url:@url, method: http_method)
+        elsif status == 409
+          raise HTTPTooManyRequestsClientException.new(status:status, result:error_response, raw_response: @response.body, url:@url, method: http_method)
         elsif (400..499).include? status
           raise HTTPClientException.new(status:status, result:error_response, raw_response: @response.body, url:@url, method: http_method)
         elsif (500..599).include? status
@@ -841,6 +843,7 @@ module Flexirest
   class HTTPTimeoutClientException < HTTPClientException ; end
   class HTTPConflictClientException < HTTPClientException ; end
   class HTTPNotFoundClientException < HTTPClientException ; end
+  class HTTPTooManyRequestsClientException < HTTPClientException ; end
   class HTTPServerException < HTTPException ; end
 
 end
