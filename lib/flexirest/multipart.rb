@@ -9,15 +9,10 @@ require 'rubygems'
 require 'mime/types'
 require 'cgi'
 
-
 module Flexirest
   module Multipart
     VERSION = "1.0.0"
 
-    # Formats a given hash as a multipart form post
-    # If a hash value responds to :string or :read messages, then it is
-    # interpreted as a file and processed accordingly; otherwise, it is assumed
-    # to be a string
     class Post
       BOUNDARY = "FLEXIRESTBOUNDARY-20190918-FLEXIRESTBOUNDARY"
       CONTENT_TYPE = "multipart/form-data; boundary=#{BOUNDARY}"
@@ -27,24 +22,33 @@ module Flexirest
         fp = []
 
         params.stringify_keys.each do |k, v|
-          # Are we trying to make a file parameter?
-          if v.respond_to?(:path) and v.respond_to?(:read) then
-            fp.push(FileParam.new(k, v.path, v.read))
-          # We must be trying to make a regular parameter
-          else
-            fp.push(StringParam.new(k, v))
-          end
+          append_parameter(fp, k, v)
         end
 
-        # Assemble the request body using the special multipart format
         query = fp.collect {|p| "--" + BOUNDARY + "\r\n" + p.to_multipart }.join("") + "--" + BOUNDARY + "--"
         return query, HEADER
+      end
+
+      def self.append_parameter(fp, key, value)
+        if value.is_a?(Array)
+          value.each do |i|
+            append_parameter(fp, "#{key}[]", i)
+          end
+        elsif value.is_a?(Hash)
+          value.stringify_keys.each do |k, i|
+            append_parameter(fp, "#{key}[#{k}]", i)
+          end
+        elsif value.respond_to?(:path) and value.respond_to?(:read) then
+          fp.push(FileParam.new(key, value.path, value.read))
+        else
+          fp.push(StringParam.new(key, value))
+        end
+
       end
     end
 
     private
 
-    # Formats a basic string key/value pair for inclusion with a multipart post
     class StringParam
       attr_accessor :k, :v
 
@@ -58,8 +62,6 @@ module Flexirest
       end
     end
 
-    # Formats the contents of a file or string for inclusion with a multipart
-    # form post
     class FileParam
       attr_accessor :k, :filename, :content
 
@@ -70,8 +72,6 @@ module Flexirest
       end
 
       def to_multipart
-        # If we can tell the possible mime-type from the filename, use the
-        # first in the list; otherwise, use "application/octet-stream"
         mime_type = MIME::Types.type_for(filename)[0] || MIME::Types["application/octet-stream"][0]
         return "Content-Disposition: form-data; name=\"#{CGI::escape(k)}\"; filename=\"#{ filename }\"\r\n" +
                "Content-Type: #{ mime_type.simplified }\r\n\r\n#{ content }\r\n"

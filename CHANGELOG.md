@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.8.4
+
+Fix:
+
+- Array and Hash parameters should be accepted in `:form_multipart`
+
 ## 1.8.3
 
 Fix:

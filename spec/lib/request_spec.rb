@@ -358,6 +358,18 @@ describe Flexirest::Request do
       "Content-Disposition: form-data; name=\"debug\"\r\n" +
       "\r\n" +
       "true\r\n" +
+      "--FLEXIRESTBOUNDARY-20190918-FLEXIRESTBOUNDARY\r\n"+
+      "Content-Disposition: form-data; name=\"arrayz%5B%5D\"\r\n"+
+      "\r\n"+
+      "1\r\n"+
+      "--FLEXIRESTBOUNDARY-20190918-FLEXIRESTBOUNDARY\r\n"+
+      "Content-Disposition: form-data; name=\"arrayz%5B%5D\"\r\n"+
+      "\r\n"+
+      "2\r\n"+
+      "--FLEXIRESTBOUNDARY-20190918-FLEXIRESTBOUNDARY\r\n"+
+      "Content-Disposition: form-data; name=\"hazh%5Bsomething%5D\"\r\n"+
+      "\r\n"+
+      "bar\r\n"+
       "--FLEXIRESTBOUNDARY-20190918-FLEXIRESTBOUNDARY\r\n" +
       "Content-Disposition: form-data; name=\"test\"\r\n" +
       "\r\n" +
@@ -372,7 +384,7 @@ describe Flexirest::Request do
       "/put/1234", body, hash_including(headers: hash_including("Content-Type"=>"multipart/form-data; boundary=FLEXIRESTBOUNDARY-20190918-FLEXIRESTBOUNDARY"))
     ).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"result\":true}", response_headers:{})))
     ExampleClient.request_body_type :form_multipart
-    ExampleClient.update id:1234, debug:true, test:'foo', file: File.open("#{File.dirname(__FILE__)}/../../spec/samples/file.txt")
+    ExampleClient.update id:1234, debug:true, arrayz: [1, 2], hazh: {something: "bar"}, test:'foo', file: File.open("#{File.dirname(__FILE__)}/../../spec/samples/file.txt")
   end
 
   it "should encode the body in a JSON format if specified" do
