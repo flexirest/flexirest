@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.8.5
+
+Fix:
+
+- Array and Hash parameters should not have their fieldname CGI escaped, Rails doesn't like it and the RFC doesn't require it
+
 ## 1.8.4
 
 Fix:

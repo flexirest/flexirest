@@ -7,7 +7,6 @@
 
 require 'rubygems'
 require 'mime/types'
-require 'cgi'
 
 module Flexirest
   module Multipart
@@ -58,7 +57,7 @@ module Flexirest
       end
 
       def to_multipart
-        return "Content-Disposition: form-data; name=\"#{CGI::escape(k)}\"\r\n\r\n#{v}\r\n"
+        return "Content-Disposition: form-data; name=\"#{k}\"\r\n\r\n#{v}\r\n"
       end
     end
 
@@ -73,7 +72,7 @@ module Flexirest
 
       def to_multipart
         mime_type = MIME::Types.type_for(filename)[0] || MIME::Types["application/octet-stream"][0]
-        return "Content-Disposition: form-data; name=\"#{CGI::escape(k)}\"; filename=\"#{ filename }\"\r\n" +
+        return "Content-Disposition: form-data; name=\"#{k}\"; filename=\"#{filename}\"\r\n" +
                "Content-Type: #{ mime_type.simplified }\r\n\r\n#{ content }\r\n"
       end
     end
