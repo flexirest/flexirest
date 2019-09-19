@@ -359,15 +359,15 @@ describe Flexirest::Request do
       "\r\n" +
       "true\r\n" +
       "--FLEXIRESTBOUNDARY-20190918-FLEXIRESTBOUNDARY\r\n"+
-      "Content-Disposition: form-data; name=\"arrayz%5B%5D\"\r\n"+
+      "Content-Disposition: form-data; name=\"arrayz[]\"\r\n"+
       "\r\n"+
       "1\r\n"+
       "--FLEXIRESTBOUNDARY-20190918-FLEXIRESTBOUNDARY\r\n"+
-      "Content-Disposition: form-data; name=\"arrayz%5B%5D\"\r\n"+
+      "Content-Disposition: form-data; name=\"arrayz[]\"\r\n"+
       "\r\n"+
       "2\r\n"+
       "--FLEXIRESTBOUNDARY-20190918-FLEXIRESTBOUNDARY\r\n"+
-      "Content-Disposition: form-data; name=\"hazh%5Bsomething%5D\"\r\n"+
+      "Content-Disposition: form-data; name=\"hazh[something]\"\r\n"+
       "\r\n"+
       "bar\r\n"+
       "--FLEXIRESTBOUNDARY-20190918-FLEXIRESTBOUNDARY\r\n" +
