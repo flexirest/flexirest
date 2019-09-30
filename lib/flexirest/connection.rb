@@ -26,14 +26,14 @@ module Flexirest
       block.call
     rescue Faraday::Error::TimeoutError
       raise Flexirest::TimeoutException.new("Timed out getting #{full_url(path)}")
-    rescue Faraday::Error::ConnectionFailed => e1
+    rescue Faraday::ConnectionFailed => e1
       if e1.respond_to?(:cause) && e1.cause.is_a?(Net::OpenTimeout)
         raise Flexirest::TimeoutException.new("Timed out getting #{full_url(path)}")
       end
       begin
         reconnect
         block.call
-      rescue Faraday::Error::ConnectionFailed => e2
+      rescue Faraday::ConnectionFailed => e2
         if e2.respond_to?(:cause) && e2.cause.is_a?(Net::OpenTimeout)
           raise Flexirest::TimeoutException.new("Timed out getting #{full_url(path)}")
         end
