@@ -603,7 +603,7 @@ module Flexirest
           raise HTTPTimeoutClientException.new(status:status, result:error_response, raw_response: @response.body, url:@url, method: http_method)
         elsif status == 409
           raise HTTPConflictClientException.new(status:status, result:error_response, raw_response: @response.body, url:@url, method: http_method)
-        elsif status == 409
+        elsif status == 429
           raise HTTPTooManyRequestsClientException.new(status:status, result:error_response, raw_response: @response.body, url:@url, method: http_method)
         elsif (400..499).include? status
           raise HTTPClientException.new(status:status, result:error_response, raw_response: @response.body, url:@url, method: http_method)

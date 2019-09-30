@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.8.6
+
+Fix:
+
+- Correct HTTP status code for too many requests (thanks to Tomohiko Mimura, @mito5525) for spotting this.
+
 ## 1.8.5
 
 Fix:
