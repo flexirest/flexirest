@@ -10,7 +10,7 @@ Flexirest::Base.adapter = :patron
 
 In versions before 1.2.0 the adapter was hardcoded to `:patron`, so if you want to ensure it still uses Patron, you should set this setting.
 
-If you want more control you can pass a **complete** configuration block ("complete" means that the block does not _override_ [the default configuration](https://github.com/flexirest/flexirest/blob/5b1953d89e26c02ca74f74464ccb7cd4c9439dcc/lib/flexirest/configuration.rb#L184-L201), but rather _replaces_ it).
+If you want more control you can pass a **complete** configuration block ("complete" means that the block does not _override_ [the default configuration](https://github.com/flexirest/flexirest/blob/master/lib/flexirest/configuration.rb#L292), but rather _replaces_ it).
 
 For available configuration variables look into the [Faraday documentation](https://github.com/lostisland/faraday).
 
