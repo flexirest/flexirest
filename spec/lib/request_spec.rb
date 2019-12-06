@@ -37,6 +37,7 @@ describe Flexirest::Request do
       put :headers_default, "/headers_default"
       put :headers_json, "/headers_json", request_body_type: :json
       get :find, "/:id", required: [:id]
+      get :find_cat, "/:id/cat"
       get :change, "/change"
       get :plain, "/plain/:id", plain: true
       post :create, "/create", rubify_names: true
@@ -286,6 +287,16 @@ describe Flexirest::Request do
     expect{ExampleClient.requires name: "John"}.to raise_error(Flexirest::MissingParametersException)
     expect{ExampleClient.requires age: 21}.to raise_error(Flexirest::MissingParametersException)
     expect{ExampleClient.requires name: nil, age: nil}.to raise_error(Flexirest::MissingParametersException)
+  end
+
+  it "should ensure any URL parameters are implicitly required and error if not specified" do
+    expect_any_instance_of(Flexirest::Connection).to_not receive(:get)
+    expect{ExampleClient.find_cat}.to raise_error(Flexirest::MissingParametersException)
+  end
+
+  it "should ensure any URL parameters are implicitly required and make the request if specified" do
+    expect_any_instance_of(Flexirest::Connection).to receive(:get).and_return(::FaradayResponseMock.new(OpenStruct.new(body:'{"result":true}', response_headers:{})))
+    expect{ExampleClient.find_cat(1)}.to_not raise_error
   end
 
   it "should makes the request if all required parameters are specified" do

@@ -353,6 +353,7 @@ module Flexirest
     end
 
     def prepare_url
+      missing = []
       if @forced_url && @forced_url.present?
         @url = @forced_url
       else
@@ -368,8 +369,15 @@ module Flexirest
             # it's possible the URL path variable may not be part of the request, in that case, try to resolve it from the object attributes
             target = @object._attributes[token.to_sym] || "" if target == ""
           end
+          if target.to_s.blank?
+            missing << token
+          end
           @url.gsub!(":#{token}", URI.escape(target.to_s).gsub("/", "%2F").gsub("+", "%2B"))
         end
+      end
+
+      if missing.present?
+        raise Flexirest::MissingParametersException.new("The following parameters weren't specifed: #{missing.join(", ")}")
       end
     end
 

@@ -1,10 +1,16 @@
 # Changelog
 
+## 1.8.7
+
+Fix:
+
+- URL parameters should be automatically required or you end up requesting incorrect URLs (thanks to Marko Kind, @m-kind for the issue).
+
 ## 1.8.6
 
 Fix:
 
-- Correct HTTP status code for too many requests (thanks to Tomohiko Mimura, @mito5525) for spotting this.
+- Correct HTTP status code for too many requests (thanks to Tomohiko Mimura, @mito5525 for spotting this).
 
 ## 1.8.5
 
