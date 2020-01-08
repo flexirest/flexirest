@@ -24,7 +24,7 @@ module Flexirest
 
     def make_safe_request(path, &block)
       block.call
-    rescue Faraday::Error::TimeoutError
+    rescue Faraday::TimeoutError
       raise Flexirest::TimeoutException.new("Timed out getting #{full_url(path)}")
     rescue Faraday::ConnectionFailed => e1
       if e1.respond_to?(:cause) && e1.cause.is_a?(Net::OpenTimeout)
