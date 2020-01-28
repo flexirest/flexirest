@@ -15,7 +15,9 @@ end
 class JsonAPIExampleArticle < Flexirest::Base
   proxy :json_api
   has_many :tags, JsonAPIAssociationExampleTag
+  has_one :main_theme, JsonAPIAssociationExampleTag
   has_one :author, JsonAPIAssociationExampleAuthor
+  has_many :co_authors, JsonAPIAssociationExampleAuthor
 
   faker1 = {
     data: {
@@ -102,6 +104,20 @@ class JsonAPIExampleArticle < Flexirest::Base
       { id: 2, type: 'tags', attributes: { item: 'item three' } }
     ]
   }
+  faker8 = {
+    data: {
+      id: 1, type: 'articles', attributes: { item: 'item one' },
+      relationships: {
+        'main_theme' => { data: { id: 1, type: 'tags' } },
+        'co_authors' => { data: [{ id: 1, type: 'authors' }, { id: 2, type: 'authors' }] },
+       }
+    },
+    included: [
+      { id: 1, type: 'tags', attributes: { item: 'item one' } },
+      { id: 1, type: 'authors', attributes: { item: 'item one' } },
+      { id: 2, type: 'authors', attributes: { item: 'item two' } },
+    ]
+  }
 
   get(
     :find,
@@ -149,6 +165,13 @@ class JsonAPIExampleArticle < Flexirest::Base
     :not_recognized_assoc,
     '/articles/:id',
     fake: faker7.to_json,
+    fake_content_type: 'application/vnd.api+json'
+  )
+
+  get(
+    :custom_relationship_name,
+    '/articles/:id',
+    fake: faker8.to_json,
     fake_content_type: 'application/vnd.api+json'
   )
 end
@@ -323,6 +346,12 @@ describe 'JSON API' do
 
     it 'should retrieve empty array if the plural relationship type is empty' do
       expect(subject.includes(:tags).no_assocs(1).tags).to be_empty
+    end
+
+    it 'should retrieve associations that have a name that differs from their type name' do
+      parsed = subject.includes(:main_theme, :co_authors).custom_relationship_name(1)
+      expect(parsed.main_theme).to be_an_instance_of(JsonAPIAssociationExampleTag)
+      expect(parsed.co_authors).to be_an_instance_of(Flexirest::ResultIterator)
     end
   end
 
