@@ -74,7 +74,7 @@ class JsonAPIExampleArticle < Flexirest::Base
     },
     included: [
       { id: 1, type: 'tags', attributes: { item: 'item three' },
-        relationships: { 'authors' => { data: [{ id: 1, type: 'tags' }] } } },
+        relationships: { 'authors' => { data: [{ id: 1, type: 'authors' }] } } },
       { id: 1, type: 'authors', attributes: { item: 'item two' } }
     ]
   }
