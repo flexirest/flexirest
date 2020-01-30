@@ -292,12 +292,14 @@ module Flexirest
 
         # Retrieve the linked resource id and its pluralized type name
         rel_id = relationships[name]['data']['id']
-        plural_name = name.pluralize
+
+        type_name = relationships[name]['data']['type']
+        plural_type_name = type_name.pluralize
 
         # Traverse through the included object, and find the included
         # linked resource, based on the given id and pluralized type name
         linked_resource = included.select do |i|
-          i['id'] == rel_id && i['type'] == plural_name
+          i['id'] == rel_id && i['type'] == plural_type_name
         end
 
         return linked_resource, rel_id, true
@@ -313,12 +315,15 @@ module Flexirest
 
         # Retrieve the linked resources ids
         rel_ids = relationships[name]['data'].map { |r| r['id'] }
-        plural_name = name.pluralize
+
+        # Index the linked resources' id and types that we need to
+        # retrieve from the included resources
+        relations_to_include = relationships[name]['data'].map { |r| [r['id'], r['type']] }.to_set
 
         # Traverse through the included object, and find the included
         # linked resources, based on the given ids and type name
         linked_resources = included.select do |i|
-          rel_ids.include?(i['id']) && i['type'] == plural_name
+          relations_to_include.include?([i['id'], i['type']])
         end
 
         return linked_resources, rel_ids, true
