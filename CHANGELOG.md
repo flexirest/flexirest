@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.8.8
+
+Fix:
+
+- Use custom type and name for JSON-API fields (thanks to François Ferrandis for the PR).
+- Fix Faraday error classes to match current ones in Faraday (thanks to François Ferrandis for the PR).
+
 ## 1.8.7
 
 Fix:
