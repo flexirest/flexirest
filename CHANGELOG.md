@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.8.9
+
+Feature:
+
+- Adds proc support to api_auth credentials (thanks to David Underwood for the PR).
+
 ## 1.8.8
 
 Fix:
