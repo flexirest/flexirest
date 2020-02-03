@@ -69,19 +69,27 @@ module Flexirest
     end
 
     def api_auth_access_id
+      ret = nil
       if object_is_class?
-        @object.api_auth_access_id
+        ret = @object.api_auth_access_id
+        ret = ret.call if ret.respond_to?(:call)
       else
-        @object.class.api_auth_access_id
+        ret = @object.class.api_auth_access_id
+        ret = ret.call(@object) if ret.respond_to?(:call)
       end
+      ret
     end
 
     def api_auth_secret_key
+      ret = nil
       if object_is_class?
-        @object.api_auth_secret_key
+        ret = @object.api_auth_secret_key
+        ret = ret.call if ret.respond_to?(:call)
       else
-        @object.class.api_auth_secret_key
+        ret = @object.class.api_auth_secret_key
+        ret = ret.call(@object) if ret.respond_to?(:call)
       end
+      ret
     end
 
     def api_auth_options

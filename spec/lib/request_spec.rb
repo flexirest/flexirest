@@ -83,6 +83,14 @@ describe Flexirest::Request do
       get :all, "/"
     end
 
+    class ApiAuthProcExampleClient < Flexirest::Base
+      base_url "http://www.example.com"
+      api_auth_credentials( Proc.new { |obj| obj ? "key-#{obj.id}" : "key" },
+                            Proc.new { |obj| obj ? "secret-#{obj.id}" : "secret" }
+                          )
+      get :all, "/"
+    end
+
     class ProcDefaultExampleClient < Flexirest::Base
       base_url "http://www.example.com"
       get :all, "/", defaults: (Proc.new do |params|
@@ -217,18 +225,31 @@ describe Flexirest::Request do
     AuthenticatedExampleClient.all
   end
 
-  it "should get an HTTP connection with authentication using procs when called in a class context" do
+  it "should get an HTTP connection with basic authentication using procs when called in a class context" do
     connection = double(Flexirest::Connection).as_null_object
     expect(Flexirest::ConnectionManager).to receive(:get_connection).with("http://bill:jones@www.example.com").and_return(connection)
     expect(connection).to receive(:get).with("/", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:'{"result":true}', response_headers:{})))
     AuthenticatedProcExampleClient.all
   end
 
-  it "should get an HTTP connection with authentication using procs when called in an object context" do
+  it "should get an HTTP connection with basic authentication using procs when called in an object context" do
     connection = double(Flexirest::Connection).as_null_object
     expect(Flexirest::ConnectionManager).to receive(:get_connection).with("http://bill-1:jones-1@www.example.com").and_return(connection)
     expect(connection).to receive(:get).with("/?id=1", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:'{"result":true}', response_headers:{})))
     obj = AuthenticatedProcExampleClient.new(id: 1)
+    obj.all
+  end
+
+  it "should get an HTTP connection with API authentication using procs when called in a class context" do
+    header_expectation = {headers: {"Accept"=>"application/hal+json, application/json;q=0.5", "Content-Type"=>"application/x-www-form-urlencoded; charset=utf-8"}, api_auth: {api_auth_access_id: "key", api_auth_secret_key: "secret", api_auth_options: {}}}
+    expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/", header_expectation).and_return(::FaradayResponseMock.new(OpenStruct.new(body:'{"result":true}', response_headers:{})))
+    ApiAuthProcExampleClient.all
+  end
+
+  it "should get an HTTP connection with API authentication using procs when called in an object context" do
+    header_expectation = {headers: {"Accept"=>"application/hal+json, application/json;q=0.5", "Content-Type"=>"application/x-www-form-urlencoded; charset=utf-8"}, api_auth: {api_auth_access_id: "key-1", api_auth_secret_key: "secret-1", api_auth_options: {}}}
+    expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/?id=1", header_expectation).and_return(::FaradayResponseMock.new(OpenStruct.new(body:'{"result":true}', response_headers:{})))
+    obj = ApiAuthProcExampleClient.new(id: 1)
     obj.all
   end
 
