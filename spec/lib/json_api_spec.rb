@@ -239,6 +239,8 @@ module JsonAPIExample
       }
     }
 
+    get(:real_find, '/articles/:id')
+
     get(
       :find_lazy,
       '/articles/:id',
@@ -307,6 +309,27 @@ describe 'JSON API' do
 
     it 'should return a Flexirest::ResultIterator if the response contains more than one data instance' do
       expect(subject.find_all).to be_an_instance_of(Flexirest::ResultIterator)
+    end
+
+    it 'should raise an error when response has "errors" key and no "data"' do
+      body = {
+        errors: [
+          {
+            title: "Record not found",
+            detail: "The record identified by 123456 could not be found",
+            code: "not_found",
+            status: "404",
+          }
+        ]
+      }
+      headers = { "Content-Type" => "application/vnd.api+json" }
+      expect_any_instance_of(Flexirest::Connection).
+        to receive(:get).with("/articles/123", an_instance_of(Hash)).
+        and_return(::FaradayResponseMock.new(OpenStruct.new(body: body.to_json, response_headers: headers, status: 404)))
+
+      expect(-> { JsonAPIExample::Article.real_find(123) }).to raise_error(Flexirest::HTTPNotFoundClientException) do |exception|
+        expect(exception.result.first.title).to eq("Record not found")
+      end
     end
   end
 
