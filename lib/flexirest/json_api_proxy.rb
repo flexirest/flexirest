@@ -196,9 +196,14 @@ module Flexirest
         # Save resource class for building lazy association loaders
         save_resource_class(object)
 
+        # try to return errors if their is no data
+        return body.fetch("errors", {}) if body['data'].nil?
+
+        # return early if data is an empty array
+        return [] if body['data'] == []
+
         # Retrieve the resource(s) object or array from the data object
         records = body['data']
-        return body['errors'] unless records.present?
 
         # Convert the resource object to an array,
         # because it is easier to work with an array than a single object
