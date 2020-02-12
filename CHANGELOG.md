@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.9.0
+
+Bugfix:
+
+- Correctly handle errors in JSONAPI calls (thanks to François Ferrandis for the PR).
+
 ## 1.8.9
 
 Feature:
