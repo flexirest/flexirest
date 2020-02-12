@@ -1,10 +1,12 @@
 # Changelog
 
-## 1.9.0
+## 1.9.10
 
 Bugfix:
 
 - Correctly handle errors in JSONAPI calls (thanks to François Ferrandis for the PR).
+
+Important: Note, because a gem was accidentally pushed as version 1.9.10 instead of 1.9.0, there will be no 1.9.0 to 1.9.9, to reduce the risk of someone having updated to the accidental high version increase. Sorry about that
 
 ## 1.8.9
 
