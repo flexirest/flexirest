@@ -312,28 +312,46 @@ describe 'JSON API' do
       expect(subject.find_all).to be_an_instance_of(Flexirest::ResultIterator)
     end
 
-    context 'when response has "errors" key and no "data" key' do
-      let(:headers) { { "Content-Type" => "application/vnd.api+json" } }
-      let(:response_body) do
-        {
-          errors: [
-            {
-              title: "Record not found",
-              detail: "The record identified by 123456 could not be found",
-              code: "not_found",
-              status: "404",
-            }
-          ]
-        }
-      end
+    describe 'error responses' do
+      subject(:make_request) { JsonAPIExample::Article.real_find(123) }
 
-      it 'should raise a Flexirest error' do
+      before do
+        headers = { "Content-Type" => "application/vnd.api+json" }
         expect_any_instance_of(Flexirest::Connection).
           to receive(:get).with("/articles/123", an_instance_of(Hash)).
           and_return(::FaradayResponseMock.new(OpenStruct.new(body: response_body.to_json, response_headers: headers, status: 404)))
+      end
 
-        expect(-> { JsonAPIExample::Article.real_find(123) }).to raise_error(Flexirest::HTTPNotFoundClientException) do |exception|
-          expect(exception.result.first.title).to eq("Record not found")
+      context 'when no "data" key is present alongside the "errors" key' do
+        let(:response_body) do
+          {
+            errors: [
+              { detail: "The record identified by 123456 could not be found", }
+            ]
+          }
+        end
+
+        it 'should raise the relevant Flexirest error' do
+          expect(-> { make_request }).to raise_error(Flexirest::HTTPNotFoundClientException) do |exception|
+            expect(exception.result.first.detail).to eq("The record identified by 123456 could not be found")
+          end
+        end
+      end
+
+      context 'when a "data" key is present alongside the "errors" key (although this is forbidden by the spec)' do
+        let(:response_body) do
+          {
+            errors: [
+              { detail: "The record identified by 123456 could not be found", }
+            ],
+            data: {}
+          }
+        end
+
+        it 'should ignore the "data" key and raise the relevant Flexirest error' do
+          expect(-> { make_request }).to raise_error(Flexirest::HTTPNotFoundClientException) do |exception|
+            expect(exception.result.first.detail).to eq("The record identified by 123456 could not be found")
+          end
         end
       end
     end
