@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.9.11
+
+Bugfix:
+
+- Prevent crash when JSONAPI response["data"] is an empty array (thanks to François Ferrandis for the PR).
+
 ## 1.9.10
 
 Bugfix:
