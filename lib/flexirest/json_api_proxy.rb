@@ -196,8 +196,10 @@ module Flexirest
         # Save resource class for building lazy association loaders
         save_resource_class(object)
 
-        # try to return errors if their is no data
-        return body.fetch("errors", {}) if body['data'].nil?
+        # According to the spec:
+        # "The members data and errors MUST NOT coexist in the same document."
+        # Thus, if the "errors" key is present, we can return it and ignore the "data" key.
+        return body['errors'] if body.include?('errors')
 
         # return early if data is an empty array
         return [] if body['data'] == []
