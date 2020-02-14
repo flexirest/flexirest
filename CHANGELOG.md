@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.9.12
+
+Bugfix:
+
+- Prevent crash on JSONAPI invalid error response (thanks to François Ferrandis for the PR).
+
 ## 1.9.11
 
 Bugfix:
