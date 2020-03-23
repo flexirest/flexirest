@@ -154,7 +154,7 @@ describe Flexirest::Caching do
       ret = Person.save_all
     end
 
-    it 'queries the server when the cache has expired' do
+    it 'queries the server when the cache has expired via etag' do
       headers = {
         Rack::ETAG => @etag
       }
@@ -174,9 +174,30 @@ describe Flexirest::Caching do
       expect(result.first_name).to eq new_name
     end
 
+    it 'queries the server when the cache has expired via cache-control' do
+      headers = {
+        Rack::CACHE_CONTROL => @cache_control,
+        'Date' => (Time.now - 60).httpdate
+      }
+      cached_response = Rack::Cache::Response.new(200, headers, @cached_object.to_json)
+      allow_any_instance_of(CachingExampleCacheStore5).to receive(:read).and_return(Marshal.dump(cached_response))
+      new_name = 'Pete'
+      response_body = Person.new(first_name: new_name).to_json
+      response = ::FaradayResponseMock.new(double(status: 200, response_headers: {}, body: response_body))
+      allow_any_instance_of(Flexirest::Connection).to(
+        receive(:get){ |connection, path, options|
+          expect(path).to eq('/')
+        }.and_return(response))
+
+      result = Person.all
+
+      expect(result.first_name).to eq new_name
+    end
+
     it "should read from the cache store, and not call the server if there's a valid cache-control" do
        headers = {
-         Rack::CACHE_CONTROL => @cache_control
+         Rack::CACHE_CONTROL => @cache_control,
+         'Date' => Time.now.httpdate
        }
        cached_response = Rack::Cache::Response.new(200, headers, @cached_object.to_json)
        expect_any_instance_of(CachingExampleCacheStore5).to receive(:read).once.with("Person:/").and_return(Marshal.dump(cached_response))
@@ -187,7 +208,8 @@ describe Flexirest::Caching do
 
     it "should read from the cache store and restore to the same object in the case of cache-control" do
       headers = {
-          Rack::CACHE_CONTROL => @cache_control
+          Rack::CACHE_CONTROL => @cache_control,
+          'Date' => Time.now.httpdate
       }
       cached_response = Rack::Cache::Response.new(200, headers, @cached_object.to_json)
       expect_any_instance_of(CachingExampleCacheStore5).to receive(:read).once.with("Person:/").and_return(Marshal.dump(cached_response))
@@ -206,6 +228,7 @@ describe Flexirest::Caching do
       cache_control = "public; max-age=30"
       headers = {
           Rack::CACHE_CONTROL => cache_control,
+          'Date' => Time.now.httpdate,
           Rack::ETAG => etag,
           Rack::EXPIRES => (Time.now + 30).httpdate
       }
@@ -308,6 +331,14 @@ describe Flexirest::Caching do
       expect_any_instance_of(CachingExampleCacheStore5).to receive(:read).once.with("Person:/").and_return(nil)
       expect_any_instance_of(CachingExampleCacheStore5).to_not receive(:write).once.with("Person:/", an_instance_of(String), an_instance_of(Hash))
       expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/", an_instance_of(Hash)).and_return(OpenStruct.new(status:200, body:"{\"result\":true}", headers:{Rack::CACHE_CONTROL=>"public, max-age=0"}))
+      Person.perform_caching = true
+      Person.all
+    end
+
+    it "should not write the response to the cache if there's a no-store value for cache-control" do
+      expect_any_instance_of(CachingExampleCacheStore5).to receive(:read).once.with("Person:/").and_return(nil)
+      expect_any_instance_of(CachingExampleCacheStore5).to_not receive(:write).once.with("Person:/", an_instance_of(String), an_instance_of(Hash))
+      expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/", an_instance_of(Hash)).and_return(OpenStruct.new(status:200, body:"{\"result\":true}", headers:{Rack::CACHE_CONTROL=>"no-store"}))
       Person.perform_caching = true
       Person.all
     end

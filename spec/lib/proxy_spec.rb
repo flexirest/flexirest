@@ -169,6 +169,7 @@ describe Flexirest::Base do
 
     headers = {
       Rack::CACHE_CONTROL => @cache_control,
+      'Date' => Time.now.httpdate,
       Rack::ETAG => @etag,
       Rack::EXPIRES => (Time.now + 30).httpdate
     }
