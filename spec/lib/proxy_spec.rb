@@ -167,23 +167,27 @@ describe Flexirest::Base do
 
   it "caches responses in the standard way" do
 
-     cached_response = Flexirest::CachedResponse.new(
-        status:200,
-        result:@cached_object,
-        etag:@etag)
+    headers = {
+      Rack::CACHE_CONTROL => @cache_control,
+      Rack::ETAG => @etag,
+      Rack::EXPIRES => (Time.now + 30).httpdate
+    }
+    cached_response = Rack::Cache::Response.new(200, headers, @cached_object.to_json)
 
     cache_store = double("CacheStore")
     allow(cache_store).to receive(:read).with(any_args).and_return(nil)
     ProxyClientExample.perform_caching true
     allow(ProxyClientExample).to receive(:cache_store).and_return(cache_store)
+    cache_control = "public, max-age=600"
     expiry = 10.minutes.from_now.rfc2822
-    expect_any_instance_of(Flexirest::Connection).to receive(:put).with("/update", "MY-BODY-CONTENT", instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"result\":true}", status:200, response_headers:{"Expires" => expiry, "ETag" => "123456"})))
+    expect_any_instance_of(Flexirest::Connection).to receive(:put).with("/update", "MY-BODY-CONTENT", instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"result\":true}", status:200, response_headers:{Rack::CACHE_CONTROL => cache_control, Rack::EXPIRES => expiry, Rack::ETAG => "123456"})))
     expect(ProxyClientExample.cache_store).to receive(:write) do |key, object, options|
       expect(key).to eq("ProxyClientExample:/update")
       expect(object).to be_an_instance_of(String)
       unmarshalled = Marshal.load(object)
-      expect(unmarshalled.etag).to eq("123456")
-      expect(unmarshalled.expires).to eq(expiry)
+      expect(unmarshalled.headers[Rack::CACHE_CONTROL]).to eq(cache_control)
+      expect(unmarshalled.headers[Rack::ETAG]).to eq("123456")
+      expect(unmarshalled.headers[Rack::EXPIRES]).to eq(expiry)
     end
     ProxyClientExample.update(id:1)
   end

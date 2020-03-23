@@ -44,6 +44,7 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency "multi_json"
   spec.add_runtime_dependency "crack"
   spec.add_runtime_dependency "faraday"
+  spec.add_runtime_dependency "rack-cache"
 
   # Use Gem::Version to parse the Ruby version for reliable comparison
   # ActiveSupport 5+ requires Ruby 2.2.2

@@ -1,12 +1,12 @@
 # *Flexirest:* Caching
 
-Expires and ETag based caching is enabled by default, but with a simple line in the application.rb/production.rb you can disable it:
+Cache-Control, Expires and ETag based caching are enabled by default, but with a simple line in the application.rb/production.rb you can disable it:
 
 ```ruby
 Flexirest::Base.perform_caching = false
 ```
 
-or you can disable it per classes with:
+or you can also disable it per classes with:
 
 ```ruby
 class Person < Flexirest::Base

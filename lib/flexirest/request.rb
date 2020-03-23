@@ -213,7 +213,7 @@ module Flexirest
         self.original_url = self.url
         cached = original_object_class.read_cached_response(self)
         if cached && !cached.is_a?(String)
-          if cached.expires && cached.expires > Time.now
+          if cached.fresh?
             Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest.name}\033[0m #{@instrumentation_name} - Absolutely cached copy found"
             return handle_cached_response(cached)
           elsif cached.etag.to_s != "" #present? isn't working for some reason
@@ -557,6 +557,12 @@ module Flexirest
     end
 
     def handle_cached_response(cached)
+      result = handle_response(OpenStruct.new(status: cached.status, response_headers: cached.headers, body: cached.body))
+      @response_delegate.__setobj__(result)
+      headers = cached.headers.keys.select{|h| h.is_a? String}.each do |key|
+        cached.headers[key.downcase.to_sym] = cached.headers[key]
+      end
+      cached = Flexirest::CachedResponse.new(status: cached.status, result: result, response_headers: headers)
       if cached.result.is_a? Flexirest::ResultIterator
         cached.result
       else
