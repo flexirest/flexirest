@@ -851,7 +851,7 @@ module Flexirest
   end
 
   class HTTPException < RequestException
-    attr_accessor :status, :result, :request_url
+    attr_accessor :status, :result, :request_url, :raw_response
     def initialize(options)
       @status = options[:status]
       @result = options[:result]
