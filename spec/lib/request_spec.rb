@@ -31,6 +31,8 @@ describe Flexirest::Request do
       get :flat, "/", params_encoder: :flat
       get :array, "/johnny", array: [:likes, :dislikes]
       get :babies, "/babies", has_many: {children: ExampleOtherClient}
+      get :basket, "/basket", array: [:options]
+      get :dates, "/dates", array: [:dates]
       get :single_association, "/single", has_one: {single: ExampleSingleClient}, has_many: {children: ExampleOtherClient}
       get :headers, "/headers"
       get :cancel_callback, "/cancel-callback"
@@ -38,6 +40,7 @@ describe Flexirest::Request do
       put :headers_json, "/headers_json", request_body_type: :json
       get :find, "/:id", required: [:id]
       get :find_cat, "/:id/cat"
+      get :fruits, "/fruits"
       get :change, "/change"
       get :plain, "/plain/:id", plain: true
       post :create, "/create", rubify_names: true
@@ -46,11 +49,14 @@ describe Flexirest::Request do
       put :update, "/put/:id"
       put :wrapped, "/put/:id", wrap_root: "example"
       put :conversion, "/put/:id", parse_fields: [:converted]
+      put :conversion_child, "/put/:id", parse_fields: [:converted_child]
       delete :remove, "/remove/:id"
       delete :remove_body, "/remove/:id", send_delete_body: true
       get :hal, "/hal", fake:"{\"_links\":{\"child\": {\"href\": \"/child/1\"}, \"other\": {\"href\": \"/other/1\"}, \"cars\":[{\"href\": \"/car/1\", \"name\":\"car1\"}, {\"href\": \"/car/2\", \"name\":\"car2\"}, {\"href\": \"/car/not-embed\", \"name\":\"car_not_embed\"} ], \"lazy\": {\"href\": \"/lazy/load\"}, \"invalid\": [{\"href\": \"/invalid/1\"}]}, \"_embedded\":{\"other\":{\"name\":\"Jane\"},\"child\":{\"name\":\"Billy\"}, \"cars\":[{\"_links\": {\"self\": {\"href\": \"/car/1\"} }, \"make\": \"Bugatti\", \"model\": \"Veyron\"}, {\"_links\": {\"self\": {\"href\": \"/car/2\"} }, \"make\": \"Ferrari\", \"model\": \"F458 Italia\"} ], \"invalid\": [{\"present\":true, \"_links\": {} } ] } }", has_many:{other:ExampleOtherClient}
-      get :fake, "/fake", fake:"{\"result\":true, \"list\":[1,2,3,{\"test\":true}], \"child\":{\"grandchild\":{\"test\":true}}}"
-      get :fake_proc, "/fake", fake:->(request) { "{\"result\":#{request.get_params[:id]}}" }
+      get :fake_object, "/fake", fake:"{\"result\":true, \"list\":[1,2,3,{\"test\":true}], \"child\":{\"grandchild\":{\"test\":true}}}"
+      get :fake_proc_object, "/fake", fake:->(request) { "{\"result\":#{request.get_params[:id]}}" }
+      get :fake_array, "/fake", fake:"[1,2,3,{\"test\":true},null]"
+      get :fake_proc_array, "/fake", fake:->(request) { "[{\"result\":#{request.get_params[:id]}},null]" }
       get :defaults, "/defaults", defaults:{overwrite:"no", persist:"yes"}
       get :requires, "/requires", requires:[:name, :age]
       patch :only_changed_1, "/changed1", only_changed: true
@@ -143,7 +149,8 @@ describe Flexirest::Request do
     class LazyLoadedExampleClient < ExampleClient
       base_url "http://www.example.com"
       lazy_load!
-      get :fake, "/fake", fake:"{\"result\":true, \"list\":[1,2,3,{\"test\":true}], \"child\":{\"grandchild\":{\"test\":true}}}"
+      get :fake_object, "/fake", fake:"{\"result\":true, \"list\":[1,2,3,{\"test\":true}], \"child\":{\"grandchild\":{\"test\":true}}}"
+      get :fake_array, "/fake", fake:"[1,2,3,{\"test\":true},{\"child\":{\"grandchild\":{\"test\":true}}}]"
       get :lazy_test, "/does-not-matter", fake:"{\"people\":[\"http://www.example.com/some/url\"]}", lazy: [:people]
     end
 
@@ -190,7 +197,8 @@ describe Flexirest::Request do
     class WhitelistedDateClient < Flexirest::Base
       base_url "http://www.example.com"
       put :conversion, "/put/:id"
-      parse_date :converted
+      put :conversion_child, "/put/:id"
+      parse_date :converted, :converted_child
     end
 
     allow_any_instance_of(Flexirest::Request).to receive(:read_cached_response)
@@ -511,31 +519,82 @@ describe Flexirest::Request do
     end
   end
 
-  it "should only convert date times in JSON if specified" do
+  it "should only convert date times in JSON if specified when converted is root property" do
     expect_any_instance_of(Flexirest::Connection).to receive(:put).with("/put/1234", "debug=true", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"converted\":\"2012-03-04T01:02:03Z\", \"not_converted\":\"2012-03-04T01:02:03Z\"}", response_headers:{})))
     object = ExampleClient.conversion id:1234, debug:true
     expect(object.converted).to be_an_instance_of(DateTime)
     expect(object.not_converted).to be_an_instance_of(String)
   end
 
-  it "should convert date times in JSON if whitelisted" do
+  it "should only convert date times in JSON if specified when converted is child property" do
+    expect_any_instance_of(Flexirest::Connection).to receive(:put).with("/put/1234", "debug=true", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"not_converted\":\"2012-03-04T01:02:03Z\", \"child\":{\"converted_child\":\"2012-03-04T01:02:03Z\"}}", response_headers:{})))
+    object = ExampleClient.conversion_child id:1234, debug:true
+    expect(object.child.converted_child).to be_an_instance_of(DateTime)
+    expect(object.not_converted).to be_an_instance_of(String)
+  end
+
+  it "should convert date times in JSON if root property is whitelisted" do
     expect_any_instance_of(Flexirest::Connection).to receive(:put).with("/put/1234", "debug=true", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"converted\":\"2012-03-04T01:02:03Z\", \"not_converted\":\"2012-03-04T01:02:03Z\"}", response_headers:{})))
     object = WhitelistedDateClient.conversion id:1234, debug:true
     expect(object.converted).to be_an_instance_of(DateTime)
     expect(object.not_converted).to be_an_instance_of(String)
   end
 
-  it "should parse JSON and return a nice object for faked responses" do
-    object = ExampleClient.fake id:1234, debug:true
+  it "should convert date times in JSON if child property is whitelisted" do
+    expect_any_instance_of(Flexirest::Connection).to receive(:put).with("/put/1234", "debug=true", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"not_converted\":\"2012-03-04T01:02:03Z\", \"child\":{\"converted_child\":\"2012-03-04T01:02:03Z\"}}", response_headers:{})))
+    object = WhitelistedDateClient.conversion_child id:1234, debug:true
+    expect(object.child.converted_child).to be_an_instance_of(DateTime)
+    expect(object.not_converted).to be_an_instance_of(String)
+  end
+
+  it "should convert date times in JSON from a result iterator response" do
+    expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/dates", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"[\"2012-03-04T01:02:03Z\", \"2012-03-04T01:02:03Z\"]", response_headers:{})))
+    object = ExampleClient.dates
+    expect(object).to be_a(Flexirest::ResultIterator)
+    expect(object.items).to be_a(Array)
+    expect(object.first).to be_an_instance_of(DateTime)
+  end
+
+  it "should convert date times in JSON even in a pure array" do
+    expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/dates", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"dates\":[\"2012-03-04T01:02:03Z\", \"2012-03-04T01:02:03Z\"]}", response_headers:{})))
+    object = ExampleClient.dates
+    expect(object).to be_a(ExampleClient)
+    expect(object.dates).to be_a(Array)
+    expect(object.dates.first).to be_an_instance_of(DateTime)
+  end
+
+  it "should parse JSON object and return a nice object for faked responses" do
+    object = ExampleClient.fake_object id:1234, debug:true
     expect(object.result).to eq(true)
     expect(object.list.first).to eq(1)
     expect(object.list.last.test).to eq(true)
     expect(object.child.grandchild.test).to eq(true)
   end
 
-  it "should parse JSON from a fake response generated by a proc" do
-    object = ExampleClient.fake_proc id:1234
+  it "should parse JSON object from a fake response generated by a proc" do
+    object = ExampleClient.fake_proc_object id:1234
     expect(object.result).to eq(1234)
+  end
+
+  it "should parse JSON array and return a nice result iterator for faked responses" do
+    object = ExampleClient.fake_array debug:true
+    expect(object).to be_instance_of(Flexirest::ResultIterator)
+    expect(object.size).to eq(5)
+    expect(object.first).to eq(1)
+    expect(object.last).to eq(nil)
+    expect(object[3]).to be_instance_of(ExampleClient)
+    expect(object[3].test).to eq(true)
+    expect(object._status).to eq(200)
+  end
+
+  it "should parse JSON array from a fake response generated by a proc" do
+    object = ExampleClient.fake_proc_array id:1234
+    expect(object).to be_instance_of(Flexirest::ResultIterator)
+    expect(object.size).to eq(2)
+    expect(object.first).to be_instance_of(ExampleClient)
+    expect(object.first.result).to eq(1234)
+    expect(object.last).to eq(nil)
+    expect(object._status).to eq(200)
   end
 
   it "should not parse JSON from a plain request" do
@@ -570,17 +629,34 @@ describe Flexirest::Request do
     expect(ExampleClient.all).to be_truthy
   end
 
-  it "should return a lazy loader object if lazy loading is enabled" do
-    object = LazyLoadedExampleClient.fake id:1234, debug:true
+  it "should return a lazy loader object if lazy loading is enabled for JSON object" do
+    object = LazyLoadedExampleClient.fake_object id:1234, debug:true
     expect(object).to be_an_instance_of(Flexirest::LazyLoader)
   end
 
-  it "should proxy through nice object for lazy loaded responses" do
-    object = LazyLoadedExampleClient.fake id:1234, debug:true
-    expect(object.result).to eq(true)
+  it "should proxy through nice object for lazy loaded responses from JSON object" do
+    object = LazyLoadedExampleClient.fake_object id:1234, debug:true
+    expect(object.instance_variable_get(:@result)).to be(nil)
+    expect(object.result).to eq(true) # method call the attribute received in response and never the instance attribute of the LazyLoader class
+    expect(object.instance_variable_get(:@result)).to be_a(LazyLoadedExampleClient)
     expect(object.list.first).to eq(1)
     expect(object.list.last.test).to eq(true)
     expect(object.child.grandchild.test).to eq(true)
+  end
+
+  it "should return a lazy loader object if lazy loading is enabled for JSON array" do
+    object = LazyLoadedExampleClient.fake_array debug:true
+    expect(object).to be_an_instance_of(Flexirest::LazyLoader)
+  end
+
+  it "should proxy through nice result iterator for lazy loaded responses from JSON array" do
+    object = LazyLoadedExampleClient.fake_array debug:true
+    expect(object.instance_variable_get(:@result)).to be(nil)
+    expect(object.items).to be_a(Array)
+    expect(object.instance_variable_get(:@result)).to be_a(Flexirest::ResultIterator)
+    expect(object.first).to eq(1)
+    expect(object[3].test).to eq(true)
+    expect(object.last.child.grandchild.test).to eq(true)
   end
 
   it "should return a LazyAssociationLoader for lazy loaded properties" do
@@ -592,7 +668,7 @@ describe Flexirest::Request do
   it "should log faked responses" do
     allow(Flexirest::Logger).to receive(:debug)
     expect(Flexirest::Logger).to receive(:debug).with(/Faked response found/)
-    ExampleClient.fake id:1234, debug:true
+    ExampleClient.fake_object id:1234, debug:true
   end
 
   it "should parse an array within JSON to be a result iterator" do
@@ -626,6 +702,51 @@ describe Flexirest::Request do
     expect(object.dislikes[1]).to eq("lawyers")
     expect(object.dislikes[2]).to eq("taxes")
     #TODO
+  end
+
+  it "should parse an attribute to be an array if attribute included in a nested array" do
+    expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/johnny", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"first_name\":\"Johnny\", \"nested_array\":[[{\"likes\":[\"donuts\", \"bacon\"], \"dislikes\":[\"politicians\", \"lawyers\", \"taxes\"]}]]}", status:200, response_headers:{})))
+    object = ExampleClient.array
+    nested_array = object.nested_array[0][0]
+    expect(nested_array.likes).to be_instance_of(Array)
+    expect(nested_array.likes.size).to eq(2)
+    expect(nested_array.likes[0]).to eq("donuts")
+    expect(nested_array.likes[1]).to eq("bacon")
+    expect(nested_array.dislikes).to be_instance_of(Array)
+    expect(nested_array.dislikes.size).to eq(3)
+    expect(nested_array.dislikes[0]).to eq("politicians")
+    expect(nested_array.dislikes[1]).to eq("lawyers")
+    expect(nested_array.dislikes[2]).to eq("taxes")
+    #TODO - Pasted from the Test above
+  end
+
+  it "should parse an attribute to be either a result iterator or an array and containing simple values like integers" do
+      expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/basket", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"products\":[101, 55, 37], \"options\":[854, 225, 772]}", status:200, response_headers:{})))
+      object = ExampleClient.basket
+      expect(object).to be_instance_of(ExampleClient)
+      expect(object.products).to be_a(Flexirest::ResultIterator)
+      expect(object.products.size).to eq(3)
+      expect(object.products.first).to eq(101)
+      expect(object.products[1]).to eq(55)
+      expect(object.products.last).to eq(37)
+      expect(object.options).to be_a(Array)
+      expect(object.options.size).to eq(3)
+      expect(object.options.first).to eq(854)
+      expect(object.options[1]).to eq(225)
+      expect(object.options.last).to eq(772)
+      expect(object._status).to eq(200)
+      #TODO - Pasted from the Test above
+    end
+
+  it "should parse the response to be a result iterator and containing simple values like strings" do
+    expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/fruits", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"[\"apple\", \"banana\", \"pear\", \"watermelon\"]", status:200, response_headers:{})))
+    object = ExampleClient.fruits
+    expect(object).to be_instance_of(Flexirest::ResultIterator)
+    expect(object.first).to eq('apple')
+    expect(object[1]).to eq('banana')
+    expect(object.last).to eq('watermelon')
+    expect(object._status).to eq(200)
+    #TODO - Pasted from the Test above
   end
 
   it "should only send changed attributes if only_changed:true" do

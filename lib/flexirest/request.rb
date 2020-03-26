@@ -656,40 +656,52 @@ module Flexirest
           k = k.to_sym
         end
         overridden_name = select_name(k, overridden_name)
-        if @method[:options][:lazy].include?(k)
-          object._attributes[k] = Flexirest::LazyAssociationLoader.new(overridden_name, v, self, overridden_name:(overridden_name))
-        elsif v.is_a? Hash
-          object._attributes[k] = new_object(v, overridden_name )
-        elsif v.is_a? Array
-          if @method[:options][:array].include?(k)
-            object._attributes[k] = Array.new
-          else
-            object._attributes[k] = Flexirest::ResultIterator.new
-          end
-          v.each do |item|
-            if item.is_a? Hash
-              object._attributes[k] << new_object(item, overridden_name)
-            else
-              object._attributes[k] << item
-            end
-          end
-        else
-          parse_fields = [ @method[:options][:parse_fields], @object._date_fields ].compact.reduce([], :|)
-          parse_fields = nil if parse_fields.empty?
-          if (parse_fields && parse_fields.include?(k))
-            object._attributes[k] = parse_attribute_value(v)
-          elsif parse_fields
-            object._attributes[k] = v
-          elsif Flexirest::Base.disable_automatic_date_parsing
-            object._attributes[k] = v
-          else
-            object._attributes[k] = parse_attribute_value(v)
-          end
-        end
+        set_corresponding_value(v, k, object, overridden_name)
       end
       object.clean! unless object_is_class?
 
       object
+    end
+
+    def set_corresponding_value(value, key = nil, object = nil, overridden_name = nil)
+      optional_args = [key, object, overridden_name]
+      value_from_object = optional_args.all? # trying to parse a JSON Hash value
+      value_from_other_type = optional_args.none? # trying to parse anything else
+      raise Flexirest::InvalidArgumentsException.new("Optional args need all to be filled or none") unless value_from_object || value_from_other_type
+      k = key || :key
+      v = value
+      assignable_hash = value_from_object ? object._attributes : {}
+      if value_from_object && @method[:options][:lazy].include?(k)
+        assignable_hash[k] = Flexirest::LazyAssociationLoader.new(overridden_name, v, self, overridden_name:(overridden_name))
+      elsif v.is_a? Hash
+        assignable_hash[k] = new_object(v, overridden_name )
+      elsif v.is_a? Array
+        if @method[:options][:array].include?(k)
+          assignable_hash[k] = Array.new
+        else
+          assignable_hash[k] = Flexirest::ResultIterator.new
+        end
+        v.each do |item|
+          if item.is_a? Hash
+            assignable_hash[k] << new_object(item, overridden_name)
+          else
+            assignable_hash[k] << set_corresponding_value(item)
+          end
+        end
+      else
+        parse_fields = [ @method[:options][:parse_fields], @object._date_fields ].compact.reduce([], :|)
+        parse_fields = nil if parse_fields.empty?
+        if (parse_fields && parse_fields.include?(k))
+          assignable_hash[k] = parse_attribute_value(v)
+        elsif parse_fields
+          assignable_hash[k] = v
+        elsif Flexirest::Base.disable_automatic_date_parsing
+          assignable_hash[k] = v
+        else
+          assignable_hash[k] = parse_attribute_value(v)
+        end
+      end
+      value_from_object ? object : assignable_hash[k]
     end
 
     def hal_response?
@@ -822,12 +834,10 @@ module Flexirest
 
     def add_nested_body_to_iterator(result, items)
       items.each do |json_object|
-        if json_object.is_a?(Array)
-          iterator = ResultIterator.new
-          add_nested_body_to_iterator(iterator, json_object)
-          result << iterator
-        else
+        if json_object.is_a? Hash
           result << new_object(json_object, @overridden_name)
+        else
+          result << set_corresponding_value(json_object)
         end
       end
     end
@@ -838,6 +848,7 @@ module Flexirest
   end
 
   class RequestException < StandardError ; end
+  class InvalidArgumentsException < StandardError ; end
 
   class InvalidRequestException < RequestException ; end
   class MissingParametersException < RequestException ; end
