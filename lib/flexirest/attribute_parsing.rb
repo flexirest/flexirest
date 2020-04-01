@@ -3,7 +3,8 @@ module Flexirest
     private
 
     def parse_attribute_value(v)
-      return v if v.is_a?(Date) || v.is_a?(DateTime)
+      return v if v.is_a?(Date) || v.is_a?(DateTime) ||
+                  v.kind_of?(NilClass) || v.kind_of?(TrueClass) || v.kind_of?(FalseClass) || v.kind_of?(Numeric)
 
       if v.to_s[(/\A(((19|20)\d\d[- \/.](0[1-9]|1[012]|[1-9])[- \/.](0[1-9]|[12][0-9]|3[01]|[1-9]))|((0[1-9]|1[012]|[1-9])[- \/.](0[1-9]|[12][0-9]|3[01]|[1-9])[- \/.](19|20)\d\d))\Z/)]
         Date.parse(v) rescue v
