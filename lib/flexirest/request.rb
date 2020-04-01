@@ -862,18 +862,19 @@ module Flexirest
   end
 
   class HTTPException < RequestException
-    attr_accessor :status, :result, :request_url, :raw_response
+    attr_accessor :status, :result, :request_url, :body, :raw_response
     def initialize(options)
       @status = options[:status]
       @result = options[:result]
       @request_url = options[:url]
-      @raw_response = options[:raw_response]
+      @body = options[:raw_response]
       @method = options[:method]
     end
+    alias_method :body, :raw_response
 
     def message
       method = @method.try(:upcase)
-      "The #{method} to '#{@request_url}' returned a #{@status} status, which raised a #{self.class.to_s} with a body of: #{@raw_response}"
+      "The #{method} to '#{@request_url}' returned a #{@status} status, which raised a #{self.class.to_s} with a body of: #{@body}"
     end
 
     def to_s
