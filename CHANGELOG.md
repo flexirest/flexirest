@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.9.13
+
+Change:
+
+- Unified the response body to be `body` for all exceptions instead of sometimes being `body` and sometimes being `raw_response`, although both are available as aliases where they were defined before (thanks to Romain Gisiger for the PR).
+- Adjust parsing of attributes to be done in a more unified way and lighten the CPU load (thanks to Romain Gisiger for the PR)
+
 ## 1.9.12
 
 Bugfix:
