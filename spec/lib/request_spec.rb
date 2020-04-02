@@ -344,7 +344,7 @@ describe Flexirest::Request do
   end
 
   it "should pass URL-encode URL parameters" do
-    expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/foo%20bar", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:'{"result":true}', response_headers:{})))
+    expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/foo+bar", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:'{"result":true}', response_headers:{})))
     ExampleClient.find id:"foo bar"
   end
 

@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.9.14
+
+Bugfix:
+
+- Remove deprecation warning for `URI.escape` on Ruby 2.7.x.
+
 ## 1.9.13
 
 Change:

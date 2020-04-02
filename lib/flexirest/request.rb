@@ -380,7 +380,7 @@ module Flexirest
           if target.to_s.blank?
             missing << token
           end
-          @url.gsub!(":#{token}", URI.escape(target.to_s).gsub("/", "%2F").gsub("+", "%2B"))
+          @url.gsub!(":#{token}", URI.encode_www_form_component(target.to_s))
         end
       end
 
