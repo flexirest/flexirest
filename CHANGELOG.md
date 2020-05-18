@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.9.15
+
+Bugfix:
+
+- Fix not marking unchanged attributes as dirty (thanks to Khairi Adnan for the bug report).
+
 ## 1.9.14
 
 Bugfix:
