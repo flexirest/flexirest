@@ -189,7 +189,7 @@ module Flexirest
       old_value = @dirty_attributes[key.to_sym]
       old_value = @attributes[key.to_sym] unless old_value
       old_value = old_value[0] if old_value and old_value.is_a? Array
-      @dirty_attributes[key.to_sym] = [old_value, value]
+      @dirty_attributes[key.to_sym] = [old_value, value] if old_value != value
       @attributes[key.to_sym] = value
     end
 

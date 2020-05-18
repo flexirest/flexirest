@@ -126,6 +126,13 @@ describe Flexirest::BaseWithoutValidation do
     expect(client).to be_dirty
   end
 
+  it "should not mark attributes that don't change as dirty" do
+    client = EmptyExample.new(test: "Foo")
+    client._clean!
+    client.test = client.test
+    expect(client).to_not be_dirty
+  end
+
   it "should store attribute set using []= array notation and mark them as dirty" do
     client = EmptyExample.new()
     client["test"] = "Something"
