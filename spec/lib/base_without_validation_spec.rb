@@ -178,6 +178,13 @@ describe Flexirest::BaseWithoutValidation do
     expect(client).to be_dirty
   end
 
+  it "should not mark a freshly retrieved object as changed" do
+    expect_any_instance_of(Flexirest::Connection).to receive(:get).with('/find/1', anything).and_return(::FaradayResponseMock.new(OpenStruct.new(status:200, response_headers:{}, body:"{\"first_name\":\"Billy\"}")))
+    client = AlteringClientExample.find(id: 1)
+    expect(client).to_not be_changed
+    expect(client.changes).to eq({})
+  end
+
   it 'should respond_to? attributes defined in the response' do
     client = EmptyExample.new(hello: "World")
     expect(client.respond_to?(:hello)).to be_truthy
