@@ -66,12 +66,12 @@ class FaradayResponseMock < ::Flexirest::FaradayResponseProxy
     @finished = false
   end
 
-  def on_complete
+  def on_complete(&block)
     if @auto_resolve
       @finished = true
       yield(@response)
     else
-      @callback = Proc.new
+      @callback = block
     end
   end
 

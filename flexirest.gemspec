@@ -36,7 +36,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "simplecov"
   spec.add_development_dependency "simplecov-rcov"
   spec.add_development_dependency 'coveralls'
-  spec.add_development_dependency "api-auth", ">= 1.3.1"
+  spec.add_development_dependency "api-auth", ">= 1.3.1", "< 2.4"
   spec.add_development_dependency 'typhoeus'
   spec.add_development_dependency 'activemodel'
 
