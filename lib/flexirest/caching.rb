@@ -1,4 +1,5 @@
 module Flexirest
+  require 'rack/cache'
   module Caching
     module ClassMethods
       @@perform_caching = true
@@ -60,23 +61,12 @@ module Flexirest
       def write_cached_response(request, response, result)
         return if result.is_a? Symbol
         return unless perform_caching
-        return unless !result.respond_to?(:_status) || [200, 304].include?(result._status)
-        headers = response.response_headers
+        rack_cached_response = Rack::Cache::Response.new(response.status, response.response_headers, response.body)
+        return unless rack_cached_response.cacheable? && cache_store.present?
 
-        headers.keys.select{|h| h.is_a? String}.each do |key|
-          headers[key.downcase.to_sym] = headers[key]
-        end
-
-        if cache_store && (headers[:etag] || headers[:expires])
-          key = "#{request.class_name}:#{request.original_url}"
-          Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest.name}\033[0m #{key} - Writing to cache"
-          cached_response = CachedResponse.new(status:response.status, result:result, response_headers: headers)
-          cached_response.etag = "#{headers[:etag]}" if headers[:etag]
-          cached_response.expires = Time.parse(headers[:expires]) rescue nil if headers[:expires]
-          if cached_response.etag.present? || cached_response.expires
-            cache_store.write(key, Marshal.dump(cached_response), {})
-          end
-        end
+        key = "#{request.class_name}:#{request.original_url}"
+        Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest.name}\033[0m #{key} - Writing to cache"
+        cache_store.write(key, Marshal.dump(rack_cached_response), {})
       end
     end
 
@@ -87,12 +77,10 @@ module Flexirest
   end
 
   class CachedResponse
-    attr_accessor :class_name, :status, :etag, :expires, :response_headers
+    attr_accessor :class_name, :status, :response_headers
 
     def initialize(options)
       @status = options[:status]
-      @etag = options[:etag]
-      @expires = options[:expires]
       @response_headers = options[:response_headers]
 
       @class_name = options[:result].class.name
