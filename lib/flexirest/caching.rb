@@ -110,9 +110,12 @@ module Flexirest
       if @result.is_a?(Array)
         ri = ResultIterator.new(self)
         ri.items = @result.map{|i| @class_name.constantize.new(i)}
+        ri._clean!
         ri
       else
-        @class_name.constantize.new(@result)
+        obj = @class_name.constantize.new(@result)
+        obj._clean!
+        obj
       end
     end
   end

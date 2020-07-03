@@ -184,6 +184,18 @@ describe Flexirest::Caching do
       expect(ret.first_name).to eq("Johnny")
     end
 
+    it "cache read objects shouldn't be marked as changed" do
+      cached_response = Flexirest::CachedResponse.new(
+        status:200,
+        result:@cached_object,
+        expires:Time.now + 30)
+      expect_any_instance_of(CachingExampleCacheStore5).to receive(:read).once.with("Person:/").and_return(Marshal.dump(cached_response))
+      expect_any_instance_of(Flexirest::Connection).not_to receive(:get)
+      ret = Person.all
+      expect(ret).to_not be_changed
+      expect(ret.changes).to eq({})
+    end
+
     it "should read from the cache store and restore to the same object" do
       cached_response = Flexirest::CachedResponse.new(
         status:200,

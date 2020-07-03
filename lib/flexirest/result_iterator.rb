@@ -15,6 +15,10 @@ module Flexirest
       @items << item
     end
 
+    def _clean!
+      @items.map(&:_clean!)
+    end
+
     def size
       @items.size
     end

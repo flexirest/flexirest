@@ -41,6 +41,7 @@ module Flexirest
     def _copy_from(result)
       @attributes = result._attributes
       @_status = result._status
+      _clean!
     end
 
     def dirty?

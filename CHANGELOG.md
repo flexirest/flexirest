@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.9.16
+
+Bugfix:
+
+- Cached responses were always returning as `dirty?`/`changed?` (thanks to AKRathore for the bug report).
+
 ## 1.9.15
 
 Bugfix:
