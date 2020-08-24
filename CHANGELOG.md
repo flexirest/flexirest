@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.9.18
+
+Security:
+
+- Upgrade rest-client development dependency to a CVE-fixed version.
+
 ## 1.9.17
 
 Feature:

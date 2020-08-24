@@ -39,6 +39,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "api-auth", ">= 1.3.1", "< 2.4"
   spec.add_development_dependency 'typhoeus'
   spec.add_development_dependency 'activemodel'
+  spec.add_development_dependency 'rest-client', ">= 1.8.0"
 
   spec.add_runtime_dependency "mime-types"
   spec.add_runtime_dependency "multi_json"

@@ -66,8 +66,8 @@ module Flexirest
       self
     end
 
-    def delete_if
-      @items = @items.delete_if &Proc.new
+    def delete_if(&block)
+      @items = @items.delete_if &block
       self
     end
 
