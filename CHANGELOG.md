@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.9.17
+
+Feature:
+
+- Methods can be specified as a symbol for generating fake data (thanks to Niall Duggan for the feature request).
+
 ## 1.9.16
 
 Bugfix:

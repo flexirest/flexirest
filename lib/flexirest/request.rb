@@ -191,9 +191,18 @@ module Flexirest
         @body = nil
         prepare_params
         prepare_url
-        if fake = @method[:options][:fake]
+        fake = @method[:options][:fake]
+        if fake.present?
           if fake.respond_to?(:call)
             fake = fake.call(self)
+          elsif @object.respond_to?(fake)
+            fake = @object.send(fake)
+          elsif @object.class.respond_to?(fake)
+            fake = @object.class.send(fake)
+          elsif @object.new.respond_to?(fake)
+            fake = @object.new.send(fake)
+          elsif @object.class.new.respond_to?(fake)
+            fake = @object.class.new.send(fake)
           end
           Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest.name}\033[0m #{@instrumentation_name} - Faked response found"
           content_type = @method[:options][:fake_content_type] || "application/json"
