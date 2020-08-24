@@ -53,12 +53,4 @@ Gem::Specification.new do |spec|
   else
     spec.add_runtime_dependency "activesupport", "< 5.0.0"
   end
-  # JSON is an implicit dependency of something, but JSON v2+ requires Ruby 2+
-  # Same with "tins" which is a dependency of coveralls
-  if Gem::Version.new(RUBY_VERSION) < Gem::Version.new('2.0.0')
-    spec.add_runtime_dependency "json", "< 2.0.0"
-    spec.add_runtime_dependency "tins", "~> 1.6.0"
-    spec.add_runtime_dependency "term-ansicolor", "~> 1.3.2"
-    spec.add_runtime_dependency "public_suffix", "~> 1.4.6"
-  end
 end
