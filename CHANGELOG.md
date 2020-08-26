@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.10.0
+
+Enhancement:
+
+- Add specific exceptions for the most common 5xx server-side errors
+
 ## 1.9.18
 
 Security:

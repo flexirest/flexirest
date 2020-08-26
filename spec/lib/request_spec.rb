@@ -1005,7 +1005,7 @@ describe Flexirest::Request do
     rescue Flexirest::HTTPServerException => e
       e
     end
-    expect(e).to be_instance_of(Flexirest::HTTPServerException)
+    expect(e).to be_instance_of(Flexirest::HTTPInternalServerException)
     expect(e.status).to eq(500)
     expect(e.result.first_name).to eq("John")
   end
@@ -1021,7 +1021,7 @@ describe Flexirest::Request do
     rescue Flexirest::HTTPServerException => e
       e
     end
-    expect(e.message).to eq(%q{The POST to '/create' returned a 500 status, which raised a Flexirest::HTTPServerException with a body of: \{"first_name":"John", "id":1234\}})
+    expect(e.message).to eq(%q{The POST to '/create' returned a 500 status, which raised a Flexirest::HTTPInternalServerException with a body of: \{"first_name":"John", "id":1234\}})
   end
 
   it "should raise a parse exception for invalid JSON returns" do
@@ -1036,7 +1036,7 @@ describe Flexirest::Request do
     rescue => e
       e
     end
-    expect(e).to be_instance_of(Flexirest::HTTPServerException)
+    expect(e).to be_instance_of(Flexirest::HTTPInternalServerException)
     expect(e.status).to eq(500)
     expect(e.result).to eq(error_content)
   end

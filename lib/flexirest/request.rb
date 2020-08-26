@@ -630,6 +630,16 @@ module Flexirest
           raise HTTPConflictClientException.new(status:status, result:error_response, raw_response: @response.body, url:@url, method: http_method)
         elsif status == 429
           raise HTTPTooManyRequestsClientException.new(status:status, result:error_response, raw_response: @response.body, url:@url, method: http_method)
+        elsif status == 500
+          raise HTTPInternalServerException.new(status:status, result:error_response, raw_response: @response.body, url:@url, method: http_method)
+        elsif status == 501
+          raise HTTPNotImplementedServerException.new(status:status, result:error_response, raw_response: @response.body, url:@url, method: http_method)
+        elsif status == 502
+          raise HTTPBadGatewayServerException.new(status:status, result:error_response, raw_response: @response.body, url:@url, method: http_method)
+        elsif status == 503
+          raise HTTPServiceUnavailableServerException.new(status:status, result:error_response, raw_response: @response.body, url:@url, method: http_method)
+        elsif status == 504
+          raise HTTPGatewayTimeoutServerException.new(status:status, result:error_response, raw_response: @response.body, url:@url, method: http_method)
         elsif (400..499).include? status
           raise HTTPClientException.new(status:status, result:error_response, raw_response: @response.body, url:@url, method: http_method)
         elsif (500..599).include? status
@@ -901,5 +911,9 @@ module Flexirest
   class HTTPNotFoundClientException < HTTPClientException ; end
   class HTTPTooManyRequestsClientException < HTTPClientException ; end
   class HTTPServerException < HTTPException ; end
-
+  class HTTPInternalServerException < HTTPServerException ; end
+  class HTTPNotImplementedServerException < HTTPServerException ; end
+  class HTTPBadGatewayServerException < HTTPServerException ; end
+  class HTTPServiceUnavailableServerException < HTTPServerException ; end
+  class HTTPGatewayTimeoutServerException < HTTPServerException ; end
 end
