@@ -91,7 +91,7 @@ end
 
 If you manually set caching responses like the above, you may want to invalidate that cache when you make a create, update, delete etc request for the resource, for example:
 
-```
+```ruby
 class Animal < Flexirest::Base
   after_request :cache
   before_request :cache_cleanup
