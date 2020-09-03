@@ -66,6 +66,7 @@ After callbacks work in exactly the same way:
 ```ruby
 class Person < Flexirest::Base
   get :all, "/people"
+  get :all, "/people"
 
   after_request :fix_empty_content
   after_request :cache_all_people
@@ -88,6 +89,32 @@ end
 
 **Note:** since v1.3.21 the empty response trick above isn't necessary, empty responses for 204 are accepted normally (the method returns `true`), but this is here to show an example of an `after_request` callback adjusting the body. The `cache_all_people` example shows how to cache a response even if the server doesn't send the correct headers.
 
+If you manually set caching responses like the above, you may want to invalidate that cache when you make a create, update, delete etc request for the resource, for example:
+
+```
+class Animal < Flexirest::Base
+  after_request :cache
+  before_request :cache_cleanup
+
+  get :get, '/animals/:id'
+  post :update, '/animals/:id'
+  delete :delete, '/animals/:id'
+
+  def cache_cleanup(name, request)
+    if name == :update || name == :delete
+      Flexirest::Logger.info("  \033[1;4;32m#{Flexirest.name}\033[0m Invalidating cache for #{self.class.name} #{request.url}")
+      Rails.cache.delete("#{self.class.name}:#{request.url}")
+    end
+  end
+
+  def cache(name, response)
+    if name == :get
+      response.response_headers["Expires"] = 1.hour.from_now.iso8601
+    end
+  end
+end
+```
+
 If you want to trap an error in an `after_request` callback and retry the request, this can be done - but retries will only happen once for each request (so we'd recommend checking all conditions in a single `after_request` and then retrying after fixing them all). You achieve this by raising a `Flexirest::CallbackRetryRequestException` from the callback.
 
 ```ruby
@@ -100,7 +127,7 @@ class Person < Flexirest::Base
 
   def fix_invalid_request(name, response)
     if response.status == 401
-      # Do something to fix the state of caches/variables used in the 
+      # Do something to fix the state of caches/variables used in the
       # before_request, etc
       raise Flexirest::CallbackRetryRequestException.new
     end
