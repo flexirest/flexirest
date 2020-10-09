@@ -94,6 +94,8 @@ module Flexirest
         request = Flexirest::Request.new(method, @request.object)
         request.url = request.forced_url = @url
         @object = request.call
+        @object._parent = @options[:parent]
+        @object._parent_attribute_name = @options[:parent_attribute_name]
       end
     end
   end

@@ -651,7 +651,7 @@ module Flexirest
       result
     end
 
-    def new_object(attributes, name = nil)
+    def new_object(attributes, name = nil, parent = nil, parent_attribute_name = nil)
       @method[:options][:has_many] ||= {}
       name = name.to_sym rescue nil
       if @method[:options][:has_many][name]
@@ -663,6 +663,9 @@ module Flexirest
       else
         object = create_object_instance
       end
+
+      object._parent = parent
+      object._parent_attribute_name = parent_attribute_name
 
       if hal_response? && name.nil?
         attributes = handle_hal_links_embedded(object, attributes)
@@ -691,9 +694,9 @@ module Flexirest
       v = value
       assignable_hash = value_from_object ? object._attributes : {}
       if value_from_object && @method[:options][:lazy].include?(k)
-        assignable_hash[k] = Flexirest::LazyAssociationLoader.new(overridden_name, v, self, overridden_name:(overridden_name))
+        assignable_hash[k] = Flexirest::LazyAssociationLoader.new(overridden_name, v, self, overridden_name:(overridden_name), parent: object, parent_attribute_name: k)
       elsif v.is_a? Hash
-        assignable_hash[k] = new_object(v, overridden_name )
+        assignable_hash[k] = new_object(v, overridden_name, object, k)
       elsif v.is_a? Array
         if @method[:options][:array].include?(k)
           assignable_hash[k] = Array.new
