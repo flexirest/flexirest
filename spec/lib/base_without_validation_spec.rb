@@ -13,7 +13,6 @@ class TranslatorExample
 end
 
 class NestedExample < Flexirest::BaseWithoutValidation
-  whiny_missing true
   get :all, "/all", fake:"{\"person\":{\"name\": \"Billy\"}}"
 end
 
@@ -148,6 +147,19 @@ describe Flexirest::BaseWithoutValidation do
 
   it "should store attribute changes on nested objects and mark them as dirty in the parent" do
     client = NestedExample.all
+    client.person.name = "John"
+    expect(client.person.name.to_s).to eq("John")
+
+    expect(client).to be_dirty
+    expect(client.changes.keys).to include(:person)
+
+    expect(client.person).to be_dirty
+    expect(client.person.changes.keys).to include(:name)
+  end
+
+  it "should store attribute changes on nested objects loaded via instance methods and mark them as dirty in the parent" do
+    client = NestedExample.new()
+    client.all
     client.person.name = "John"
     expect(client.person.name.to_s).to eq("John")
 

@@ -43,6 +43,13 @@ module Flexirest
     def _copy_from(result)
       @attributes = result._attributes
       @_status = result._status
+      self._parent = result._parent
+      self._parent_attribute_name = result._parent_attribute_name
+      @attributes.each do |k,v|
+        if v.respond_to?(:_parent) && v._parent.present?
+          @attributes[k]._parent = self
+        end
+      end
       _clean!
     end
 

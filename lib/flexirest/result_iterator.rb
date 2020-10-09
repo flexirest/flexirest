@@ -4,6 +4,8 @@ module Flexirest
 
     attr_accessor :_status, :items
     attr_reader :_headers
+    attr_accessor :_parent
+    attr_accessor :_parent_attribute_name
 
     def initialize(response = nil)
       @_status  = response.try :status
