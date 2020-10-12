@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.10.1
+
+Enhancement:
+
+- Nested objects now report their dirty/changed status up to the parent (thanks to Matthias Hähnel for the bug report)
+
 ## 1.10.0
 
 Enhancement:
