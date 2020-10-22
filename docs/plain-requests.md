@@ -7,7 +7,7 @@ class Person < Flexirest::Base
 end
 
 people = Person._plain_request('http://api.example.com/v1/people') # Defaults to get with no parameters
-# people is a normal Flexirest object, implementing iteration, HAL loading, etc.
+# people is a string containing the response
 
 Person._plain_request('http://api.example.com/v1/people', :post, {id:1234,name:"John"}) # Post with parameters
 ```
