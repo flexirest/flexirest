@@ -12,17 +12,26 @@ This proxy translates requests according to the JSON API specifications, parses 
 
 It supports lazy loading by default. Unless a compound document is returned from the connected JSON API service, it will make another request to the service for the specified linked resource.
 
+
+## Including associations
+
 To reduce the number of requests to the service, you can ask the service to include the linked resources in the response. Such responses are called "compound documents". To do this, use the `includes` method:
 
 ```ruby
-# Makes a call to /articles with parameters: include=images
+# Makes a call to: /articles?include=images
 Article.includes(:images).all
 
-# For nested resources, the include parameter becomes: include=images.tags,images.photographer
+# Fetch nested resources: /articles?include=images.tags,images.photographer
 Article.includes(:images => [:tags, :photographer]).all
+
+# Note: the `includes` method takes precedence over the passed `:include` parameter.
+# This will result in query: /articles?include=images
+Article.includes(:images).all(include: "author")
 ```
 
-For POST and PATCH requests, the proxy formats a JSON API compliant request, and adds a `Content-Type: application/vnd.api+json` header. It guesses the `type` value in the resource object from the class name, but it can be set specifically with `alias_type`:
+## Resource type
+
+The `type` value is guessed from the class name, but it can be set specifically with `alias_type`:
 
 ```ruby
 class Photographer < Flexirest::Base
@@ -34,7 +43,10 @@ class Photographer < Flexirest::Base
 end
 ```
 
-NB: Updating relationships is not yet supported.
+
+## Notes
+
+Updating relationships is not yet supported.
 
 
 -----
