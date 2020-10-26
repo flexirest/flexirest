@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.10.2
+
+Bugfix:
+
+- JSON-API calls do not include linked resources when no other parameter is passed (thanks to Stevo-S for the bug report and François Ferrandis for the PR)
+
 ## 1.10.1
 
 Enhancement:
