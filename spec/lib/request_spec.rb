@@ -264,6 +264,24 @@ describe Flexirest::Request do
       }
     end
 
+    class BaseWrappedRootExampleClient < Flexirest::Base
+      base_url "http://www.example.com"
+      wrap_root "base_data"
+    end
+
+    class GlobalWrappedRootExampleClient < BaseWrappedRootExampleClient
+      put :wrapped, "/put/:id"
+    end
+
+    class OverrideGlobalWrappedRootForFileExampleClient < BaseWrappedRootExampleClient
+      wrap_root "class_specific_data"
+      put :wrapped, "/put/:id"
+    end
+
+    class OverrideGlobalWrappedRootForRequestExampleClient < BaseWrappedRootExampleClient
+      put :wrapped, "/put/:id", wrap_root: "request_specific_data"
+    end
+
     class WhitelistedDateClient < Flexirest::Base
       base_url "http://www.example.com"
       put :conversion, "/put/:id"
@@ -1428,7 +1446,7 @@ describe Flexirest::Request do
     expect(LocalIgnoredMultiLevelRootExampleClient.multi_level_root.title).to eq("Example Multi Level Feed")
   end
 
-   it "should ignore a specified root element" do
+  it "should ignore a specified root element" do
     expect(GlobalIgnoredRootExampleClient.root.title).to eq("Example Feed")
   end
 
@@ -1438,6 +1456,42 @@ describe Flexirest::Request do
 
   it "should ignore a specified root element" do
     expect(OverrideGlobalIgnoredRootForRequestExampleClient.root.title).to eq("Example Feed")
+  end
+
+  it "should wrap elements if specified, in form-encoded format" do
+    expect_any_instance_of(Flexirest::Connection).to receive(:put).with("/put/1234", %q(base_data%5Bdebug%5D=true&base_data%5Btest%5D=foo), an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"result\":true}", response_headers:{})))
+    GlobalWrappedRootExampleClient.request_body_type :form_encoded
+    GlobalWrappedRootExampleClient.wrapped id:1234, debug:true, test:'foo'
+  end
+
+  it "should wrap elements if specified, in form-encoded format" do
+    expect_any_instance_of(Flexirest::Connection).to receive(:put).with("/put/1234", %q(class_specific_data%5Bdebug%5D=true&class_specific_data%5Btest%5D=foo), an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"result\":true}", response_headers:{})))
+    OverrideGlobalWrappedRootForFileExampleClient.request_body_type :form_encoded
+    OverrideGlobalWrappedRootForFileExampleClient.wrapped id:1234, debug:true, test:'foo'
+  end
+
+  it "should wrap elements if specified, in form-encoded format" do
+    expect_any_instance_of(Flexirest::Connection).to receive(:put).with("/put/1234", %q(request_specific_data%5Bdebug%5D=true&request_specific_data%5Btest%5D=foo), an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"result\":true}", response_headers:{})))
+    OverrideGlobalWrappedRootForRequestExampleClient.request_body_type :form_encoded
+    OverrideGlobalWrappedRootForRequestExampleClient.wrapped id:1234, debug:true, test:'foo'
+  end
+
+  it "should encode the body wrapped in a root element in a JSON format if specified" do
+    expect_any_instance_of(Flexirest::Connection).to receive(:put).with("/put/1234", %q({"base_data":{"debug":true,"test":"foo"}}), an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"result\":true}", response_headers:{})))
+    GlobalWrappedRootExampleClient.request_body_type :json
+    GlobalWrappedRootExampleClient.wrapped id:1234, debug:true, test:'foo'
+  end
+
+  it "should encode the body wrapped in a root element in a JSON format if specified" do
+    expect_any_instance_of(Flexirest::Connection).to receive(:put).with("/put/1234", %q({"class_specific_data":{"debug":true,"test":"foo"}}), an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"result\":true}", response_headers:{})))
+    OverrideGlobalWrappedRootForFileExampleClient.request_body_type :json
+    OverrideGlobalWrappedRootForFileExampleClient.wrapped id:1234, debug:true, test:'foo'
+  end
+
+  it "should encode the body wrapped in a root element in a JSON format if specified" do
+    expect_any_instance_of(Flexirest::Connection).to receive(:put).with("/put/1234", %q({"request_specific_data":{"debug":true,"test":"foo"}}), an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"result\":true}", response_headers:{})))
+    OverrideGlobalWrappedRootForRequestExampleClient.request_body_type :json
+    OverrideGlobalWrappedRootForRequestExampleClient.wrapped id:1234, debug:true, test:'foo'
   end
 
   context "Parameter preparation" do
