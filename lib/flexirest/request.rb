@@ -148,6 +148,18 @@ module Flexirest
       end
     end
 
+    def wrap_root
+      if @method[:options][:wrap_root]
+        @method[:options][:wrap_root]
+      elsif @object.nil?
+        nil
+      elsif object_is_class?
+        @object.wrap_root
+      else
+        @object.class.wrap_root
+      end
+    end
+
     def verbose?
       if object_is_class?
         @object.verbose
@@ -450,8 +462,8 @@ module Flexirest
           @post_params
         else
           p = (params || @post_params || {})
-          if @method[:options][:wrap_root].present?
-            p = {@method[:options][:wrap_root] => p}
+          if wrap_root.present?
+            p = {wrap_root => p}
           end
           p.to_query
         end
@@ -464,8 +476,8 @@ module Flexirest
           @post_params
         else
           p = (params || @post_params || {})
-          if @method[:options][:wrap_root].present?
-            p = {@method[:options][:wrap_root] => p}
+          if wrap_root.present?
+            p = {wrap_root => p}
           end
           data, mp_headers = Flexirest::Multipart::Post.prepare_query(p)
           mp_headers.each do |k,v|
@@ -479,8 +491,8 @@ module Flexirest
         elsif @post_params.is_a?(String)
           @post_params
         else
-          if @method[:options][:wrap_root].present?
-            {@method[:options][:wrap_root] => (params || @post_params || {})}.to_json
+          if wrap_root.present?
+            {wrap_root => (params || @post_params || {})}.to_json
           else
             (params || @post_params || {}).to_json
           end

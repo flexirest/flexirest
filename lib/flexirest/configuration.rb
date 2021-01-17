@@ -14,6 +14,7 @@ module Flexirest
       @api_auth_secret_key = nil
       @api_auth_options = {}
       @ignore_root = nil
+      @wrap_root = nil
 
       def ignore_root(value=nil)
         if value.nil?
@@ -24,6 +25,18 @@ module Flexirest
           end
         else
           @ignore_root = value
+        end
+      end
+
+      def wrap_root(value=nil)
+        if value.nil?
+          value = if @wrap_root.nil? && superclass.respond_to?(:wrap_root)
+            superclass.wrap_root
+          else
+            @wrap_root
+          end
+        else
+          @wrap_root = value
         end
       end
 
