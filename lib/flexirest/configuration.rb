@@ -13,6 +13,19 @@ module Flexirest
       @api_auth_access_id = nil
       @api_auth_secret_key = nil
       @api_auth_options = {}
+      @ignore_root = nil
+
+      def ignore_root(value=nil)
+        if value.nil?
+          value = if @ignore_root.nil? && superclass.respond_to?(:ignore_root)
+            superclass.ignore_root
+          else
+            @ignore_root
+          end
+        else
+          @ignore_root = value
+        end
+      end
 
       def base_url(value = nil)
         @base_url ||= nil

@@ -136,6 +136,18 @@ module Flexirest
       end
     end
 
+    def ignore_root
+      if @method[:options][:ignore_root]
+        @method[:options][:ignore_root]
+      elsif @object.nil?
+        nil
+      elsif object_is_class?
+        @object.ignore_root
+      else
+        @object.class.ignore_root
+      end
+    end
+
     def verbose?
       if object_is_class?
         @object.verbose
@@ -601,7 +613,7 @@ module Flexirest
           else
             Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest.name}\033[0m #{@instrumentation_name} - Response received #{@response.body.size} bytes"
           end
-          result = generate_new_object(ignore_root: @method[:options][:ignore_root], ignore_xml_root: @method[:options][:ignore_xml_root])
+          result = generate_new_object(ignore_root: ignore_root, ignore_xml_root: @method[:options][:ignore_xml_root])
           # TODO: Cleanup when ignore_xml_root is removed
         else
           raise ResponseParseException.new(status:status, body:@response.body, headers: @response.headers)
@@ -814,15 +826,15 @@ module Flexirest
           body = JsonAPIProxy::Response.parse(body, @object)
         end
 
-        if options[:ignore_root]
-          [options[:ignore_root]].flatten.each do |key|
+        if ignore_root
+          [ignore_root].flatten.each do |key|
             body = body[key.to_s]
           end
         end
       elsif is_xml_response?
         body = @response.body.blank? ? {} : Crack::XML.parse(@response.body)
-        if options[:ignore_root]
-          [options[:ignore_root]].flatten.each do |key|
+        if ignore_root
+          [ignore_root].flatten.each do |key|
             body = body[key.to_s]
           end
         elsif options[:ignore_xml_root]
