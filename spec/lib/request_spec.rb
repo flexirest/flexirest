@@ -199,6 +199,71 @@ describe Flexirest::Request do
       }
     end
 
+    class LocalIgnoredRootExampleClient < ExampleClient
+      ignore_root "feed"
+
+      get :root, "/root", fake: %Q{
+        {
+          "feed": {
+            "title": "Example Feed"
+          }
+        }
+      }
+    end
+
+    class LocalIgnoredMultiLevelRootExampleClient < ExampleClient
+      ignore_root [:response, "data", "object"]
+
+      get :multi_level_root, "/multi-level-root", fake: %Q{
+        {
+          "response": {
+            "data": {
+              "object": {
+                "title": "Example Multi Level Feed"
+              }
+            }
+          }
+        }
+      }
+    end
+
+    class BaseIgnoredRootExampleClient < Flexirest::Base
+      base_url "http://www.example.com"
+      ignore_root "feed"
+    end
+
+    class GlobalIgnoredRootExampleClient < BaseIgnoredRootExampleClient
+      get :root, "/root", fake: %Q{
+        {
+          "feed": {
+            "title": "Example Feed"
+          }
+        }
+      }
+    end
+
+    class OverrideGlobalIgnoredRootForFileExampleClient < BaseIgnoredRootExampleClient
+      ignore_root "data"
+
+      get :root, "/root", fake: %Q{
+        {
+          "data": {
+            "title": "Example Feed"
+          }
+        }
+      }
+    end
+
+    class OverrideGlobalIgnoredRootForRequestExampleClient < BaseIgnoredRootExampleClient
+      get :root, "/root", ignore_root: "data", fake: %Q{
+        {
+          "data": {
+            "title": "Example Feed"
+          }
+        }
+      }
+    end
+
     class WhitelistedDateClient < Flexirest::Base
       base_url "http://www.example.com"
       put :conversion, "/put/:id"
@@ -1353,6 +1418,26 @@ describe Flexirest::Request do
 
   it "should ignore a specified multi-level root element" do
     expect(IgnoredMultiLevelRootExampleClient.multi_level_root.title).to eq("Example Multi Level Feed")
+  end
+
+  it "should ignore a specified root element" do
+    expect(LocalIgnoredRootExampleClient.root.title).to eq("Example Feed")
+  end
+
+  it "should ignore a specified multi-level root element" do
+    expect(LocalIgnoredMultiLevelRootExampleClient.multi_level_root.title).to eq("Example Multi Level Feed")
+  end
+
+   it "should ignore a specified root element" do
+    expect(GlobalIgnoredRootExampleClient.root.title).to eq("Example Feed")
+  end
+
+  it "should ignore a specified root element" do
+    expect(OverrideGlobalIgnoredRootForFileExampleClient.root.title).to eq("Example Feed")
+  end
+
+  it "should ignore a specified root element" do
+    expect(OverrideGlobalIgnoredRootForRequestExampleClient.root.title).to eq("Example Feed")
   end
 
   context "Parameter preparation" do
