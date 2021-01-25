@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.10.3
+
+Enhancement:
+
+- Ignore/wrap root functionality available for all routes, rather than just route specifically (thanks to Sampat Badhe for the PR)
+
 ## 1.10.2
 
 Bugfix:
