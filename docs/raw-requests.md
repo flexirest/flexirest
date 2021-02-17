@@ -1,6 +1,6 @@
 # *Flexirest:* Raw requests
 
-Sometimes you have have a URL that you just want to force through, but have the response handled in the same way as normal objects or you want to have the callbacks run (say for authentication). The easiest way to do that is to call `_request` on the class:
+Sometimes you have a URL that you just want to force through, but have the response handled in the same way as normal objects or you want to have the callbacks run (say for authentication). The easiest way to do that is to call `_request` on the class:
 
 ```ruby
 class Person < Flexirest::Base
