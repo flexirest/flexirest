@@ -135,6 +135,25 @@ module Flexirest
         @@password = value
       end
 
+      DEFAULT_BASIC_URL_METHOD = :url
+      VALID_BASIC_URL_METHODS = [:url, :header]
+
+      def basic_auth_method(*params)
+        case params.size
+        when 0 # Used as a getter method
+          @basic_auth_method || DEFAULT_BASIC_URL_METHOD
+        when 1 # Used as a setter method
+          method_type = params.first
+          unless [:header, :url].include?(method_type)
+            raise %(Invalid basic_auth_method #{method_type.inspect}. Valid methods are #{VALID_BASIC_URL_METHODS.inspect}.)
+          end
+
+          @basic_auth_method = method_type
+        else
+          raise "basic_auth_method can only take one parameter"
+        end
+      end
+
       def alias_type(value = nil)
         @alias_type ||= nil
         if value.nil?
@@ -311,6 +330,7 @@ module Flexirest
         @adapter              = Faraday.default_adapter
         @api_auth_access_id   = nil
         @api_auth_secret_key  = nil
+        @basic_auth_method    = nil
       end
 
       private

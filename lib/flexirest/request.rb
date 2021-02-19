@@ -32,6 +32,10 @@ module Flexirest
       !@object.respond_to?(:dirty?)
     end
 
+    def model_class
+      object_is_class? ? @object : @object.class
+    end
+
     def class_name
       if object_is_class?
         @object.name
@@ -122,6 +126,18 @@ module Flexirest
        ret = ret.call(@object) if ret.respond_to?(:call)
       end
       ret
+    end
+
+    def inject_basic_auth_in_url(url)
+      url.gsub!(%r{//(.)}, "//#{username}:#{password}@\\1") if !url[%r{//[^/]*:[^/]*@}]
+    end
+
+    def using_basic_auth?
+      !!username
+    end
+
+    def basic_auth_digest
+      Base64.strict_encode64("#{username}:#{password}")
     end
 
     def request_body_type
@@ -527,7 +543,9 @@ module Flexirest
           else
             _, @base_url, @url = parts
           end
-          base_url.gsub!(%r{//(.)}, "//#{username}:#{password}@\\1") if username && !base_url[%r{//[^/]*:[^/]*@}]
+          if using_basic_auth? && model_class.basic_auth_method != :header
+            inject_basic_auth_in_url(base_url)
+          end
           connection = Flexirest::ConnectionManager.get_connection(base_url)
         end
       else
@@ -540,7 +558,9 @@ module Flexirest
         else
           base_url = parts[0]
         end
-        base_url.gsub!(%r{//(.)}, "//#{username}:#{password}@\\1") if username && !base_url[%r{//[^/]*:[^/]*@}]
+        if using_basic_auth? && model_class.basic_auth_method != :header
+          inject_basic_auth_in_url(base_url)
+        end
         connection = Flexirest::ConnectionManager.get_connection(base_url)
       end
       if @method[:options][:direct]
@@ -566,6 +586,8 @@ module Flexirest
           :api_auth_secret_key => api_auth_secret_key,
           :api_auth_options => api_auth_options
         }
+      elsif using_basic_auth? && model_class.basic_auth_method == :header
+        http_headers["Authorization"] = "Basic #{basic_auth_digest}"
       end
       if @method[:options][:timeout]
         request_options[:timeout] = @method[:options][:timeout]
