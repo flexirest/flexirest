@@ -89,6 +89,10 @@ describe Flexirest::Request do
       get :all, "/"
     end
 
+    class AuthenticatedBasicHeaderExampleClientChildClass < AuthenticatedBasicHeaderExampleClient
+      get :child_method, "/"
+    end
+
     class AuthenticatedBasicUrlExampleClient < Flexirest::Base
       base_url "http://www.example.com"
       username "john"
@@ -354,7 +358,17 @@ describe Flexirest::Request do
       AuthenticatedExampleClient.class_eval do
         basic_auth_method :some_invalid_value
       end
-    end.to raise_error(RuntimeError, "Invalid basic_auth_method :some_invalid_value. Valid methods are [:url, :header].")
+    end.to raise_error(RuntimeError, "Invalid basic_auth_method :some_invalid_value. Valid methods are :url (default) and :header.")
+  end
+
+  it "should use the setting set on the aprent class" do
+    mocked_response = ::FaradayResponseMock.new(OpenStruct.new(body:'{"result":true}', response_headers:{}))
+    headers_including_auth = hash_including({ "Authorization" => "Basic am9objpzbWl0aA==" })
+
+    connection = double(Flexirest::Connection).as_null_object
+    expect(Flexirest::ConnectionManager).to receive(:get_connection).with("http://www.example.com").and_return(connection)
+    expect(connection).to receive(:get).with("/", hash_including(headers: headers_including_auth)).and_return(mocked_response)
+    AuthenticatedBasicHeaderExampleClientChildClass.child_method
   end
 
   it "should use the URL method for Basic auth when basic_auth_method is set to :url (and not include Authorization header)" do
