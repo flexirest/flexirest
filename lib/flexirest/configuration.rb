@@ -136,16 +136,19 @@ module Flexirest
       end
 
       DEFAULT_BASIC_URL_METHOD = :url
-      VALID_BASIC_URL_METHODS = [:url, :header]
 
-      def basic_auth_method(method = nil)
-        if method.nil? # Used as a getter method
-          @basic_auth_method || DEFAULT_BASIC_URL_METHOD
-        else # Used as a setter method
-          unless [:header, :url].include?(method)
-            raise %(Invalid basic_auth_method #{method.inspect}. Valid methods are #{VALID_BASIC_URL_METHODS.inspect}.)
+      def basic_auth_method(value = nil)
+        if value.nil? # Used as a getter method
+          if @basic_auth_method.nil? && superclass.respond_to?(:basic_auth_method)
+            superclass.basic_auth_method
+          else
+            @basic_auth_method || DEFAULT_BASIC_URL_METHOD
           end
-          @basic_auth_method = method
+        else # Used as a setter method
+          unless [:header, :url].include?(value)
+            raise %(Invalid basic_auth_method #{value.inspect}. Valid methods are :url (default) and :header.)
+          end
+          @basic_auth_method = value
         end
       end
 
@@ -325,7 +328,7 @@ module Flexirest
         @adapter              = Faraday.default_adapter
         @api_auth_access_id   = nil
         @api_auth_secret_key  = nil
-        @basic_auth_method    = nil
+        @basic_auth_method    = :url
       end
 
       private
