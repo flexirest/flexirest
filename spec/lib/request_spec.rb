@@ -81,6 +81,22 @@ describe Flexirest::Request do
       get :all, "/"
     end
 
+    class AuthenticatedBasicHeaderExampleClient < Flexirest::Base
+      base_url "http://www.example.com"
+      username "john"
+      password "smith"
+      basic_auth_method :header
+      get :all, "/"
+    end
+
+    class AuthenticatedBasicUrlExampleClient < Flexirest::Base
+      base_url "http://www.example.com"
+      username "john"
+      password "smith"
+      basic_auth_method :url
+      get :all, "/"
+    end
+
     class AuthenticatedProcExampleClient < Flexirest::Base
       base_url "http://www.example.com"
       username Proc.new { |obj| obj ? "bill-#{obj.id}" : "bill" }
@@ -314,11 +330,41 @@ describe Flexirest::Request do
     expect(servers.uniq.count).to eq(2)
   end
 
-  it "should get an HTTP connection with authentication when called" do
+  it "should use the URL method for Basic HTTP Auth when no basic_auth_method is set" do
+    mocked_response = ::FaradayResponseMock.new(OpenStruct.new(body:'{"result":true}', response_headers:{}))
+
     connection = double(Flexirest::Connection).as_null_object
     expect(Flexirest::ConnectionManager).to receive(:get_connection).with("http://john:smith@www.example.com").and_return(connection)
-    expect(connection).to receive(:get).with("/", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:'{"result":true}', response_headers:{})))
+    expect(connection).to receive(:get).with("/", an_instance_of(Hash)).and_return(mocked_response)
     AuthenticatedExampleClient.all
+  end
+
+  it "should use the headers method for Basic auth when basic_auth_method is set to :header" do
+    mocked_response = ::FaradayResponseMock.new(OpenStruct.new(body:'{"result":true}', response_headers:{}))
+    headers_including_auth = hash_including({ "Authorization" => "Basic am9objpzbWl0aA==" })
+
+    connection = double(Flexirest::Connection).as_null_object
+    expect(Flexirest::ConnectionManager).to receive(:get_connection).with("http://www.example.com").and_return(connection)
+    expect(connection).to receive(:get).with("/", hash_including(headers: headers_including_auth)).and_return(mocked_response)
+    AuthenticatedBasicHeaderExampleClient.all
+  end
+
+  it "should raise an error if Basic HTTP method is not :header or :url" do
+    expect do
+      AuthenticatedExampleClient.class_eval do
+        basic_auth_method :some_invalid_value
+      end
+    end.to raise_error(RuntimeError, "Invalid basic_auth_method :some_invalid_value. Valid methods are [:url, :header].")
+  end
+
+  it "should use the URL method for Basic auth when basic_auth_method is set to :url (and not include Authorization header)" do
+    mocked_response = ::FaradayResponseMock.new(OpenStruct.new(body:'{"result":true}', response_headers:{}))
+    headers_not_including_auth = hash_excluding("Authorization")
+
+    connection = double(Flexirest::Connection).as_null_object
+    expect(Flexirest::ConnectionManager).to receive(:get_connection).with("http://john:smith@www.example.com").and_return(connection)
+    expect(connection).to receive(:get).with("/", headers: headers_not_including_auth).and_return(mocked_response)
+    AuthenticatedBasicUrlExampleClient.all
   end
 
   it "should get an HTTP connection with basic authentication using procs when called in a class context" do
