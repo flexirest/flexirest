@@ -361,7 +361,7 @@ describe Flexirest::Request do
     end.to raise_error(RuntimeError, "Invalid basic_auth_method :some_invalid_value. Valid methods are :url (default) and :header.")
   end
 
-  it "should use the setting set on the aprent class" do
+  it "should use the setting set on the parent class" do
     mocked_response = ::FaradayResponseMock.new(OpenStruct.new(body:'{"result":true}', response_headers:{}))
     headers_including_auth = hash_including({ "Authorization" => "Basic am9objpzbWl0aA==" })
 
