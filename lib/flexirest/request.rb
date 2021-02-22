@@ -543,7 +543,7 @@ module Flexirest
           else
             _, @base_url, @url = parts
           end
-          if using_basic_auth? && model_class.basic_auth_method = :url
+          if using_basic_auth? && model_class.basic_auth_method == :url
             inject_basic_auth_in_url(base_url)
           end
           connection = Flexirest::ConnectionManager.get_connection(base_url)
