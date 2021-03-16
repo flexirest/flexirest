@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.10.4
+
+Enhancement:
+
+- Implement support for in-header Basic Auth (thanks to François Ferrandis for the PR)
+
 ## 1.10.3
 
 Enhancement:
