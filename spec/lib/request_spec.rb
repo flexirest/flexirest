@@ -41,6 +41,7 @@ describe Flexirest::Request do
       get :find, "/:id", required: [:id]
       get :find_cat, "/:id/cat"
       get :fruits, "/fruits"
+      get :uncached, "/uncached", skip_caching: true
       get :change, "/change"
       get :plain, "/plain/:id", plain: true
       post :create, "/create", rubify_names: true
@@ -995,6 +996,35 @@ describe Flexirest::Request do
     expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/123", an_instance_of(Hash)).and_return(response)
     object = ExampleClient.find(123)
     expect(object._etag).to eq("123456")
+  end
+
+  it "shouldn't expose the etag header if skip_caching is enabled" do
+    response = ::FaradayResponseMock.new(OpenStruct.new(body: "{}", response_headers: {"ETag" => "123456"}, status: 200))
+    expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/uncached", an_instance_of(Hash)).and_return(response)
+    object = ExampleClient.uncached
+    expect(object._etag).to_not eq("123456")
+  end
+
+  it "shouldn't send the etag header if skip_caching is enabled" do
+    cached_response = Flexirest::CachedResponse.new(status:200, result:"", response_headers: {})
+    cached_response.etag = "123456"
+    expect(ExampleClient).to receive(:read_cached_response).and_return(cached_response)
+
+    response = ::FaradayResponseMock.new(OpenStruct.new(body: "{}", response_headers: {"ETag" => "123456"}, status: 200))
+    expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/uncached", {
+      api_auth: {
+        api_auth_access_id: "id123",
+        api_auth_options: {},
+        api_auth_secret_key: "secret123"
+      },
+      headers: {
+        "Accept"=>"application/hal+json, application/json;q=0.5",
+        "Content-Type"=>"application/x-www-form-urlencoded; charset=utf-8"
+      }
+    }).and_return(response)
+
+    expect(ExampleClient).to_not receive(:write_cached_response)
+    object = ExampleClient.uncached
   end
 
   it "should expose all headers" do

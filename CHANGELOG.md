@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.10.5
+
+Enhancement:
+
+- Allow skipping of caching for single endpoints
+
 ## 1.10.4
 
 Enhancement:

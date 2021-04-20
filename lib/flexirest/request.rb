@@ -312,7 +312,7 @@ module Flexirest
 
           result = handle_response(response_env, cached)
           @response_delegate.__setobj__(result)
-          original_object_class.write_cached_response(self, response_env, result)
+          original_object_class.write_cached_response(self, response_env, result) unless @method[:options][:skip_caching]
         end
 
         # If this was not a parallel request just return the original result
@@ -523,7 +523,7 @@ module Flexirest
 
     def do_request(etag)
       http_headers = {}
-      http_headers["If-None-Match"] = etag if etag
+      http_headers["If-None-Match"] = etag if etag && !@method[:options][:skip_caching]
       http_headers["Accept"] = "application/hal+json, application/json;q=0.5"
       headers.each do |key,value|
         value = value.join(",") if value.is_a?(Array)
@@ -890,7 +890,7 @@ module Flexirest
         result = new_object(body, @overridden_name)
         result._status = @response.status
         result._headers = @response.response_headers
-        result._etag = @response.response_headers['ETag']
+        result._etag = @response.response_headers['ETag'] unless @method[:options][:skip_caching]
         if !object_is_class? && options[:mutable] != false
           @object._copy_from(result)
           @object._clean!
