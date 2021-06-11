@@ -17,7 +17,7 @@ module Flexirest
     end
 
     def self.debug(message)
-      if defined?(Rails) && Rails.respond_to?(:logger)
+      if defined?(Rails) && Rails.logger.present?
         Rails.logger.debug(message)
       elsif @logfile
         if @logfile.is_a?(String)
@@ -33,7 +33,7 @@ module Flexirest
     end
 
     def self.info(message)
-      if defined?(Rails) && Rails.respond_to?(:logger) && Rails.logger
+      if defined?(Rails) && Rails.logger.present?
         Rails.logger.info(message)
       elsif @logfile
         if @logfile.is_a?(String)
@@ -49,7 +49,7 @@ module Flexirest
     end
 
     def self.warn(message)
-      if defined?(Rails) && Rails.respond_to?(:logger)
+      if defined?(Rails) && Rails.logger.present?
         Rails.logger.warn(message)
       elsif @logfile
         if @logfile.is_a?(String)
@@ -65,7 +65,7 @@ module Flexirest
     end
 
     def self.error(message)
-      if defined?(Rails) && Rails.respond_to?(:logger)
+      if defined?(Rails) && Rails.logger.present?
         Rails.logger.error(message)
       elsif @logfile
         if @logfile.is_a?(String)
