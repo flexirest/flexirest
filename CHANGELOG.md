@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.10.6
+
+Bugfix:
+
+- Flexirest was erroring if Rails.logger was defined but was nil (thanks to Alex Oxte for the PR)
+
 ## 1.10.5
 
 Enhancement:
