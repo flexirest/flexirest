@@ -1,10 +1,10 @@
 # Flexirest
 
 > Access your REST APIs in a flexible way.
-> 
+>
 > Write your API classes in an ActiveRecord-style; like ActiveResource but Flexirest works where the resource naming doesn't follow Rails conventions, it has built-in caching and is much more flexible.
 
-[![Build Status](https://travis-ci.org/flexirest/flexirest.svg?branch=master)](https://travis-ci.org/flexirest/flexirest)
+[![Build Status](https://github.com/m4c3/flexirest/workflows/build_test/badge.svg)](https://github.com/flexirest/workflows//actions?query=workflow%3Abuild_test)
 [![Coverage Status](https://coveralls.io/repos/github/flexirest/flexirest/badge.svg?branch=master)](https://coveralls.io/github/flexirest/flexirest?branch=master)
 [![Code Climate](https://codeclimate.com/github/flexirest/flexirest.png)](https://codeclimate.com/github/flexirest/flexirest)
 [![Gem Version](https://badge.fury.io/rb/flexirest.png)](http://badge.fury.io/rb/flexirest)
