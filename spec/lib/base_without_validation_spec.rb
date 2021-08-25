@@ -237,7 +237,7 @@ describe Flexirest::BaseWithoutValidation do
     Flexirest::Base.base_url = "https://www.example.com/api/v2"
     expect(OutsideBaseExample.base_url).to eq("https://www.example.com/api/v2")
   ensure
-    Flexirest::Base.base_url = ''
+    Flexirest::Base.base_url = 'http://www.example.com'
   end
 
   it "should include the Mapping module" do
