@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.10.7
+
+Bugfix:
+
+- Flexirest didn't find the elements if the specified root wasn't found, e.g. in error conditions (thanks to Jolyon Pawlyn/@jpawlyn for the PR)
+
 ## 1.10.6
 
 Bugfix:
