@@ -4,7 +4,7 @@
 >
 > Write your API classes in an ActiveRecord-style; like ActiveResource but Flexirest works where the resource naming doesn't follow Rails conventions, it has built-in caching and is much more flexible.
 
-[![Build](https://github.com/flexirest/flexirest/actions/workflows/build_test.yml/badge.svg)](https://github.com/flexirest/flexirest/actions/workflows/build.yml)
+[![Build](https://github.com/flexirest/flexirest/actions/workflows/build.yml/badge.svg)](https://github.com/flexirest/flexirest/actions/workflows/build.yml)
 [![Coverage Status](https://coveralls.io/repos/github/flexirest/flexirest/badge.svg?branch=master)](https://coveralls.io/github/flexirest/flexirest?branch=master)
 [![Code Climate](https://codeclimate.com/github/flexirest/flexirest.png)](https://codeclimate.com/github/flexirest/flexirest)
 [![Gem Version](https://badge.fury.io/rb/flexirest.png)](http://badge.fury.io/rb/flexirest)
