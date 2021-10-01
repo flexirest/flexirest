@@ -436,7 +436,7 @@ describe Flexirest::Request do
   end
 
   it "should get an HTTP connection when called and call delete without a body if send_delete_body is not specified" do
-    expect_any_instance_of(Flexirest::Connection).to receive(:delete).with("/remove/1", "", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:'{"result":true}', response_headers:{})))
+    expect_any_instance_of(Flexirest::Connection).to receive(:delete).with("/remove/1?something=else", "", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:'{"result":true}', response_headers:{})))
     ExampleClient.remove(id:1, something: "else")
   end
 
