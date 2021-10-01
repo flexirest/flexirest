@@ -347,7 +347,7 @@ module Flexirest
       if @explicit_parameters
         params = @explicit_parameters
       end
-      if http_method == :get
+      if http_method == :get || (http_method == :delete && !@method[:options][:send_delete_body] && proxy != :json_api)
         @get_params = default_params.merge(params || {})
         @post_params = nil
       elsif http_method == :delete && @method[:options][:send_delete_body]

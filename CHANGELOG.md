@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.10.8
+
+Bugfix:
+
+- Flexirest didn't set DELETE params in the URL if send_request_body was false
+
 ## 1.10.7
 
 Bugfix:
