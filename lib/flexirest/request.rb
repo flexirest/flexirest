@@ -404,7 +404,7 @@ module Flexirest
           end
         end
         if missing.any?
-          raise Flexirest::MissingParametersException.new("The following parameters weren't specifed: #{missing.join(", ")}")
+          raise Flexirest::MissingParametersException.new("The following parameters weren't specified: #{missing.join(", ")}")
         end
       end
     end
@@ -434,7 +434,7 @@ module Flexirest
       end
 
       if missing.present?
-        raise Flexirest::MissingParametersException.new("The following parameters weren't specifed: #{missing.join(", ")}")
+        raise Flexirest::MissingParametersException.new("The following parameters weren't specified: #{missing.join(", ")}")
       end
     end
 
