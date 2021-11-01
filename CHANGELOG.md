@@ -1,5 +1,11 @@
 # Changelog
 
+## Untagged
+
+Bugfix:
+
+- Fixed a couple of typos in error messages (thanks to Sampat Badhe/@sampatbadhe for the PR)
+
 ## 1.10.7
 
 Bugfix:
