@@ -49,8 +49,8 @@ You can then use your new class like this:
 ```ruby
 # Create a new person
 @person = Person.create(
-  first_name:"John"
-  last_name:"Smith"
+  first_name: "John",
+  last_name: "Smith"
 )
 
 # Find a person (not needed after creating)
