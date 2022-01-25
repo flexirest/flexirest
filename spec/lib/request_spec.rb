@@ -522,6 +522,14 @@ describe Flexirest::Request do
     ExampleClient.find("1234")
   end
 
+  it "should handle a 204 response and not erase the instance's attributes" do
+    expect_any_instance_of(Flexirest::Connection).to receive(:put).and_return(::FaradayResponseMock.new(OpenStruct.new(body: "", response_headers: {}, status: 204)))
+    client = ExampleClient.new
+    client.id = "1234"
+    client.update
+    expect(client.id).to eq("1234")
+  end
+
   it "should pass through url parameters and get parameters" do
     expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/1234?debug=true", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"result\":true}", response_headers:{})))
     ExampleClient.find id:1234, debug:true

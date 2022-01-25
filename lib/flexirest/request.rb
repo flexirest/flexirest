@@ -639,6 +639,10 @@ module Flexirest
       end
 
       if (200..399).include?(status)
+        if status == 204
+          return true
+        end
+
         if @method[:options][:plain]
           return @response = Flexirest::PlainResponse.from_response(@response)
         elsif is_json_response? || is_xml_response?
