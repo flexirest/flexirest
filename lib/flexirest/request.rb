@@ -627,7 +627,7 @@ module Flexirest
     def handle_response(response, cached = nil)
       @response = response
       status = @response.status || 200
-      if @response.body.blank?
+      if @response.body.blank? && !@method[:options][:ignore_empty_response]
         @response.response_headers['Content-Type'] = "application/json"
         @response.body = "{}"
       end
@@ -639,7 +639,7 @@ module Flexirest
       end
 
       if (200..399).include?(status)
-        if status == 204
+        if status == 204 || (@response.body.blank? && @method[:options][:ignore_empty_response])
           return true
         end
 

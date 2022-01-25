@@ -82,6 +82,7 @@ I've written a TON of documentation on how to use Flexirest and a LITTLE bit on 
 - [Lazy loading](docs/lazy-loading.md)
 - [Authentication](docs/authentication.md)
 - [Body types](docs/body-types.md)
+- [Empty body handling](docs/empty-body-handling.md)
 - [Parallel requests](docs/parallel-requests.md)
 - [Faking calls](docs/faking-calls.md)
 - [Per-request timeouts](docs/per-request-timeouts.md)

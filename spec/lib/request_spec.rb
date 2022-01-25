@@ -48,6 +48,7 @@ describe Flexirest::Request do
       post :test_encoding, "/encoding", request_body_type: :json
       post :testing_no_content_headers, "/no-content"
       put :update, "/put/:id"
+      put :update_with_empty, "/put/:id", ignore_empty_response: true
       put :wrapped, "/put/:id", wrap_root: "example"
       put :conversion, "/put/:id", parse_fields: [:converted]
       put :conversion_child, "/put/:id", parse_fields: [:converted_child]
@@ -526,8 +527,18 @@ describe Flexirest::Request do
     expect_any_instance_of(Flexirest::Connection).to receive(:put).and_return(::FaradayResponseMock.new(OpenStruct.new(body: "", response_headers: {}, status: 204)))
     client = ExampleClient.new
     client.id = "1234"
-    client.update
+    ret = client.update
     expect(client.id).to eq("1234")
+    expect(ret).to be_truthy
+  end
+
+  it "should handle a 204 response and not erase the instance's attributes" do
+    expect_any_instance_of(Flexirest::Connection).to receive(:put).and_return(::FaradayResponseMock.new(OpenStruct.new(body: "", response_headers: {}, status: 200)))
+    client = ExampleClient.new
+    client.id = "1234"
+    ret = client.update_with_empty
+    expect(client.id).to eq("1234")
+    expect(ret).to be_truthy
   end
 
   it "should pass through url parameters and get parameters" do

@@ -1,9 +1,11 @@
 # Changelog
 
-## Untagged
+## 1.10.9
 
 Bugfix:
 
+- Correctly handle a 204 response to not wipe an instance's attributes (thanks to @couchbelag for the issue)
+- Add an option to handle a 200 response with an empty body to not wipe an instance's attributes (thanks to @couchbelag for the issue)
 - Fixed a couple of typos in error messages (thanks to Sampat Badhe/@sampatbadhe for the PR)
 
 ## 1.10.8
