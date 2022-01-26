@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.10.10
+
+Bugfix:
+
+- Specifically requiring a 1.x Faraday. They changed the engine inclusion in 2.x and it's not necessary for Flexirest to need that. If anyone does need it, feel free to raise a PR.
+
 ## 1.10.9
 
 Bugfix:
