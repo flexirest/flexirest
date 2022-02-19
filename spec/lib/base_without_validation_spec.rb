@@ -114,12 +114,12 @@ describe Flexirest::BaseWithoutValidation do
     expect(client["test"]).to be_an_instance_of(DateTime)
   end
 
-  it "should allow strings of 4 digits and not intepret them as dates" do
+  it "should allow strings of 4 digits and not interpret them as dates" do
     client = EmptyExample.new(test: "2015")
     expect(client["test"]).to be_an_instance_of(String)
   end
 
-  it "should allow strings of 8 digits and not intepret them as dates" do
+  it "should allow strings of 8 digits and not interpret them as dates" do
     client = EmptyExample.new(test: "1266129")
     expect(client["test"]).to be_an_instance_of(String)
   end

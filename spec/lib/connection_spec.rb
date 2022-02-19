@@ -10,7 +10,7 @@ describe Flexirest::Connection do
     @connection.reconnect
   end
 
-  it "should contain a Farday connection" do
+  it "should contain a Faraday connection" do
     expect(@connection.session).to be_a_kind_of(Faraday::Connection)
   end
 
