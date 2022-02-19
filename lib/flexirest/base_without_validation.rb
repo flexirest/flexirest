@@ -66,7 +66,7 @@ module Flexirest
       @dirty_attributes.keys
     end
 
-    # Returns hash of old and new vaules for each changed field
+    # Returns hash of old and new values for each changed field
     def changes
       @dirty_attributes
     end
