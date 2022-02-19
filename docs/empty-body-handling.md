@@ -20,3 +20,7 @@ class Person < Flexirest::Base
   put :save, "/people/:id", ignore_empty_response: true
 end
 ```
+
+-----
+
+[< Body types](body-types.md) | [Parallel requests >](parallel-requests.md)

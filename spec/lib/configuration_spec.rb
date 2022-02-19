@@ -209,7 +209,7 @@ describe Flexirest::Configuration do
     end
   end
 
-  it "should default to non-verbose loggingg" do
+  it "should default to non-verbose logging" do
     class VerboseConfigurationExample1
       include Flexirest::Configuration
     end
