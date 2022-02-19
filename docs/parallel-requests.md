@@ -25,4 +25,4 @@ puts @employers.size #=> 7
 
 -----
 
-[< Body types](body-types.md) | [Faking calls >](faking-calls.md)
+[< Empty body handling](empty-body-handling.md) | [Faking calls >](faking-calls.md)

@@ -45,10 +45,10 @@ class Person < Flexirest::Base
   put :save, '/person/:id/logs', request_body_type: :plain
 end
 
-Person.save(id: 1, body: '["Something here"]', 
+Person.save(id: 1, body: '["Something here"]',
             content_type: "application/json")
 ```
 
 -----
 
-[< Authentication](authentication.md) | [Parallel requests >](parallel-requests.md)
+[< Authentication](authentication.md) | [Empty body handling >](empty-body-handling.md)
