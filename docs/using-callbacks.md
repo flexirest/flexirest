@@ -105,6 +105,7 @@ class Animal < Flexirest::Base
       Flexirest::Logger.info("  \033[1;4;32m#{Flexirest.name}\033[0m Invalidating cache for #{self.class.name} #{request.url}")
       Rails.cache.delete("#{self.class.name}:#{request.url}")
     end
+    nil
   end
 
   def cache(name, response)
