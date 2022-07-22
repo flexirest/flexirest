@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.10.11
+
+Bugfix:
+
+- HTTPClientException's instance body was return nil instead of the response. (thanks to @pinifloyd for the issue and PR)
+
 ## 1.10.10
 
 Bugfix:
