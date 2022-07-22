@@ -934,7 +934,7 @@ module Flexirest
   end
 
   class HTTPException < RequestException
-    attr_accessor :status, :result, :request_url, :body, :raw_response
+    attr_accessor :status, :result, :request_url, :body
     def initialize(options)
       @status = options[:status]
       @result = options[:result]
@@ -942,7 +942,7 @@ module Flexirest
       @body = options[:raw_response]
       @method = options[:method]
     end
-    alias_method :body, :raw_response
+    alias_method :raw_response, :body
 
     def message
       method = @method.try(:upcase)
