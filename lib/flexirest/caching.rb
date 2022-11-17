@@ -48,10 +48,10 @@ module Flexirest
         @@cache_store = nil
       end
 
-      def read_cached_response(request)
+      def read_cached_response(request, quiet)
         if cache_store && perform_caching && request.method[:method] == :get
           key = "#{request.class_name}:#{request.original_url}"
-          Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest.name}\033[0m #{key} - Trying to read from cache"
+          Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest.name}\033[0m #{key} - Trying to read from cache" unless quiet
           value = cache_store.read(key)
           value = Marshal.load(value) rescue value
         end

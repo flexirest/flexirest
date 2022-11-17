@@ -1,6 +1,8 @@
-# *Flexirest:* Debugging
+# *Flexirest:* Logging
 
-You can turn on verbose debugging to see what is sent to the API server and what is returned in one of these two ways:
+## Verbose
+
+You can turn on verbose logging to see what is sent to the API server and what is returned in one of these two ways:
 
 ```ruby
 class Article < Flexirest::Base
@@ -26,6 +28,19 @@ class Article < Flexirest::Base
 end
 ```
 
+## Quiet
+
+By the same token, if you want to silence all log output from Flexirest, you can use quiet:
+
+```ruby
+class Article < Flexirest::Base
+  quiet true
+end
+
+class Person < Flexirest::Base
+  quiet!
+end
+```
 
 -----
 

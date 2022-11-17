@@ -299,6 +299,20 @@ module Flexirest
         value ? @verbose = value : @verbose
       end
 
+      def quiet!(options = {})
+        @quiet = true
+        @verbose = false
+      end
+
+      def quiet(value = nil)
+        @quiet ||= false
+        if value == true || value == false
+          @quiet = value
+          @verbose = false if @quiet != false
+        end
+        @quiet
+      end
+
       def translator(value = nil)
         Flexirest::Logger.warn("DEPRECATION: The translator functionality of Flexirest has been replaced with proxy functionality, see https://github.com/andyjeffries/flexirest#proxying-apis for more information") unless value.nil?
         @translator ||= nil

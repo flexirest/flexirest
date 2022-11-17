@@ -188,6 +188,13 @@ describe Flexirest::Request do
       post :create, "/create"
     end
 
+    class QuietExampleClient < ExampleClient
+      base_url "http://www.example.com"
+      quiet!
+      get :all, "/all"
+      post :create, "/create"
+    end
+
     class CallbackBodyExampleClient < ExampleClient
       base_url "http://www.example.com"
       before_request do |name, request|
@@ -1121,6 +1128,16 @@ describe Flexirest::Request do
     expect(Flexirest::Logger).to receive(:debug).with(/ << /).at_least(:twice)
     allow(Flexirest::Logger).to receive(:debug).with(any_args)
     VerboseExampleClient.all
+  end
+
+  it "should not log if quiet" do
+    connection = double(Flexirest::Connection).as_null_object
+    expect(Flexirest::ConnectionManager).to receive(:get_connection).and_return(connection)
+    expect(connection).to receive(:get).with("/all", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:'{"result":true}', response_headers:{"Content-Type" => "application/json", "Connection" => "close"})))
+    expect(Flexirest::Logger).to_not receive(:debug)
+    expect(Flexirest::Logger).to_not receive(:info)
+    expect(Flexirest::Logger).to_not receive(:error)
+    QuietExampleClient.all
   end
 
   it "should return the headers still for 202 responses" do

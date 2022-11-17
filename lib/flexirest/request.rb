@@ -184,6 +184,14 @@ module Flexirest
       end
     end
 
+    def quiet?
+      if object_is_class?
+        @object.quiet
+      else
+        @object.class.quiet
+      end
+    end
+
     def translator
       if object_is_class?
         @object.translator
@@ -226,7 +234,7 @@ module Flexirest
       @instrumentation_name = "#{class_name}##{@method[:name]}"
       result = nil
       cached = nil
-      ActiveSupport::Notifications.instrument("request_call.flexirest", :name => @instrumentation_name) do
+      ActiveSupport::Notifications.instrument("request_call.flexirest", :name => @instrumentation_name, quiet: quiet?) do
         @explicit_parameters = explicit_parameters
         @body = nil
         prepare_params
@@ -244,7 +252,7 @@ module Flexirest
           elsif @object.class.new.respond_to?(fake)
             fake = @object.class.new.send(fake)
           end
-          Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest.name}\033[0m #{@instrumentation_name} - Faked response found"
+          Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest.name}\033[0m #{@instrumentation_name} - Faked response found" unless quiet?
           content_type = @method[:options][:fake_content_type] || "application/json"
           return handle_response(OpenStruct.new(status:200, body:fake, response_headers:{"X-ARC-Faked-Response" => "true", "Content-Type" => content_type}))
         end
@@ -260,13 +268,13 @@ module Flexirest
         append_get_parameters
         prepare_request_body
         self.original_url = self.url
-        cached = original_object_class.read_cached_response(self)
+        cached = original_object_class.read_cached_response(self, quiet?)
         if cached && !cached.is_a?(String)
           if cached.expires && cached.expires > Time.now
-            Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest.name}\033[0m #{@instrumentation_name} - Absolutely cached copy found"
+            Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest.name}\033[0m #{@instrumentation_name} - Absolutely cached copy found" unless quiet?
             return handle_cached_response(cached)
           elsif cached.etag.to_s != "" #present? isn't working for some reason
-            Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest.name}\033[0m #{@instrumentation_name} - Etag cached copy found with etag #{cached.etag}"
+            Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest.name}\033[0m #{@instrumentation_name} - Etag cached copy found with etag #{cached.etag}" unless quiet?
             etag = cached.etag
           end
         end
@@ -564,9 +572,9 @@ module Flexirest
         connection = Flexirest::ConnectionManager.get_connection(base_url)
       end
       if @method[:options][:direct]
-        Flexirest::Logger.info "  \033[1;4;32m#{Flexirest.name}\033[0m #{@instrumentation_name} - Requesting #{@url}"
+        Flexirest::Logger.info "  \033[1;4;32m#{Flexirest.name}\033[0m #{@instrumentation_name} - Requesting #{@url}" unless quiet?
       else
-        Flexirest::Logger.info "  \033[1;4;32m#{Flexirest.name}\033[0m #{@instrumentation_name} - Requesting #{connection.base_url}#{@url}"
+        Flexirest::Logger.info "  \033[1;4;32m#{Flexirest.name}\033[0m #{@instrumentation_name} - Requesting #{connection.base_url}#{@url}" unless quiet?
       end
 
       if verbose?
@@ -634,7 +642,7 @@ module Flexirest
 
       if cached && response.status == 304
         Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest.name}\033[0m #{@instrumentation_name}" +
-          ' - Etag copy is the same as the server'
+          ' - Etag copy is the same as the server' unless quiet?
         return handle_cached_response(cached)
       end
 
@@ -647,9 +655,9 @@ module Flexirest
           return @response = Flexirest::PlainResponse.from_response(@response)
         elsif is_json_response? || is_xml_response?
           if @response.respond_to?(:proxied) && @response.proxied
-            Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest.name}\033[0m #{@instrumentation_name} - Response was proxied, unable to determine size"
+            Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest.name}\033[0m #{@instrumentation_name} - Response was proxied, unable to determine size" unless quiet?
           else
-            Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest.name}\033[0m #{@instrumentation_name} - Response received #{@response.body.size} bytes"
+            Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest.name}\033[0m #{@instrumentation_name} - Response received #{@response.body.size} bytes" unless quiet?
           end
           result = generate_new_object(ignore_root: ignore_root, ignore_xml_root: @method[:options][:ignore_xml_root])
           # TODO: Cleanup when ignore_xml_root is removed

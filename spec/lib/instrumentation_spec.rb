@@ -14,7 +14,7 @@ describe Flexirest::Instrumentation do
   end
 
   it "should call ActiveSupport::Notifications.instrument when making any request" do
-    expect(ActiveSupport::Notifications).to receive(:instrument).with("request_call.flexirest", {:name=>"InstrumentationExampleClient#fake"})
+    expect(ActiveSupport::Notifications).to receive(:instrument).with("request_call.flexirest", {:name=>"InstrumentationExampleClient#fake", :quiet=>false})
     InstrumentationExampleClient.fake
   end
 

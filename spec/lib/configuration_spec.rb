@@ -229,6 +229,26 @@ describe Flexirest::Configuration do
     expect(VerboseConfigurationExample3.verbose).to be_truthy
   end
 
+  it "should default to non-quiet logging" do
+    class QuietConfigurationExample1
+      include Flexirest::Configuration
+    end
+    expect(QuietConfigurationExample1.quiet).to be_falsey
+  end
+
+  it "should be able to switch on quiet logging" do
+    class QuietConfigurationExample2
+      include Flexirest::Configuration
+      quiet!
+    end
+    class QuietConfigurationExample3
+      include Flexirest::Configuration
+      quiet true
+    end
+    expect(QuietConfigurationExample2.quiet).to be_truthy
+    expect(QuietConfigurationExample3.quiet).to be_truthy
+  end
+
   it "should store a translator given" do
     expect{ ConfigurationExample.send(:translator) }.to_not raise_error
     ConfigurationExample.send(:translator, String.new)

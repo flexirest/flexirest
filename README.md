@@ -100,7 +100,7 @@ I've written a TON of documentation on how to use Flexirest and a LITTLE bit on 
 - [HTTP/parse error handling](docs/httpparse-error-handling.md)
 - [Validation](docs/validation.md)
 - [Filtering result lists](docs/filtering-result-lists.md)
-- [Debugging](docs/debugging.md)
+- [Logging](docs/logging.md)
 - [XML responses](docs/xml-responses.md)
 
 
