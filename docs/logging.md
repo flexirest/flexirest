@@ -6,11 +6,13 @@ You can turn on verbose logging to see what is sent to the API server and what i
 
 ```ruby
 class Article < Flexirest::Base
-  verbose true
+  verbose!
 end
 
+# or if you prefer
+
 class Person < Flexirest::Base
-  verbose!
+  verbose true
 end
 ```
 
@@ -34,11 +36,13 @@ By the same token, if you want to silence all log output from Flexirest, you can
 
 ```ruby
 class Article < Flexirest::Base
-  quiet true
+  quiet!
 end
 
+# or if you prefer
+
 class Person < Flexirest::Base
-  quiet!
+  quiet true
 end
 ```
 
