@@ -332,7 +332,7 @@ describe 'JSON API' do
         end
 
         it 'should raise the relevant Flexirest error' do
-          expect(-> { make_request }).to raise_error(Flexirest::HTTPNotFoundClientException) do |exception|
+          expect { make_request }.to raise_error(Flexirest::HTTPNotFoundClientException) do |exception|
             expect(exception.result.first.detail).to eq("The record identified by 123456 could not be found")
           end
         end
@@ -349,7 +349,7 @@ describe 'JSON API' do
         end
 
         it 'should ignore the "data" key and raise the relevant Flexirest error' do
-          expect(-> { make_request }).to raise_error(Flexirest::HTTPNotFoundClientException) do |exception|
+          expect { make_request }.to raise_error(Flexirest::HTTPNotFoundClientException) do |exception|
             expect(exception.result.first.detail).to eq("The record identified by 123456 could not be found")
           end
         end
@@ -464,7 +464,7 @@ describe 'JSON API' do
     end
 
     it 'should raise exception when an association in the response is not defined in base class' do
-      expect(-> { subject.includes(:tags).not_recognized_assoc(1) }).to raise_error(Exception)
+      expect { subject.includes(:tags).not_recognized_assoc(1) }.to raise_error(Exception)
     end
   end
 
@@ -528,7 +528,7 @@ describe 'JSON API' do
       article = JsonAPIExample::Article.new
       article.item = 'item one'
       article.tags = [tag, author]
-      expect(-> { article.create }).to raise_error(Exception)
+      expect { article.create }.to raise_error(Exception)
     end
 
     it 'should perform a patch request in proper json api format' do

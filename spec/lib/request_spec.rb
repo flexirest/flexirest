@@ -385,11 +385,14 @@ describe Flexirest::Request do
 
   it "should use the URL method for Basic auth when basic_auth_method is set to :url (and not include Authorization header)" do
     mocked_response = ::FaradayResponseMock.new(OpenStruct.new(body:'{"result":true}', response_headers:{}))
-    headers_not_including_auth = hash_excluding("Authorization")
 
     connection = double(Flexirest::Connection).as_null_object
     expect(Flexirest::ConnectionManager).to receive(:get_connection).with("http://john:smith@www.example.com").and_return(connection)
-    expect(connection).to receive(:get).with("/", headers: headers_not_including_auth).and_return(mocked_response)
+    expect(connection).to receive(:get) do |path, options|
+      expect(path).to eq("/")
+      expect(options[:headers]).to eq({"Accept"=>"application/hal+json, application/json;q=0.5", "Content-Type"=>"application/x-www-form-urlencoded; charset=utf-8"})
+    end.and_return(mocked_response)
+
     AuthenticatedBasicUrlExampleClient.all
   end
 
