@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.10.12
+
+Enhancement:
+
+- Added a quiet! mode to silence logging (thanks to Mujtaba Saboor for the issue and PR)
+
 ## 1.10.11
 
 Bugfix:
