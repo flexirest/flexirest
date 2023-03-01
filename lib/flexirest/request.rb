@@ -320,7 +320,7 @@ module Flexirest
 
           result = handle_response(response_env, cached)
           @response_delegate.__setobj__(result)
-          original_object_class.write_cached_response(self, response_env, result) unless @method[:options][:skip_caching]
+          original_object_class.write_cached_response(self, response_env, result, quiet?) unless @method[:options][:skip_caching]
         end
 
         # If this was not a parallel request just return the original result
