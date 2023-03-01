@@ -35,13 +35,15 @@ describe Flexirest::ConnectionManager do
   end
 
   it "should call 'in_parallel' for a session and yield procedure inside that block" do
+    require 'faraday/typhoeus' if Gem.loaded_specs["faraday-typhoeus"].present?
     Flexirest::Base.adapter = :typhoeus
     Flexirest::ConnectionManager.get_connection("http://www.example.com").session
     expect { |b| Flexirest::ConnectionManager.in_parallel("http://www.example.com", &b)}.to yield_control
     Flexirest::Base._reset_configuration!
   end
 
-  it "should raise Flexirest::MissingOptionalLibraryError if Typhous isn't available" do
+  it "should raise Flexirest::MissingOptionalLibraryError if Typhoeus isn't available" do
+    require 'faraday/typhoeus' if Gem.loaded_specs["faraday-typhoeus"].present?
     Flexirest::Base.adapter = :typhoeus
     Flexirest::ConnectionManager.get_connection("http://www.example.com").session
     expect(Flexirest::ConnectionManager).to receive(:require).and_raise(LoadError)
