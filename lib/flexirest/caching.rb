@@ -57,7 +57,7 @@ module Flexirest
         end
       end
 
-      def write_cached_response(request, response, result)
+      def write_cached_response(request, response, result, quiet)
         return if result.is_a? Symbol
         return unless perform_caching
         return unless !result.respond_to?(:_status) || [200, 304].include?(result._status)
@@ -69,7 +69,7 @@ module Flexirest
 
         if cache_store && (headers[:etag] || headers[:expires])
           key = "#{request.class_name}:#{request.original_url}"
-          Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest.name}\033[0m #{key} - Writing to cache"
+          Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest.name}\033[0m #{key} - Writing to cache" unless quiet
           cached_response = CachedResponse.new(status:response.status, result:result, response_headers: headers)
           cached_response.etag = "#{headers[:etag]}" if headers[:etag]
           cached_response.expires = Time.parse(headers[:expires]) rescue nil if headers[:expires]
