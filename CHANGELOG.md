@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.11.0
+
+Major change:
+
+- Dropped support for Ruby 2.x. Ruby 2.7 will be EOL in 27 days, and anyone can use the previous version 1.10 if they need 2.x support for the last month.
+
+Enhancement:
+
+- Added caching lines to the quiet! feature (thanks to Romain Gisiger for the issue and PR)
+
 ## 1.10.12
 
 Enhancement:
