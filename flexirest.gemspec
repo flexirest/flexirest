@@ -36,20 +36,31 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "simplecov"
   spec.add_development_dependency "simplecov-rcov"
   spec.add_development_dependency 'coveralls'
-  spec.add_development_dependency "api-auth", ">= 1.3.1", "< 2.4"
-  spec.add_development_dependency 'typhoeus'
+  ruby_below_2_7_0 = Gem::Version.new(RUBY_VERSION) < Gem::Version.new('2.7.0')
+  if ruby_below_2_7_0
+    spec.add_development_dependency "api-auth", ">= 1.3.1", "< 2.4"
+    spec.add_development_dependency 'typhoeus'
+  else
+    spec.add_development_dependency "api-auth", ">= 2.4"
+    spec.add_development_dependency 'faraday-typhoeus'
+  end
   spec.add_development_dependency 'activemodel'
   spec.add_development_dependency 'rest-client'
 
   spec.add_runtime_dependency "mime-types"
   spec.add_runtime_dependency "multi_json"
   spec.add_runtime_dependency "crack"
-  spec.add_runtime_dependency "faraday", "~> 1.0"
+  if ruby_below_2_7_0
+    spec.add_runtime_dependency "faraday", "~> 1.0"
+  else
+    spec.add_runtime_dependency "faraday", "~> 2.7"
+  end
 
   # Use Gem::Version to parse the Ruby version for reliable comparison
   # ActiveSupport 5+ requires Ruby 2.2.2
   if Gem::Version.new(RUBY_VERSION) > Gem::Version.new('2.2.2')
     spec.add_runtime_dependency "activesupport"
+    spec.add_runtime_dependency "actionpack" unless ruby_below_2_7_0
   else
     spec.add_runtime_dependency "activesupport", "< 5.0.0"
   end
