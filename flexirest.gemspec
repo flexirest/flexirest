@@ -36,6 +36,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'faraday-typhoeus'
   spec.add_development_dependency 'activemodel'
   spec.add_development_dependency 'rest-client'
+  spec.add_development_dependency 'timecop'
 
   spec.add_runtime_dependency "mime-types"
   spec.add_runtime_dependency "multi_json"

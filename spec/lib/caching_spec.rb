@@ -72,28 +72,21 @@ describe Flexirest::Caching do
     end
 
     it "should use a custom cache store if a valid one is manually set" do
-      class CachingExampleCacheStore1
-        def read(key) ; end
-        def write(key, value, options={}) ; end
-        def fetch(key, &block) ; end
-      end
+      class CachingExampleCacheStore1 < ActiveSupport::Cache::MemoryStore; end
       cache_store = CachingExampleCacheStore1.new
       Flexirest::Base.cache_store = cache_store
       expect(Flexirest::Base.cache_store).to eq(cache_store)
     end
 
     it "should error if you try to use a custom cache store that doesn't match the required interface" do
-      class CachingExampleCacheStore2
-        def write(key, value, options={}) ; end
-        def fetch(key, &block) ; end
+      class CachingExampleCacheStore2 < ActiveSupport::Cache::MemoryStore
+        undef_method :read
       end
-      class CachingExampleCacheStore3
-        def read(key) ; end
-        def fetch(key, &block) ; end
+      class CachingExampleCacheStore3 < ActiveSupport::Cache::MemoryStore
+        undef_method :write
       end
-      class CachingExampleCacheStore4
-        def read(key) ; end
-        def write(key, value, options={}) ; end
+      class CachingExampleCacheStore4 < ActiveSupport::Cache::MemoryStore
+        undef_method :fetch
       end
 
       expect{ Flexirest::Base.cache_store = CachingExampleCacheStore2.new }.to raise_error(Flexirest::InvalidCacheStoreException)
@@ -109,11 +102,7 @@ describe Flexirest::Caching do
   context "Reading/writing to the cache" do
     before :each do
       Object.send(:remove_const, :CachingExampleCacheStore5) if defined?(CachingExampleCacheStore5)
-      class CachingExampleCacheStore5
-        def read(key) ; end
-        def write(key, value, options={}) ; end
-        def fetch(key, &block) ; end
-      end
+      class CachingExampleCacheStore5 < ActiveSupport::Cache::MemoryStore; end
 
       class Person < Flexirest::Base
         perform_caching true
@@ -173,7 +162,7 @@ describe Flexirest::Caching do
       expect(result.first_name).to eq new_name
     end
 
-    it "should read from the cache store, and not call the server if there's a hard expiry" do
+    it "should read from the cache store, and not call the server if there's a hard expiry not passed yet" do
       cached_response = Flexirest::CachedResponse.new(
         status:200,
         result:@cached_object,
@@ -182,6 +171,18 @@ describe Flexirest::Caching do
       expect_any_instance_of(Flexirest::Connection).not_to receive(:get)
       ret = Person.all
       expect(ret.first_name).to eq("Johnny")
+    end
+
+    it "should not read from the cache store, and call the server if there's a hard expiry already passed" do
+      cached_response = Flexirest::CachedResponse.new(
+        status:200,
+        result:@cached_object,
+        expires:Time.now + 30)
+      Timecop.travel(Time.now + 60)
+      expect_any_instance_of(CachingExampleCacheStore5).to receive(:read).once.with("Person:/").and_return(nil)
+      expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(status:200, body:"{\"result\":true}", response_headers:{})))
+      ret = Person.all
+      Timecop.return
     end
 
     it "cache read objects shouldn't be marked as changed" do
@@ -208,7 +209,7 @@ describe Flexirest::Caching do
       expect(ret.first_name).to eq("Johnny")
     end
 
-    it "should restore a result iterator from the cache store, if there's a hard expiry" do
+    it "should restore a result iterator from the cache store, if there's a hard expiry not passed yet" do
       class CachingExample3 < Flexirest::Base ; end
       object = Flexirest::ResultIterator.new(double(status: 200))
       object << CachingExample3.new(first_name:"Johnny")
@@ -224,6 +225,26 @@ describe Flexirest::Caching do
       ret = Person.all
       expect(ret.first.first_name).to eq("Johnny")
       expect(ret._status).to eq(200)
+    end
+
+    it "should not restore a result iterator from the cache store, if there's a hard expiry already passed" do
+      class CachingExample3 < Flexirest::Base ; end
+      object = Flexirest::ResultIterator.new(double(status: 200))
+      object << CachingExample3.new(first_name:"Johnny")
+      object << CachingExample3.new(first_name:"Billy")
+      etag = "6527914a91e0c5769f6de281f25bd891"
+      cached_response = Flexirest::CachedResponse.new(
+        status:200,
+        result:object,
+        etag:etag,
+        expires:Time.now + 30)
+      Timecop.travel(Time.now + 60)
+      expect_any_instance_of(CachingExampleCacheStore5).to receive(:read).once.with("Person:/").and_return(nil)
+      expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(status:200, body:"[{\"first_name\":\"Billy\"}]", response_headers:{})))
+      ret = Person.all
+      expect(ret.first.first_name).to eq("Billy")
+      expect(ret._status).to eq(200)
+      Timecop.return
     end
 
     it "should not write the response to the cache unless it has caching headers" do
@@ -264,10 +285,18 @@ describe Flexirest::Caching do
       end
     end
 
-    it "should write the response to the cache if there's a hard expiry" do
+    it "should write the response to the cache if there's a hard expiry in the future" do
       expect_any_instance_of(CachingExampleCacheStore5).to receive(:read).once.with("Person:/").and_return(nil)
       expect_any_instance_of(CachingExampleCacheStore5).to receive(:write).once.with("Person:/", an_instance_of(String), an_instance_of(Hash))
       expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(status:200, body:"{\"result\":true}", response_headers:{expires:(Time.now + 30).rfc822})))
+      Person.perform_caching = true
+      Person.all
+    end
+
+    it "should not write the response to the cache if there's a hard expiry in the past" do
+      expect_any_instance_of(CachingExampleCacheStore5).to receive(:read).once.with("Person:/").and_return(nil)
+      expect_any_instance_of(CachingExampleCacheStore5).not_to receive(:write)
+      expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(status:200, body:"{\"result\":true}", response_headers:{expires:(Time.now - 10).rfc822})))
       Person.perform_caching = true
       Person.all
     end

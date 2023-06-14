@@ -74,7 +74,14 @@ module Flexirest
           cached_response.etag = "#{headers[:etag]}" if headers[:etag]
           cached_response.expires = Time.parse(headers[:expires]) rescue nil if headers[:expires]
           if cached_response.etag.present? || cached_response.expires
-            cache_store.write(key, Marshal.dump(cached_response), {})
+            options = {}
+            if cached_response.expires.present?
+              exp_in_seconds = cached_response.expires.utc - Time.now.utc
+              return unless exp_in_seconds.positive?
+
+              options[:expires_in] = exp_in_seconds
+            end
+            cache_store.write(key, Marshal.dump(cached_response), options)
           end
         end
       end
