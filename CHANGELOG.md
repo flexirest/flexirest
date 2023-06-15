@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.11.1
+
+Enhancement:
+
+- Add automatic expiry of cached responses based on the Expires header if set (thanks to Romain Gisiger for the issue and PR)
+
 ## 1.11.0
 
 Major change:
