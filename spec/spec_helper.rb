@@ -3,6 +3,7 @@ require 'simplecov'
 require 'flexirest'
 require "ostruct"
 require 'webmock/rspec'
+require 'timecop'
 
 if ENV["JENKINS"]
   require 'simplecov-rcov'
