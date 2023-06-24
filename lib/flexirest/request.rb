@@ -713,12 +713,13 @@ module Flexirest
       @method[:options][:has_many] ||= {}
       name = name.to_sym rescue nil
       if @method[:options][:has_many][name]
-        overridden_name = name
+        parent_name = name
         object = @method[:options][:has_many][name].new
       elsif @method[:options][:has_one][name]
-        overridden_name = name
+        parent_name = name
         object = @method[:options][:has_one][name].new
       else
+        parent_name = nil
         object = create_object_instance
       end
 
@@ -735,8 +736,7 @@ module Flexirest
         else
           k = k.to_sym
         end
-        overridden_name = select_name(k, overridden_name)
-        set_corresponding_value(v, k, object, overridden_name)
+        set_corresponding_value(v, k, object, select_name(k, parent_name))
       end
       object.clean! unless object_is_class?
 
