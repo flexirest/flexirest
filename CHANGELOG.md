@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.11.2
+
+Bugfix:
+
+- When a model had multiple lazy loaders specified, they would all have their object class set to the first object class that was found when iterating over them. (thanks to Joshua Samberg for the PR)
+
 ## 1.11.1
 
 Enhancement:
