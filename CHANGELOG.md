@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.11.3
+
+Bugfix:
+
+- Forward all Flexirest::ResultIterator#index arguments to allow for code like `result.index { |i| i == "z" }` (thanks to Stevo-S for the PR)
+
 ## 1.11.2
 
 Bugfix:
@@ -230,7 +236,7 @@ Features:
 
 Fix:
 
-- plain requests to URLs that are just the domain e.g. "https://www.example.com" should also work (i.e. without any trailing path, even a '/')
+- plain requests to URLs that are just the domain e.g. "<https://www.example.com>" should also work (i.e. without any trailing path, even a '/')
 
 ## 1.7.7
 
