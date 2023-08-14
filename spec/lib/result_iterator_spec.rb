@@ -74,6 +74,7 @@ describe Flexirest::ResultIterator do
     result << "a"
     result << "z"
     expect(result.index("z")).to eq(1)
+    expect(result.index { |i| i == "z" }).to eq(1)
   end
 
   it "should implement empty?" do

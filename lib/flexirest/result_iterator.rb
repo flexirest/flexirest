@@ -33,8 +33,8 @@ module Flexirest
       @items.join(*args)
     end
 
-    def index(value)
-      @items.index(value)
+    def index(...)
+      @items.index(...)
     end
 
     def empty?
