@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.12.0
+
+Bugfix:
+
+- Add compatibility with Ruby on Rails 7.1 (requires a method on the logger)
+
 ## 1.11.3
 
 Bugfix:
