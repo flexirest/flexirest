@@ -16,6 +16,14 @@ module Flexirest
       @messages = []
     end
 
+    def self.level
+      if defined?(Rails) && Rails.logger.present?
+        Rails.logger.level
+      else
+        0
+      end
+    end
+
     def self.debug(message)
       if defined?(Rails) && Rails.logger.present?
         Rails.logger.debug(message)
