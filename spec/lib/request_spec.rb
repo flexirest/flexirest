@@ -78,15 +78,15 @@ describe Flexirest::Request do
 
     class AuthenticatedExampleClient < Flexirest::Base
       base_url "http://www.example.com"
-      username "john"
-      password "smith"
+      username "john@example.com"
+      password "smith?$"
       get :all, "/"
     end
 
     class AuthenticatedBasicHeaderExampleClient < Flexirest::Base
       base_url "http://www.example.com"
-      username "john"
-      password "smith"
+      username "john@example.com"
+      password "smith?$"
       basic_auth_method :header
       get :all, "/"
     end
@@ -97,8 +97,8 @@ describe Flexirest::Request do
 
     class AuthenticatedBasicUrlExampleClient < Flexirest::Base
       base_url "http://www.example.com"
-      username "john"
-      password "smith"
+      username "john@example.com"
+      password "smith?$"
       basic_auth_method :url
       get :all, "/"
     end
@@ -357,14 +357,14 @@ describe Flexirest::Request do
     mocked_response = ::FaradayResponseMock.new(OpenStruct.new(body:'{"result":true}', response_headers:{}))
 
     connection = double(Flexirest::Connection).as_null_object
-    expect(Flexirest::ConnectionManager).to receive(:get_connection).with("http://john:smith@www.example.com").and_return(connection)
+    expect(Flexirest::ConnectionManager).to receive(:get_connection).with("http://john%40example.com:smith%3F%24@www.example.com").and_return(connection)
     expect(connection).to receive(:get).with("/", an_instance_of(Hash)).and_return(mocked_response)
     AuthenticatedExampleClient.all
   end
 
   it "should use the headers method for Basic auth when basic_auth_method is set to :header" do
     mocked_response = ::FaradayResponseMock.new(OpenStruct.new(body:'{"result":true}', response_headers:{}))
-    headers_including_auth = hash_including({ "Authorization" => "Basic am9objpzbWl0aA==" })
+    headers_including_auth = hash_including({ "Authorization" => "Basic am9obkBleGFtcGxlLmNvbTpzbWl0aD8k" })
 
     connection = double(Flexirest::Connection).as_null_object
     expect(Flexirest::ConnectionManager).to receive(:get_connection).with("http://www.example.com").and_return(connection)
@@ -382,7 +382,7 @@ describe Flexirest::Request do
 
   it "should use the setting set on the parent class" do
     mocked_response = ::FaradayResponseMock.new(OpenStruct.new(body:'{"result":true}', response_headers:{}))
-    headers_including_auth = hash_including({ "Authorization" => "Basic am9objpzbWl0aA==" })
+    headers_including_auth = hash_including({ "Authorization" => "Basic am9obkBleGFtcGxlLmNvbTpzbWl0aD8k" })
 
     connection = double(Flexirest::Connection).as_null_object
     expect(Flexirest::ConnectionManager).to receive(:get_connection).with("http://www.example.com").and_return(connection)
@@ -394,7 +394,7 @@ describe Flexirest::Request do
     mocked_response = ::FaradayResponseMock.new(OpenStruct.new(body:'{"result":true}', response_headers:{}))
 
     connection = double(Flexirest::Connection).as_null_object
-    expect(Flexirest::ConnectionManager).to receive(:get_connection).with("http://john:smith@www.example.com").and_return(connection)
+    expect(Flexirest::ConnectionManager).to receive(:get_connection).with("http://john%40example.com:smith%3F%24@www.example.com").and_return(connection)
     expect(connection).to receive(:get) do |path, options|
       expect(path).to eq("/")
       expect(options[:headers]).to eq({"Accept"=>"application/hal+json, application/json;q=0.5", "Content-Type"=>"application/x-www-form-urlencoded; charset=utf-8"})

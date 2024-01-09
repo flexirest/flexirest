@@ -92,7 +92,6 @@ module Flexirest
           if value.respond_to?(:call)
             @username = value
           else
-            value = CGI::escape(value) if value.present? && !value.include?("%")
             @username = value
           end
         end
@@ -100,7 +99,6 @@ module Flexirest
 
       def username=(value)
         Flexirest::Logger.info "\033[1;4;32m#{name}\033[0m Username set to be #{value}"
-        value = CGI::escape(value) if value.present? && !value.include?("%")
         @@username = value
       end
 
@@ -123,7 +121,6 @@ module Flexirest
           if value.respond_to?(:call)
             @password = value
           else
-            value = CGI::escape(value) if value.present? && !value.include?("%")
             @password = value
           end
         end
@@ -131,7 +128,6 @@ module Flexirest
 
       def password=(value)
         Flexirest::Logger.info "\033[1;4;32m#{name}\033[0m Password set..."
-        value = CGI::escape(value) if value.present? && !value.include?("%")
         @@password = value
       end
 

@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.12.1
+
+Bugfix:
+
+- Usernames and passwords for simple authentication should be URL-encoded unless they're actually going in the URL (thanks to Scott Duke for the bug report)
+
 ## 1.12.0
 
 Bugfix:

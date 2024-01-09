@@ -129,7 +129,11 @@ module Flexirest
     end
 
     def inject_basic_auth_in_url(url)
-      url.gsub!(%r{//(.)}, "//#{username}:#{password}@\\1") if !url[%r{//[^/]*:[^/]*@}]
+      u = username
+      u = CGI::escape(u) if u.present? && !u.include?("%")
+      p = password
+      p = CGI::escape(p) if p.present? && !p.include?("%")
+      url.gsub!(%r{//(.)}, "//#{u}:#{p}@\\1") if !url[%r{//[^/]*:[^/]*@}]
     end
 
     def using_basic_auth?
