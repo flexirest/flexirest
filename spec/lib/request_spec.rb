@@ -173,6 +173,13 @@ describe Flexirest::Request do
       get :second_call, "/second_call"
     end
 
+    class SimpleRetryingExampleClient < Flexirest::Base
+      base_url "http://www.example.com"
+      get :all, "/objects", defaults: proc { |params| { type: params.delete(:object_type) } }
+
+      after_request -> (name, response) { raise Flexirest::CallbackRetryRequestException.new }
+    end
+
     class LazyLoadedExampleClient < ExampleClient
       base_url "http://www.example.com"
       lazy_load!
@@ -1395,6 +1402,13 @@ describe Flexirest::Request do
     expect(RetryingExampleClient.retries).to eq(2)
   end
 
+  it "shouldn't destructively change params before retrying" do
+    stub_request(:get, "http://www.example.com/objects?type=foo").
+      to_return(status: 200, body: "", headers: {})
+    SimpleRetryingExampleClient.all(object_type: 'foo')
+
+    expect(WebMock).to have_requested(:get, "www.example.com/objects?type=foo").twice
+  end
 
   context "Direct URL requests" do
     class SameServerExampleClient < Flexirest::Base

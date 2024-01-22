@@ -344,6 +344,8 @@ module Flexirest
         params = {id:params}
       end
 
+      params = params.dup
+
       # Format includes parameter for jsonapi
       if proxy == :json_api
         JsonAPIProxy::Request::Params.translate(params, @object._include_associations)

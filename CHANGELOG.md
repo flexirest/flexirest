@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.12.2
+
+Bugfix:
+
+- Changing the parameters in a `defaults` option to a mapping shouldn't mutate the parameters, meaning that retries should get the same as the original parameters (thanks to vskbjrn for the bug report)
+
 ## 1.12.1
 
 Bugfix:
