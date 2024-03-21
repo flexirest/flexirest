@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.12.3
+
+Bugfix:
+
+- Do not raise undefined method error when ignore_root value is null (thanks to jpawlyn for the PR)
+
 ## 1.12.2
 
 Bugfix:
