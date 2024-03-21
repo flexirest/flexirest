@@ -221,6 +221,14 @@ describe Flexirest::Request do
       }
     end
 
+    class IgnoredRootWithNullValueExampleClient < ExampleClient
+      get :root, "/root", ignore_root: "feed", fake: %Q{
+        {
+          "feed": null
+        }
+      }
+    end
+
     class IgnoredRootWithUnexpectedResponseExampleClient < ExampleClient
       get :root, "/root", ignore_root: "feed", fake: %Q{
         {
@@ -1585,6 +1593,10 @@ describe Flexirest::Request do
 
   it "should ignore a specified root element" do
     expect(IgnoredRootExampleClient.root.title).to eq("Example Feed")
+  end
+
+  it "should not raise an error if ignore_root value is null" do
+    expect(IgnoredRootWithNullValueExampleClient.root).to be_instance_of(IgnoredRootWithNullValueExampleClient)
   end
 
   it "should ignore an ignore_root parameter if the specified element is not in the response" do
