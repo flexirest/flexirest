@@ -109,6 +109,7 @@ describe Flexirest::Caching do
         base_url "http://www.example.com"
         get :all, "/"
         put :save_all, "/"
+        get :plain, "/plain/:id", plain: true
       end
 
       Person.cache_store = CachingExampleCacheStore5.new({ expires_in: 1.day.to_i }) # default cache expiration
@@ -265,6 +266,21 @@ describe Flexirest::Caching do
       expect(ret.first.first_name).to eq("Billy")
       expect(ret._status).to eq(200)
       Timecop.return
+    end
+
+    it "should not write the response to the cache if it is a plain request" do
+      response_body = "This is another non-JSON string"
+      expect_any_instance_of(CachingExampleCacheStore5).to receive(:read).once.with("Person:/plain/1234").and_return(nil)
+      expect_any_instance_of(CachingExampleCacheStore5).to receive(:write).once.with("Person:/plain/1234", an_instance_of(String), hash_excluding(:etag))
+      expect_any_instance_of(Flexirest::Connection).to receive(:get).with(any_args).and_return(::FaradayResponseMock.new(OpenStruct.new(status:200, response_headers:{expires:(Time.now + 30).rfc822}, body:response_body)))
+      Person.plain(id:1234)
+    end
+
+    it "should write the response to the cache if response is a 204 with empty bodies and with expires set (or an etag)" do
+      expect_any_instance_of(CachingExampleCacheStore5).to receive(:read).once.with("Person:/").and_return(nil)
+      expect_any_instance_of(CachingExampleCacheStore5).to receive(:write).once.with("Person:/", an_instance_of(String), hash_excluding(:etag))
+      expect_any_instance_of(Flexirest::Connection).to receive(:get).with(any_args).and_return(::FaradayResponseMock.new(OpenStruct.new(status:204, response_headers:{expires:(Time.now + 30).rfc822}, body: nil)))
+      Person.all
     end
 
     it "should not write the response to the cache unless it has caching headers" do
