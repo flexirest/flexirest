@@ -68,9 +68,10 @@ module Flexirest
         end
 
         if cache_store && (headers[:etag] || headers[:expires])
-          key = "#{request.class_name}:#{request.original_url}"
+          class_name = request.class_name
+          key = "#{class_name}:#{request.original_url}"
           Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest.name}\033[0m #{key} - Writing to cache" unless quiet
-          cached_response = CachedResponse.new(status:response.status, result:result, response_headers: headers)
+          cached_response = CachedResponse.new(status:response.status, result:result, response_headers: headers, class_name:class_name)
           cached_response.etag = "#{headers[:etag]}" if headers[:etag]
           cached_response.expires = Time.parse(headers[:expires]) rescue nil if headers[:expires]
           if cached_response.etag.present? || cached_response.expires
@@ -101,18 +102,19 @@ module Flexirest
       @etag = options[:etag]
       @expires = options[:expires]
       @response_headers = options[:response_headers]
+      @old_cached_instance = options[:result].class.name.nil?
 
-      @class_name = options[:result].class.name
       if options[:result].is_a?(ResultIterator)
         @class_name = options[:result][0].class.name
         @result = options[:result].map{|i| {}.merge(i._attributes)}
       else
+        @class_name = options[:class_name]
         @result = {}.merge(options[:result].try(:_attributes) || {})
       end
     end
 
     def result
-      return @result if @class_name.nil? # Old cached instance
+      return @result if @old_cached_instance
 
       if @result.is_a?(Array)
         ri = ResultIterator.new(self)
