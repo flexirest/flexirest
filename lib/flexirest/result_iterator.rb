@@ -4,6 +4,8 @@ module Flexirest
 
     attr_accessor :_status, :items
     attr_reader :_headers
+    attr_accessor :_parent
+    attr_accessor :_parent_attribute_name
 
     def initialize(response = nil)
       @_status  = response.try :status
@@ -13,6 +15,10 @@ module Flexirest
 
     def <<(item)
       @items << item
+    end
+
+    def _clean!
+      @items.map(&:_clean!)
     end
 
     def size
@@ -27,8 +33,8 @@ module Flexirest
       @items.join(*args)
     end
 
-    def index(value)
-      @items.index(value)
+    def index(...)
+      @items.index(...)
     end
 
     def empty?
@@ -62,8 +68,8 @@ module Flexirest
       self
     end
 
-    def delete_if
-      @items = @items.delete_if &Proc.new
+    def delete_if(&block)
+      @items = @items.delete_if &block
       self
     end
 

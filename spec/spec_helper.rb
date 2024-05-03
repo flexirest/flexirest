@@ -3,6 +3,7 @@ require 'simplecov'
 require 'flexirest'
 require "ostruct"
 require 'webmock/rspec'
+require 'timecop'
 
 if ENV["JENKINS"]
   require 'simplecov-rcov'
@@ -11,6 +12,8 @@ elsif ENV["TRAVIS"]
   require 'coveralls'
   Coveralls.wear!
 end
+
+ActiveSupport::Deprecation.silenced = true
 
 RSpec.configure do |config|
   config.color = true
@@ -66,12 +69,12 @@ class FaradayResponseMock < ::Flexirest::FaradayResponseProxy
     @finished = false
   end
 
-  def on_complete
+  def on_complete(&block)
     if @auto_resolve
       @finished = true
       yield(@response)
     else
-      @callback = Proc.new
+      @callback = block
     end
   end
 

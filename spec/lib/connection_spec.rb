@@ -10,7 +10,7 @@ describe Flexirest::Connection do
     @connection.reconnect
   end
 
-  it "should contain a Farday connection" do
+  it "should contain a Faraday connection" do
     expect(@connection.session).to be_a_kind_of(Faraday::Connection)
   end
 
@@ -175,13 +175,24 @@ describe Flexirest::Connection do
       expect(auth_header == "APIAuth id123:TQiQIW6vVaDC5jvh99uTNkxIg6Q=" || auth_header == "APIAuth id123:PMWBThkB8vKbvUccHvoqu9G3eVk=").to be_truthy
     end
 
-    it 'should have an Content-MD5 header' do
-      stub_request(:put, "www.example.com/foo").
-        with(body: "body", :headers => @default_headers).
-        to_return(body: "{result:true}")
+    if Gem.loaded_specs["api-auth"].present? && Gem.loaded_specs["api-auth"].version.to_s < "2.5.0"
+      it 'should have an Content-MD5 header' do
+        stub_request(:put, "www.example.com/foo").
+          with(body: "body", :headers => @default_headers).
+          to_return(body: "{result:true}")
 
-      result = @connection.put("/foo", "body", @options)
-      expect(result.env.request_headers['Content-MD5']).to eq("hBotaJrYa9FhFEdFPCLG/A==")
+        result = @connection.put("/foo", "body", @options)
+        expect(result.env.request_headers['Content-MD5']).to eq("hBotaJrYa9FhFEdFPCLG/A==")
+      end
+    else
+      it 'should have an X-AUTHORIZATION-CONTENT-SHA256 header' do
+        stub_request(:put, "www.example.com/foo").
+          with(body: "body", :headers => @default_headers).
+          to_return(body: "{result:true}")
+
+        result = @connection.put("/foo", "body", @options)
+        expect(result.env.request_headers['X-AUTHORIZATION-CONTENT-SHA256']).to eq("Iw2DWNyOiJC0xY3utikS7i8gNXrpKlzIYbmOaP4xrLU=")
+      end
     end
   end
 

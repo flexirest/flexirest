@@ -86,36 +86,55 @@ When the `:array` option includes an attribute, it is assumed the values were re
 
 ## Type 2 - Lazy Loading From Other URLs
 
-When mapping the method, passing a list of attributes will cause any requests for those attributes to mapped to the URLs given in their responses. The response for the attribute may be one of the following:
+If the call for an attribute should
+
++ Use the value held within the specified attribute as a URL(s) from which to load the associated resource(s)
++ **THEN**, create an instance of your API object from the result
++ **THEN**, call subsequent chained methods on that instance
+
+you can specify this when mapping the method by passing attribtues to the `:lazy` option.
 
 ```ruby
-"attribute" : "URL"
-"attribute" : ["URL", "URL"]
-"attribute" : { "url" : "URL"}
-"attribute" : { "href" : "URL"}
-"attribute" : { "something" : "URL"}
-```
+class Book < Flexirest::Base
+  get :find, "/books/:name"
+end
 
-The difference between the last 3 examples is that a key of `url` or `href` signifies it's a single object that is lazy loaded from the value specified. Any other keys assume that it's a nested set of URLs (like in the array situation, but accessible via the keys - e.g. object.attribute.something in the above example).
-
-It is required that the URL is a complete URL including a protocol starting with "http". To configure this use code like:
-
-```ruby
 class Person < Flexirest::Base
-  get :find, "/people/:id", :lazy => [:orders, :refunds]
+  get :find, "/people/:id", :lazy => { books: Book }
 end
 ```
 
-And use it like this:
+Use it like this:
 
 ```ruby
 # Makes a call to /people/1
 @person = Person.find(1)
 
-# Makes a call to the first URL found in the "books":[...] array in the article response
-# only makes the HTTP request when first used though
+# Lazily makes a call to the first URL found in the "books":[...] array in the Person.find response
+# - Only makes the HTTP request when first used
+# - Instantiates a Book object from the response and then accesses its "name" property
 @person.books.first.name
 ```
+
+### URLs in API responses
+To provide a URL(s) for lazy loading an attribute, the API response may contain one of the following for the attribute (**`book`** or **`books`** is the attribute in all examples below):
+
+```ruby
+# all of the following will lazy load a single object from the specified URL
+"book" : "https://example.com/books/1"
+# or
+"book" : { "url" : "https://example.com/books/1"}
+# or
+"book" : { "href" : "https://example.com/books/1"}
+
+# books will be an array whose elements will be lazy loaded one-by-one, from the URL in the corresponding array position, whenever each element is first accessed
+"books" : ["https://example.com/books/1", "https://example.com/books/2"]
+
+# book will be an object where the values will be lazy loaded one-by-one, from the URL in the corresponding key, whenever each key is first accessed (e.g. the first time object.book.author is accessed)
+"book" : { "author" : "https://example.com/author/1"}
+```
+
+It is required that each URL is a complete URL including a protocol starting with `http`.
 
 ## Type 3 - HAL Auto-loaded Resources
 

@@ -1,10 +1,10 @@
 # Flexirest
 
 > Access your REST APIs in a flexible way.
-> 
+>
 > Write your API classes in an ActiveRecord-style; like ActiveResource but Flexirest works where the resource naming doesn't follow Rails conventions, it has built-in caching and is much more flexible.
 
-[![Build Status](https://travis-ci.org/flexirest/flexirest.svg?branch=master)](https://travis-ci.org/flexirest/flexirest)
+[![Build](https://github.com/flexirest/flexirest/actions/workflows/build.yml/badge.svg)](https://github.com/flexirest/flexirest/actions/workflows/build.yml)
 [![Coverage Status](https://coveralls.io/repos/github/flexirest/flexirest/badge.svg?branch=master)](https://coveralls.io/github/flexirest/flexirest?branch=master)
 [![Code Climate](https://codeclimate.com/github/flexirest/flexirest.png)](https://codeclimate.com/github/flexirest/flexirest)
 [![Gem Version](https://badge.fury.io/rb/flexirest.png)](http://badge.fury.io/rb/flexirest)
@@ -49,8 +49,8 @@ You can then use your new class like this:
 ```ruby
 # Create a new person
 @person = Person.create(
-  first_name:"John"
-  last_name:"Smith"
+  first_name: "John",
+  last_name: "Smith"
 )
 
 # Find a person (not needed after creating)
@@ -82,6 +82,7 @@ I've written a TON of documentation on how to use Flexirest and a LITTLE bit on 
 - [Lazy loading](docs/lazy-loading.md)
 - [Authentication](docs/authentication.md)
 - [Body types](docs/body-types.md)
+- [Empty body handling](docs/empty-body-handling.md)
 - [Parallel requests](docs/parallel-requests.md)
 - [Faking calls](docs/faking-calls.md)
 - [Per-request timeouts](docs/per-request-timeouts.md)
@@ -99,7 +100,7 @@ I've written a TON of documentation on how to use Flexirest and a LITTLE bit on 
 - [HTTP/parse error handling](docs/httpparse-error-handling.md)
 - [Validation](docs/validation.md)
 - [Filtering result lists](docs/filtering-result-lists.md)
-- [Debugging](docs/debugging.md)
+- [Logging](docs/logging.md)
 - [XML responses](docs/xml-responses.md)
 
 

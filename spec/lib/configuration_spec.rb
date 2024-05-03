@@ -81,18 +81,6 @@ describe Flexirest::Configuration do
     expect(SubConfigurationExample.username).to eq("john")
   end
 
-  it "should escape the username" do
-    Flexirest::Base.username = "bill@example.com"
-    expect(Flexirest::Base.username).to eq("bill%40example.com")
-    Flexirest::Base.username = nil
-  end
-
-  it "should not doubly escape the username" do
-    Flexirest::Base.username = "bill%40example.com"
-    expect(Flexirest::Base.username).to_not eq("bill%2540example.com")
-    Flexirest::Base.username = nil
-  end
-
   it "should remember the set password" do
     expect(ConfigurationExample.password).to eq("smith")
   end
@@ -105,18 +93,6 @@ describe Flexirest::Configuration do
 
   it "should remember the set password on a class, overriding a general one" do
     expect(SubConfigurationExample.password).to eq("smith")
-  end
-
-  it "should escape the password" do
-    Flexirest::Base.password = "something@else"
-    expect(Flexirest::Base.password).to eq("something%40else")
-    Flexirest::Base.password = nil
-  end
-
-  it "should not doubly escape the password" do
-    Flexirest::Base.password = "something%40else"
-    expect(Flexirest::Base.password).to_not eq("something%2540else")
-    Flexirest::Base.password = nil
   end
 
   it "should default to a form_encoded request_body_type" do
@@ -209,7 +185,7 @@ describe Flexirest::Configuration do
     end
   end
 
-  it "should default to non-verbose loggingg" do
+  it "should default to non-verbose logging" do
     class VerboseConfigurationExample1
       include Flexirest::Configuration
     end
@@ -227,6 +203,26 @@ describe Flexirest::Configuration do
     end
     expect(VerboseConfigurationExample2.verbose).to be_truthy
     expect(VerboseConfigurationExample3.verbose).to be_truthy
+  end
+
+  it "should default to non-quiet logging" do
+    class QuietConfigurationExample1
+      include Flexirest::Configuration
+    end
+    expect(QuietConfigurationExample1.quiet).to be_falsey
+  end
+
+  it "should be able to switch on quiet logging" do
+    class QuietConfigurationExample2
+      include Flexirest::Configuration
+      quiet!
+    end
+    class QuietConfigurationExample3
+      include Flexirest::Configuration
+      quiet true
+    end
+    expect(QuietConfigurationExample2.quiet).to be_truthy
+    expect(QuietConfigurationExample3.quiet).to be_truthy
   end
 
   it "should store a translator given" do

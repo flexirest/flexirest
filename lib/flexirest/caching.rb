@@ -48,16 +48,16 @@ module Flexirest
         @@cache_store = nil
       end
 
-      def read_cached_response(request)
+      def read_cached_response(request, quiet)
         if cache_store && perform_caching && request.method[:method] == :get
           key = "#{request.class_name}:#{request.original_url}"
-          Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest.name}\033[0m #{key} - Trying to read from cache"
+          Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest.name}\033[0m #{key} - Trying to read from cache" unless quiet
           value = cache_store.read(key)
           value = Marshal.load(value) rescue value
         end
       end
 
-      def write_cached_response(request, response, result)
+      def write_cached_response(request, response, result, quiet)
         return if result.is_a? Symbol
         return unless perform_caching
         return unless !result.respond_to?(:_status) || [200, 304].include?(result._status)
@@ -69,12 +69,19 @@ module Flexirest
 
         if cache_store && (headers[:etag] || headers[:expires])
           key = "#{request.class_name}:#{request.original_url}"
-          Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest.name}\033[0m #{key} - Writing to cache"
+          Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest.name}\033[0m #{key} - Writing to cache" unless quiet
           cached_response = CachedResponse.new(status:response.status, result:result, response_headers: headers)
           cached_response.etag = "#{headers[:etag]}" if headers[:etag]
           cached_response.expires = Time.parse(headers[:expires]) rescue nil if headers[:expires]
           if cached_response.etag.present? || cached_response.expires
-            cache_store.write(key, Marshal.dump(cached_response), {})
+            options = {}
+            if cached_response.expires.present?
+              exp_in_seconds = cached_response.expires.utc - Time.now.utc
+              return unless exp_in_seconds.positive?
+
+              options[:expires_in] = exp_in_seconds
+            end
+            cache_store.write(key, Marshal.dump(cached_response), options)
           end
         end
       end
@@ -110,9 +117,12 @@ module Flexirest
       if @result.is_a?(Array)
         ri = ResultIterator.new(self)
         ri.items = @result.map{|i| @class_name.constantize.new(i)}
+        ri._clean!
         ri
       else
-        @class_name.constantize.new(@result)
+        obj = @class_name.constantize.new(@result)
+        obj._clean!
+        obj
       end
     end
   end

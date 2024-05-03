@@ -40,6 +40,30 @@ Or if it's called from a class context:
 Person.find(id: 1234)
 ```
 
+### Basic authentication method
+
+Flexirest provides two methods for HTTP Basic Auth. The default method is `:url`:
+
+```ruby
+class Person < Flexirest::Base
+  basic_auth_method :url
+end
+# Includes the credentials in the URL:
+#   https://my_username:my_password@example.com/
+```
+
+But you might want to keep the credentials out of your logs and use the `:header` method:
+
+```ruby
+class Person < Flexirest::Base
+  basic_auth_method :header
+end
+# Clean URL:
+#   https://example.com/
+# with the base64 encoded credentials:
+#   Authorization: Basic YXBpOmViNjkzZWMtODI1MmMtZDYzMDEtMDJmZDAtZDBmYjctYzM0ODU=
+```
+
 ## Api-Auth
 
 Using the [Api-Auth](https://github.com/mgomes/api_auth) integration it is very easy to sign requests. Include the Api-Auth gem in your `Gemfile` and  then add it to your application. Then simply configure Api-Auth one time in your app and all requests will be signed from then on.

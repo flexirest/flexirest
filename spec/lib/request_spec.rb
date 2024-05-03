@@ -31,6 +31,8 @@ describe Flexirest::Request do
       get :flat, "/", params_encoder: :flat
       get :array, "/johnny", array: [:likes, :dislikes]
       get :babies, "/babies", has_many: {children: ExampleOtherClient}
+      get :basket, "/basket", array: [:options]
+      get :dates, "/dates", array: [:dates]
       get :single_association, "/single", has_one: {single: ExampleSingleClient}, has_many: {children: ExampleOtherClient}
       get :headers, "/headers"
       get :cancel_callback, "/cancel-callback"
@@ -38,24 +40,35 @@ describe Flexirest::Request do
       put :headers_json, "/headers_json", request_body_type: :json
       get :find, "/:id", required: [:id]
       get :find_cat, "/:id/cat"
+      get :fruits, "/fruits"
+      get :uncached, "/uncached", skip_caching: true
       get :change, "/change"
       get :plain, "/plain/:id", plain: true
       post :create, "/create", rubify_names: true
       post :test_encoding, "/encoding", request_body_type: :json
       post :testing_no_content_headers, "/no-content"
       put :update, "/put/:id"
+      put :update_with_empty, "/put/:id", ignore_empty_response: true
       put :wrapped, "/put/:id", wrap_root: "example"
       put :conversion, "/put/:id", parse_fields: [:converted]
+      put :conversion_child, "/put/:id", parse_fields: [:converted_child]
       delete :remove, "/remove/:id"
       delete :remove_body, "/remove/:id", send_delete_body: true
       get :hal, "/hal", fake:"{\"_links\":{\"child\": {\"href\": \"/child/1\"}, \"other\": {\"href\": \"/other/1\"}, \"cars\":[{\"href\": \"/car/1\", \"name\":\"car1\"}, {\"href\": \"/car/2\", \"name\":\"car2\"}, {\"href\": \"/car/not-embed\", \"name\":\"car_not_embed\"} ], \"lazy\": {\"href\": \"/lazy/load\"}, \"invalid\": [{\"href\": \"/invalid/1\"}]}, \"_embedded\":{\"other\":{\"name\":\"Jane\"},\"child\":{\"name\":\"Billy\"}, \"cars\":[{\"_links\": {\"self\": {\"href\": \"/car/1\"} }, \"make\": \"Bugatti\", \"model\": \"Veyron\"}, {\"_links\": {\"self\": {\"href\": \"/car/2\"} }, \"make\": \"Ferrari\", \"model\": \"F458 Italia\"} ], \"invalid\": [{\"present\":true, \"_links\": {} } ] } }", has_many:{other:ExampleOtherClient}
-      get :fake, "/fake", fake:"{\"result\":true, \"list\":[1,2,3,{\"test\":true}], \"child\":{\"grandchild\":{\"test\":true}}}"
-      get :fake_proc, "/fake", fake:->(request) { "{\"result\":#{request.get_params[:id]}}" }
+      get :fake_object, "/fake", fake:"{\"result\":true, \"list\":[1,2,3,{\"test\":true}], \"child\":{\"grandchild\":{\"test\":true}}}"
+      get :fake_proc_object, "/fake", fake:->(request) { "{\"result\":#{request.get_params[:id]}}" }
+      get :fake_method, "/fake", fake: :generate_fake_data
+      get :fake_array, "/fake", fake:"[1,2,3,{\"test\":true},null]"
+      get :fake_proc_array, "/fake", fake:->(request) { "[{\"result\":#{request.get_params[:id]}},null]" }
       get :defaults, "/defaults", defaults:{overwrite:"no", persist:"yes"}
       get :requires, "/requires", requires:[:name, :age]
       patch :only_changed_1, "/changed1", only_changed: true
       patch :only_changed_2, "/changed2", only_changed: [:debug1, :debug2]
       patch :only_changed_3, "/changed3", only_changed: { debug1: false, debug2: true }
+
+      def generate_fake_data
+        "{\"result\":true, \"list\":[1,2,3,{\"test\":true}], \"child\":{\"grandchild\":{\"test\":true}}}"
+      end
     end
 
     class ExampleLoadBalancedClient < Flexirest::Base
@@ -65,8 +78,28 @@ describe Flexirest::Request do
 
     class AuthenticatedExampleClient < Flexirest::Base
       base_url "http://www.example.com"
-      username "john"
-      password "smith"
+      username "john@example.com"
+      password "smith?$"
+      get :all, "/"
+    end
+
+    class AuthenticatedBasicHeaderExampleClient < Flexirest::Base
+      base_url "http://www.example.com"
+      username "john@example.com"
+      password "smith?$"
+      basic_auth_method :header
+      get :all, "/"
+    end
+
+    class AuthenticatedBasicHeaderExampleClientChildClass < AuthenticatedBasicHeaderExampleClient
+      get :child_method, "/"
+    end
+
+    class AuthenticatedBasicUrlExampleClient < Flexirest::Base
+      base_url "http://www.example.com"
+      username "john@example.com"
+      password "smith?$"
+      basic_auth_method :url
       get :all, "/"
     end
 
@@ -140,16 +173,31 @@ describe Flexirest::Request do
       get :second_call, "/second_call"
     end
 
+    class SimpleRetryingExampleClient < Flexirest::Base
+      base_url "http://www.example.com"
+      get :all, "/objects", defaults: proc { |params| { type: params.delete(:object_type) } }
+
+      after_request -> (name, response) { raise Flexirest::CallbackRetryRequestException.new }
+    end
+
     class LazyLoadedExampleClient < ExampleClient
       base_url "http://www.example.com"
       lazy_load!
-      get :fake, "/fake", fake:"{\"result\":true, \"list\":[1,2,3,{\"test\":true}], \"child\":{\"grandchild\":{\"test\":true}}}"
+      get :fake_object, "/fake", fake:"{\"result\":true, \"list\":[1,2,3,{\"test\":true}], \"child\":{\"grandchild\":{\"test\":true}}}"
+      get :fake_array, "/fake", fake:"[1,2,3,{\"test\":true},{\"child\":{\"grandchild\":{\"test\":true}}}]"
       get :lazy_test, "/does-not-matter", fake:"{\"people\":[\"http://www.example.com/some/url\"]}", lazy: [:people]
     end
 
     class VerboseExampleClient < ExampleClient
       base_url "http://www.example.com"
       verbose!
+      get :all, "/all"
+      post :create, "/create"
+    end
+
+    class QuietExampleClient < ExampleClient
+      base_url "http://www.example.com"
+      quiet!
       get :all, "/all"
       post :create, "/create"
     end
@@ -173,6 +221,24 @@ describe Flexirest::Request do
       }
     end
 
+    class IgnoredRootWithNullValueExampleClient < ExampleClient
+      get :root, "/root", ignore_root: "feed", fake: %Q{
+        {
+          "feed": null
+        }
+      }
+    end
+
+    class IgnoredRootWithUnexpectedResponseExampleClient < ExampleClient
+      get :root, "/root", ignore_root: "feed", fake: %Q{
+        {
+          "error": {
+            "message": "Example Error"
+          }
+        }
+      }
+    end
+
     class IgnoredMultiLevelRootExampleClient < ExampleClient
       get :multi_level_root, "/multi-level-root", ignore_root: [:response, "data", "object"], fake: %Q{
         {
@@ -187,10 +253,94 @@ describe Flexirest::Request do
       }
     end
 
+    class LocalIgnoredRootExampleClient < ExampleClient
+      ignore_root "feed"
+
+      get :root, "/root", fake: %Q{
+        {
+          "feed": {
+            "title": "Example Feed"
+          }
+        }
+      }
+    end
+
+    class LocalIgnoredMultiLevelRootExampleClient < ExampleClient
+      ignore_root [:response, "data", "object"]
+
+      get :multi_level_root, "/multi-level-root", fake: %Q{
+        {
+          "response": {
+            "data": {
+              "object": {
+                "title": "Example Multi Level Feed"
+              }
+            }
+          }
+        }
+      }
+    end
+
+    class BaseIgnoredRootExampleClient < Flexirest::Base
+      base_url "http://www.example.com"
+      ignore_root "feed"
+    end
+
+    class GlobalIgnoredRootExampleClient < BaseIgnoredRootExampleClient
+      get :root, "/root", fake: %Q{
+        {
+          "feed": {
+            "title": "Example Feed"
+          }
+        }
+      }
+    end
+
+    class OverrideGlobalIgnoredRootForFileExampleClient < BaseIgnoredRootExampleClient
+      ignore_root "data"
+
+      get :root, "/root", fake: %Q{
+        {
+          "data": {
+            "title": "Example Feed"
+          }
+        }
+      }
+    end
+
+    class OverrideGlobalIgnoredRootForRequestExampleClient < BaseIgnoredRootExampleClient
+      get :root, "/root", ignore_root: "data", fake: %Q{
+        {
+          "data": {
+            "title": "Example Feed"
+          }
+        }
+      }
+    end
+
+    class BaseWrappedRootExampleClient < Flexirest::Base
+      base_url "http://www.example.com"
+      wrap_root "base_data"
+    end
+
+    class GlobalWrappedRootExampleClient < BaseWrappedRootExampleClient
+      put :wrapped, "/put/:id"
+    end
+
+    class OverrideGlobalWrappedRootForFileExampleClient < BaseWrappedRootExampleClient
+      wrap_root "class_specific_data"
+      put :wrapped, "/put/:id"
+    end
+
+    class OverrideGlobalWrappedRootForRequestExampleClient < BaseWrappedRootExampleClient
+      put :wrapped, "/put/:id", wrap_root: "request_specific_data"
+    end
+
     class WhitelistedDateClient < Flexirest::Base
       base_url "http://www.example.com"
       put :conversion, "/put/:id"
-      parse_date :converted
+      put :conversion_child, "/put/:id"
+      parse_date :converted, :converted_child
     end
 
     allow_any_instance_of(Flexirest::Request).to receive(:read_cached_response)
@@ -218,11 +368,54 @@ describe Flexirest::Request do
     expect(servers.uniq.count).to eq(2)
   end
 
-  it "should get an HTTP connection with authentication when called" do
+  it "should use the URL method for Basic HTTP Auth when no basic_auth_method is set" do
+    mocked_response = ::FaradayResponseMock.new(OpenStruct.new(body:'{"result":true}', response_headers:{}))
+
     connection = double(Flexirest::Connection).as_null_object
-    expect(Flexirest::ConnectionManager).to receive(:get_connection).with("http://john:smith@www.example.com").and_return(connection)
-    expect(connection).to receive(:get).with("/", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:'{"result":true}', response_headers:{})))
+    expect(Flexirest::ConnectionManager).to receive(:get_connection).with("http://john%40example.com:smith%3F%24@www.example.com").and_return(connection)
+    expect(connection).to receive(:get).with("/", an_instance_of(Hash)).and_return(mocked_response)
     AuthenticatedExampleClient.all
+  end
+
+  it "should use the headers method for Basic auth when basic_auth_method is set to :header" do
+    mocked_response = ::FaradayResponseMock.new(OpenStruct.new(body:'{"result":true}', response_headers:{}))
+    headers_including_auth = hash_including({ "Authorization" => "Basic am9obkBleGFtcGxlLmNvbTpzbWl0aD8k" })
+
+    connection = double(Flexirest::Connection).as_null_object
+    expect(Flexirest::ConnectionManager).to receive(:get_connection).with("http://www.example.com").and_return(connection)
+    expect(connection).to receive(:get).with("/", hash_including(headers: headers_including_auth)).and_return(mocked_response)
+    AuthenticatedBasicHeaderExampleClient.all
+  end
+
+  it "should raise an error if Basic HTTP method is not :header or :url" do
+    expect do
+      AuthenticatedExampleClient.class_eval do
+        basic_auth_method :some_invalid_value
+      end
+    end.to raise_error(RuntimeError, "Invalid basic_auth_method :some_invalid_value. Valid methods are :url (default) and :header.")
+  end
+
+  it "should use the setting set on the parent class" do
+    mocked_response = ::FaradayResponseMock.new(OpenStruct.new(body:'{"result":true}', response_headers:{}))
+    headers_including_auth = hash_including({ "Authorization" => "Basic am9obkBleGFtcGxlLmNvbTpzbWl0aD8k" })
+
+    connection = double(Flexirest::Connection).as_null_object
+    expect(Flexirest::ConnectionManager).to receive(:get_connection).with("http://www.example.com").and_return(connection)
+    expect(connection).to receive(:get).with("/", hash_including(headers: headers_including_auth)).and_return(mocked_response)
+    AuthenticatedBasicHeaderExampleClientChildClass.child_method
+  end
+
+  it "should use the URL method for Basic auth when basic_auth_method is set to :url (and not include Authorization header)" do
+    mocked_response = ::FaradayResponseMock.new(OpenStruct.new(body:'{"result":true}', response_headers:{}))
+
+    connection = double(Flexirest::Connection).as_null_object
+    expect(Flexirest::ConnectionManager).to receive(:get_connection).with("http://john%40example.com:smith%3F%24@www.example.com").and_return(connection)
+    expect(connection).to receive(:get) do |path, options|
+      expect(path).to eq("/")
+      expect(options[:headers]).to eq({"Accept"=>"application/hal+json, application/json;q=0.5", "Content-Type"=>"application/x-www-form-urlencoded; charset=utf-8"})
+    end.and_return(mocked_response)
+
+    AuthenticatedBasicUrlExampleClient.all
   end
 
   it "should get an HTTP connection with basic authentication using procs when called in a class context" do
@@ -269,7 +462,7 @@ describe Flexirest::Request do
   end
 
   it "should get an HTTP connection when called and call delete without a body if send_delete_body is not specified" do
-    expect_any_instance_of(Flexirest::Connection).to receive(:delete).with("/remove/1", "", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:'{"result":true}', response_headers:{})))
+    expect_any_instance_of(Flexirest::Connection).to receive(:delete).with("/remove/1?something=else", "", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:'{"result":true}', response_headers:{})))
     ExampleClient.remove(id:1, something: "else")
   end
 
@@ -336,7 +529,7 @@ describe Flexirest::Request do
   end
 
   it "should pass URL-encode URL parameters" do
-    expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/foo%20bar", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:'{"result":true}', response_headers:{})))
+    expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/foo+bar", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:'{"result":true}', response_headers:{})))
     ExampleClient.find id:"foo bar"
   end
 
@@ -353,6 +546,24 @@ describe Flexirest::Request do
   it "should accept a string as the only parameter and use it as id" do
     expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/1234", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:'{"result":true}', response_headers:{})))
     ExampleClient.find("1234")
+  end
+
+  it "should handle a 204 response and not erase the instance's attributes" do
+    expect_any_instance_of(Flexirest::Connection).to receive(:put).and_return(::FaradayResponseMock.new(OpenStruct.new(body: "", response_headers: {}, status: 204)))
+    client = ExampleClient.new
+    client.id = "1234"
+    ret = client.update
+    expect(client.id).to eq("1234")
+    expect(ret).to be_truthy
+  end
+
+  it "should handle a 200 response with an empty body and not erase the instance's attributes" do
+    expect_any_instance_of(Flexirest::Connection).to receive(:put).and_return(::FaradayResponseMock.new(OpenStruct.new(body: "", response_headers: {}, status: 200)))
+    client = ExampleClient.new
+    client.id = "1234"
+    ret = client.update_with_empty
+    expect(client.id).to eq("1234")
+    expect(ret).to be_truthy
   end
 
   it "should pass through url parameters and get parameters" do
@@ -511,31 +722,87 @@ describe Flexirest::Request do
     end
   end
 
-  it "should only convert date times in JSON if specified" do
+  it "should only convert date times in JSON if specified when converted is root property" do
     expect_any_instance_of(Flexirest::Connection).to receive(:put).with("/put/1234", "debug=true", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"converted\":\"2012-03-04T01:02:03Z\", \"not_converted\":\"2012-03-04T01:02:03Z\"}", response_headers:{})))
     object = ExampleClient.conversion id:1234, debug:true
     expect(object.converted).to be_an_instance_of(DateTime)
     expect(object.not_converted).to be_an_instance_of(String)
   end
 
-  it "should convert date times in JSON if whitelisted" do
+  it "should only convert date times in JSON if specified when converted is child property" do
+    expect_any_instance_of(Flexirest::Connection).to receive(:put).with("/put/1234", "debug=true", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"not_converted\":\"2012-03-04T01:02:03Z\", \"child\":{\"converted_child\":\"2012-03-04T01:02:03Z\"}}", response_headers:{})))
+    object = ExampleClient.conversion_child id:1234, debug:true
+    expect(object.child.converted_child).to be_an_instance_of(DateTime)
+    expect(object.not_converted).to be_an_instance_of(String)
+  end
+
+  it "should convert date times in JSON if root property is whitelisted" do
     expect_any_instance_of(Flexirest::Connection).to receive(:put).with("/put/1234", "debug=true", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"converted\":\"2012-03-04T01:02:03Z\", \"not_converted\":\"2012-03-04T01:02:03Z\"}", response_headers:{})))
     object = WhitelistedDateClient.conversion id:1234, debug:true
     expect(object.converted).to be_an_instance_of(DateTime)
     expect(object.not_converted).to be_an_instance_of(String)
   end
 
-  it "should parse JSON and return a nice object for faked responses" do
-    object = ExampleClient.fake id:1234, debug:true
+  it "should convert date times in JSON if child property is whitelisted" do
+    expect_any_instance_of(Flexirest::Connection).to receive(:put).with("/put/1234", "debug=true", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"not_converted\":\"2012-03-04T01:02:03Z\", \"child\":{\"converted_child\":\"2012-03-04T01:02:03Z\"}}", response_headers:{})))
+    object = WhitelistedDateClient.conversion_child id:1234, debug:true
+    expect(object.child.converted_child).to be_an_instance_of(DateTime)
+    expect(object.not_converted).to be_an_instance_of(String)
+  end
+
+  it "should convert date times in JSON from a result iterator response" do
+    expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/dates", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"[\"2012-03-04T01:02:03Z\", \"2012-03-04T01:02:03Z\"]", response_headers:{})))
+    object = ExampleClient.dates
+    expect(object).to be_a(Flexirest::ResultIterator)
+    expect(object.items).to be_a(Array)
+    expect(object.first).to be_an_instance_of(DateTime)
+  end
+
+  it "should convert date times in JSON even in a pure array" do
+    expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/dates", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"dates\":[\"2012-03-04T01:02:03Z\", \"2012-03-04T01:02:03Z\"]}", response_headers:{})))
+    object = ExampleClient.dates
+    expect(object).to be_a(ExampleClient)
+    expect(object.dates).to be_a(Array)
+    expect(object.dates.first).to be_an_instance_of(DateTime)
+  end
+
+  it "should parse JSON object and return a nice object for faked responses" do
+    object = ExampleClient.fake_object id:1234, debug:true
     expect(object.result).to eq(true)
     expect(object.list.first).to eq(1)
     expect(object.list.last.test).to eq(true)
     expect(object.child.grandchild.test).to eq(true)
   end
 
-  it "should parse JSON from a fake response generated by a proc" do
-    object = ExampleClient.fake_proc id:1234
+  it "should parse JSON object from a fake response generated by a proc" do
+    object = ExampleClient.fake_proc_object id:1234
     expect(object.result).to eq(1234)
+  end
+
+  it "should parse JSON object from a fake response generated by method defined as a symbol" do
+    object = ExampleClient.fake_method id:1234
+    expect(object.result).to eq(true)
+  end
+
+  it "should parse JSON array and return a nice result iterator for faked responses" do
+    object = ExampleClient.fake_array debug:true
+    expect(object).to be_instance_of(Flexirest::ResultIterator)
+    expect(object.size).to eq(5)
+    expect(object.first).to eq(1)
+    expect(object.last).to eq(nil)
+    expect(object[3]).to be_instance_of(ExampleClient)
+    expect(object[3].test).to eq(true)
+    expect(object._status).to eq(200)
+  end
+
+  it "should parse JSON array from a fake response generated by a proc" do
+    object = ExampleClient.fake_proc_array id:1234
+    expect(object).to be_instance_of(Flexirest::ResultIterator)
+    expect(object.size).to eq(2)
+    expect(object.first).to be_instance_of(ExampleClient)
+    expect(object.first.result).to eq(1234)
+    expect(object.last).to eq(nil)
+    expect(object._status).to eq(200)
   end
 
   it "should not parse JSON from a plain request" do
@@ -570,17 +837,34 @@ describe Flexirest::Request do
     expect(ExampleClient.all).to be_truthy
   end
 
-  it "should return a lazy loader object if lazy loading is enabled" do
-    object = LazyLoadedExampleClient.fake id:1234, debug:true
+  it "should return a lazy loader object if lazy loading is enabled for JSON object" do
+    object = LazyLoadedExampleClient.fake_object id:1234, debug:true
     expect(object).to be_an_instance_of(Flexirest::LazyLoader)
   end
 
-  it "should proxy through nice object for lazy loaded responses" do
-    object = LazyLoadedExampleClient.fake id:1234, debug:true
-    expect(object.result).to eq(true)
+  it "should proxy through nice object for lazy loaded responses from JSON object" do
+    object = LazyLoadedExampleClient.fake_object id:1234, debug:true
+    expect(object.instance_variable_get(:@result)).to be(nil)
+    expect(object.result).to eq(true) # method call the attribute received in response and never the instance attribute of the LazyLoader class
+    expect(object.instance_variable_get(:@result)).to be_a(LazyLoadedExampleClient)
     expect(object.list.first).to eq(1)
     expect(object.list.last.test).to eq(true)
     expect(object.child.grandchild.test).to eq(true)
+  end
+
+  it "should return a lazy loader object if lazy loading is enabled for JSON array" do
+    object = LazyLoadedExampleClient.fake_array debug:true
+    expect(object).to be_an_instance_of(Flexirest::LazyLoader)
+  end
+
+  it "should proxy through nice result iterator for lazy loaded responses from JSON array" do
+    object = LazyLoadedExampleClient.fake_array debug:true
+    expect(object.instance_variable_get(:@result)).to be(nil)
+    expect(object.items).to be_a(Array)
+    expect(object.instance_variable_get(:@result)).to be_a(Flexirest::ResultIterator)
+    expect(object.first).to eq(1)
+    expect(object[3].test).to eq(true)
+    expect(object.last.child.grandchild.test).to eq(true)
   end
 
   it "should return a LazyAssociationLoader for lazy loaded properties" do
@@ -592,7 +876,7 @@ describe Flexirest::Request do
   it "should log faked responses" do
     allow(Flexirest::Logger).to receive(:debug)
     expect(Flexirest::Logger).to receive(:debug).with(/Faked response found/)
-    ExampleClient.fake id:1234, debug:true
+    ExampleClient.fake_object id:1234, debug:true
   end
 
   it "should parse an array within JSON to be a result iterator" do
@@ -626,6 +910,51 @@ describe Flexirest::Request do
     expect(object.dislikes[1]).to eq("lawyers")
     expect(object.dislikes[2]).to eq("taxes")
     #TODO
+  end
+
+  it "should parse an attribute to be an array if attribute included in a nested array" do
+    expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/johnny", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"first_name\":\"Johnny\", \"nested_array\":[[{\"likes\":[\"donuts\", \"bacon\"], \"dislikes\":[\"politicians\", \"lawyers\", \"taxes\"]}]]}", status:200, response_headers:{})))
+    object = ExampleClient.array
+    nested_array = object.nested_array[0][0]
+    expect(nested_array.likes).to be_instance_of(Array)
+    expect(nested_array.likes.size).to eq(2)
+    expect(nested_array.likes[0]).to eq("donuts")
+    expect(nested_array.likes[1]).to eq("bacon")
+    expect(nested_array.dislikes).to be_instance_of(Array)
+    expect(nested_array.dislikes.size).to eq(3)
+    expect(nested_array.dislikes[0]).to eq("politicians")
+    expect(nested_array.dislikes[1]).to eq("lawyers")
+    expect(nested_array.dislikes[2]).to eq("taxes")
+    #TODO - Pasted from the Test above
+  end
+
+  it "should parse an attribute to be either a result iterator or an array and containing simple values like integers" do
+      expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/basket", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"products\":[101, 55, 37], \"options\":[854, 225, 772]}", status:200, response_headers:{})))
+      object = ExampleClient.basket
+      expect(object).to be_instance_of(ExampleClient)
+      expect(object.products).to be_a(Flexirest::ResultIterator)
+      expect(object.products.size).to eq(3)
+      expect(object.products.first).to eq(101)
+      expect(object.products[1]).to eq(55)
+      expect(object.products.last).to eq(37)
+      expect(object.options).to be_a(Array)
+      expect(object.options.size).to eq(3)
+      expect(object.options.first).to eq(854)
+      expect(object.options[1]).to eq(225)
+      expect(object.options.last).to eq(772)
+      expect(object._status).to eq(200)
+      #TODO - Pasted from the Test above
+    end
+
+  it "should parse the response to be a result iterator and containing simple values like strings" do
+    expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/fruits", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"[\"apple\", \"banana\", \"pear\", \"watermelon\"]", status:200, response_headers:{})))
+    object = ExampleClient.fruits
+    expect(object).to be_instance_of(Flexirest::ResultIterator)
+    expect(object.first).to eq('apple')
+    expect(object[1]).to eq('banana')
+    expect(object.last).to eq('watermelon')
+    expect(object._status).to eq(200)
+    #TODO - Pasted from the Test above
   end
 
   it "should only send changed attributes if only_changed:true" do
@@ -723,6 +1052,35 @@ describe Flexirest::Request do
     expect(object._etag).to eq("123456")
   end
 
+  it "shouldn't expose the etag header if skip_caching is enabled" do
+    response = ::FaradayResponseMock.new(OpenStruct.new(body: "{}", response_headers: {"ETag" => "123456"}, status: 200))
+    expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/uncached", an_instance_of(Hash)).and_return(response)
+    object = ExampleClient.uncached
+    expect(object._etag).to_not eq("123456")
+  end
+
+  it "shouldn't send the etag header if skip_caching is enabled" do
+    cached_response = Flexirest::CachedResponse.new(status:200, result:"", response_headers: {})
+    cached_response.etag = "123456"
+    expect(ExampleClient).to receive(:read_cached_response).and_return(cached_response)
+
+    response = ::FaradayResponseMock.new(OpenStruct.new(body: "{}", response_headers: {"ETag" => "123456"}, status: 200))
+    expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/uncached", {
+      api_auth: {
+        api_auth_access_id: "id123",
+        api_auth_options: {},
+        api_auth_secret_key: "secret123"
+      },
+      headers: {
+        "Accept"=>"application/hal+json, application/json;q=0.5",
+        "Content-Type"=>"application/x-www-form-urlencoded; charset=utf-8"
+      }
+    }).and_return(response)
+
+    expect(ExampleClient).to_not receive(:write_cached_response)
+    object = ExampleClient.uncached
+  end
+
   it "should expose all headers" do
     response = ::FaradayResponseMock.new(OpenStruct.new(body: "{}", response_headers: {"X-Test-Header" => "true"}, status: 200))
     expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/123", an_instance_of(Hash)).and_return(response)
@@ -785,6 +1143,16 @@ describe Flexirest::Request do
     expect(Flexirest::Logger).to receive(:debug).with(/ << /).at_least(:twice)
     allow(Flexirest::Logger).to receive(:debug).with(any_args)
     VerboseExampleClient.all
+  end
+
+  it "should not log if quiet" do
+    connection = double(Flexirest::Connection).as_null_object
+    expect(Flexirest::ConnectionManager).to receive(:get_connection).and_return(connection)
+    expect(connection).to receive(:get).with("/all", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:'{"result":true}', response_headers:{"Content-Type" => "application/json", "Connection" => "close"})))
+    expect(Flexirest::Logger).to_not receive(:debug)
+    expect(Flexirest::Logger).to_not receive(:info)
+    expect(Flexirest::Logger).to_not receive(:error)
+    QuietExampleClient.all
   end
 
   it "should return the headers still for 202 responses" do
@@ -874,7 +1242,7 @@ describe Flexirest::Request do
     rescue Flexirest::HTTPServerException => e
       e
     end
-    expect(e).to be_instance_of(Flexirest::HTTPServerException)
+    expect(e).to be_instance_of(Flexirest::HTTPInternalServerException)
     expect(e.status).to eq(500)
     expect(e.result.first_name).to eq("John")
   end
@@ -890,7 +1258,7 @@ describe Flexirest::Request do
     rescue Flexirest::HTTPServerException => e
       e
     end
-    expect(e.message).to eq(%q{The POST to '/create' returned a 500 status, which raised a Flexirest::HTTPServerException with a body of: \{"first_name":"John", "id":1234\}})
+    expect(e.message).to eq(%q{The POST to '/create' returned a 500 status, which raised a Flexirest::HTTPInternalServerException with a body of: \{"first_name":"John", "id":1234\}})
   end
 
   it "should raise a parse exception for invalid JSON returns" do
@@ -905,7 +1273,7 @@ describe Flexirest::Request do
     rescue => e
       e
     end
-    expect(e).to be_instance_of(Flexirest::HTTPServerException)
+    expect(e).to be_instance_of(Flexirest::HTTPInternalServerException)
     expect(e.status).to eq(500)
     expect(e.result).to eq(error_content)
   end
@@ -1042,6 +1410,13 @@ describe Flexirest::Request do
     expect(RetryingExampleClient.retries).to eq(2)
   end
 
+  it "shouldn't destructively change params before retrying" do
+    stub_request(:get, "http://www.example.com/objects?type=foo").
+      to_return(status: 200, body: "", headers: {})
+    SimpleRetryingExampleClient.all(object_type: 'foo')
+
+    expect(WebMock).to have_requested(:get, "www.example.com/objects?type=foo").twice
+  end
 
   context "Direct URL requests" do
     class SameServerExampleClient < Flexirest::Base
@@ -1220,8 +1595,72 @@ describe Flexirest::Request do
     expect(IgnoredRootExampleClient.root.title).to eq("Example Feed")
   end
 
+  it "should not raise an error if ignore_root value is null" do
+    expect(IgnoredRootWithNullValueExampleClient.root).to be_instance_of(IgnoredRootWithNullValueExampleClient)
+  end
+
+  it "should ignore an ignore_root parameter if the specified element is not in the response" do
+    expect(IgnoredRootWithUnexpectedResponseExampleClient.root.error.message).to eq("Example Error")
+  end
+
   it "should ignore a specified multi-level root element" do
     expect(IgnoredMultiLevelRootExampleClient.multi_level_root.title).to eq("Example Multi Level Feed")
+  end
+
+  it "should ignore a specified root element" do
+    expect(LocalIgnoredRootExampleClient.root.title).to eq("Example Feed")
+  end
+
+  it "should ignore a specified multi-level root element" do
+    expect(LocalIgnoredMultiLevelRootExampleClient.multi_level_root.title).to eq("Example Multi Level Feed")
+  end
+
+  it "should ignore a specified root element" do
+    expect(GlobalIgnoredRootExampleClient.root.title).to eq("Example Feed")
+  end
+
+  it "should ignore a specified root element" do
+    expect(OverrideGlobalIgnoredRootForFileExampleClient.root.title).to eq("Example Feed")
+  end
+
+  it "should ignore a specified root element" do
+    expect(OverrideGlobalIgnoredRootForRequestExampleClient.root.title).to eq("Example Feed")
+  end
+
+  it "should wrap elements if specified, in form-encoded format" do
+    expect_any_instance_of(Flexirest::Connection).to receive(:put).with("/put/1234", %q(base_data%5Bdebug%5D=true&base_data%5Btest%5D=foo), an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"result\":true}", response_headers:{})))
+    GlobalWrappedRootExampleClient.request_body_type :form_encoded
+    GlobalWrappedRootExampleClient.wrapped id:1234, debug:true, test:'foo'
+  end
+
+  it "should wrap elements if specified, in form-encoded format" do
+    expect_any_instance_of(Flexirest::Connection).to receive(:put).with("/put/1234", %q(class_specific_data%5Bdebug%5D=true&class_specific_data%5Btest%5D=foo), an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"result\":true}", response_headers:{})))
+    OverrideGlobalWrappedRootForFileExampleClient.request_body_type :form_encoded
+    OverrideGlobalWrappedRootForFileExampleClient.wrapped id:1234, debug:true, test:'foo'
+  end
+
+  it "should wrap elements if specified, in form-encoded format" do
+    expect_any_instance_of(Flexirest::Connection).to receive(:put).with("/put/1234", %q(request_specific_data%5Bdebug%5D=true&request_specific_data%5Btest%5D=foo), an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"result\":true}", response_headers:{})))
+    OverrideGlobalWrappedRootForRequestExampleClient.request_body_type :form_encoded
+    OverrideGlobalWrappedRootForRequestExampleClient.wrapped id:1234, debug:true, test:'foo'
+  end
+
+  it "should encode the body wrapped in a root element in a JSON format if specified" do
+    expect_any_instance_of(Flexirest::Connection).to receive(:put).with("/put/1234", %q({"base_data":{"debug":true,"test":"foo"}}), an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"result\":true}", response_headers:{})))
+    GlobalWrappedRootExampleClient.request_body_type :json
+    GlobalWrappedRootExampleClient.wrapped id:1234, debug:true, test:'foo'
+  end
+
+  it "should encode the body wrapped in a root element in a JSON format if specified" do
+    expect_any_instance_of(Flexirest::Connection).to receive(:put).with("/put/1234", %q({"class_specific_data":{"debug":true,"test":"foo"}}), an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"result\":true}", response_headers:{})))
+    OverrideGlobalWrappedRootForFileExampleClient.request_body_type :json
+    OverrideGlobalWrappedRootForFileExampleClient.wrapped id:1234, debug:true, test:'foo'
+  end
+
+  it "should encode the body wrapped in a root element in a JSON format if specified" do
+    expect_any_instance_of(Flexirest::Connection).to receive(:put).with("/put/1234", %q({"request_specific_data":{"debug":true,"test":"foo"}}), an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"result\":true}", response_headers:{})))
+    OverrideGlobalWrappedRootForRequestExampleClient.request_body_type :json
+    OverrideGlobalWrappedRootForRequestExampleClient.wrapped id:1234, debug:true, test:'foo'
   end
 
   context "Parameter preparation" do

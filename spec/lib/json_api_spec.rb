@@ -303,7 +303,7 @@ describe 'JSON API' do
   let(:tags) { JsonAPIExample::Tag }
   let(:author) { JsonAPIExample::Author }
 
-  context 'responses' do
+  describe 'responses' do
     it 'should return the data object if the response contains only one data instance' do
       expect(subject.find(1)).to be_an_instance_of(JsonAPIExampleArticle)
     end
@@ -332,7 +332,7 @@ describe 'JSON API' do
         end
 
         it 'should raise the relevant Flexirest error' do
-          expect(-> { make_request }).to raise_error(Flexirest::HTTPNotFoundClientException) do |exception|
+          expect { make_request }.to raise_error(Flexirest::HTTPNotFoundClientException) do |exception|
             expect(exception.result.first.detail).to eq("The record identified by 123456 could not be found")
           end
         end
@@ -349,7 +349,7 @@ describe 'JSON API' do
         end
 
         it 'should ignore the "data" key and raise the relevant Flexirest error' do
-          expect(-> { make_request }).to raise_error(Flexirest::HTTPNotFoundClientException) do |exception|
+          expect { make_request }.to raise_error(Flexirest::HTTPNotFoundClientException) do |exception|
             expect(exception.result.first.detail).to eq("The record identified by 123456 could not be found")
           end
         end
@@ -370,17 +370,17 @@ describe 'JSON API' do
     end
   end
 
-  context 'attributes' do
+  describe 'attributes' do
     it 'should return the attributes as part of the data instance' do
-      expect(subject.find(1).item).to_not be_nil
+      expect(subject.find(1).item).to eq("item one")
     end
 
     it 'should return the association\'s attributes as part of the association instance' do
-      expect(subject.includes(:author).find_single_author(1).author.item).to_not be_nil
+      expect(subject.includes(:author).find_single_author(1).author.item).to eq("item two")
     end
   end
 
-  context 'associations' do
+  describe 'associations' do
     it 'should retrieve the resource\'s associations via its relationships object' do
       expect(subject.includes(:tags).find(1).tags.size).to eq(2)
     end
@@ -415,6 +415,40 @@ describe 'JSON API' do
     end
   end
 
+  describe 'requests' do
+    describe 'the `include=` parameter' do
+      before { stub_request(:get, %r{example\.com/articles}) }
+
+      context 'when using `.includes(:tags)`' do
+        it 'equal "tags"' do
+          JsonAPIExample::Article.includes(:tags).real_index
+          expect(WebMock).to have_requested(:get, 'http://www.example.com/articles?include=tags')
+        end
+      end
+
+      context 'when using `.includes(tags: [:authors, :articles])`' do
+        it 'equal "tags.authors,tags.articles"' do
+          JsonAPIExample::Article.includes(tags: [:authors, :articles]).real_index
+          expect(WebMock).to have_requested(:get, 'http://www.example.com/articles?include=tags.authors,tags.articles')
+        end
+      end
+
+      context 'when using both `.includes(:tags)` and other params in the final call' do
+        it 'uses the values passed to the `includes() method`' do
+          JsonAPIExample::Article.includes(:tags).real_index(filter: { author_id: 4 })
+          expect(WebMock).to have_requested(:get, 'http://www.example.com/articles?filter%5Bauthor_id%5D=4&include=tags')
+        end
+      end
+
+      context 'when using both `.includes(:tags)` and the :include param in final call' do
+        it 'uses the values passed to the `includes() method`' do
+          JsonAPIExample::Article.includes(:tags).real_index(include: "author")
+          expect(WebMock).to have_requested(:get, 'http://www.example.com/articles?include=tags')
+        end
+      end
+    end
+  end
+
   context 'lazy loading' do
     it 'should fetch association lazily' do
       stub_request(:get, /www.example.com\/articles\/1\/tags/)
@@ -430,11 +464,11 @@ describe 'JSON API' do
     end
 
     it 'should raise exception when an association in the response is not defined in base class' do
-      expect(-> { subject.includes(:tags).not_recognized_assoc(1) }).to raise_error(Exception)
+      expect { subject.includes(:tags).not_recognized_assoc(1) }.to raise_error(Exception)
     end
   end
 
-  context 'client' do
+  describe 'client' do
     it 'should request with json api format, and expect a json api response' do
       expect_any_instance_of(Flexirest::Connection).to receive(:post) { |_, _, _, options|
         expect(options[:headers]).to include('Content-Type' => 'application/vnd.api+json')
@@ -494,7 +528,7 @@ describe 'JSON API' do
       article = JsonAPIExample::Article.new
       article.item = 'item one'
       article.tags = [tag, author]
-      expect(-> { article.create }).to raise_error(Exception)
+      expect { article.create }.to raise_error(Exception)
     end
 
     it 'should perform a patch request in proper json api format' do

@@ -11,6 +11,8 @@ module Flexirest
     attr_accessor :_status
     attr_accessor :_etag
     attr_accessor :_headers
+    attr_accessor :_parent
+    attr_accessor :_parent_attribute_name
 
     instance_methods.each do |m|
       next unless %w{display presence load require untrust trust freeze method enable_warnings with_warnings suppress capture silence quietly debugger breakpoint}.map(&:to_sym).include? m
@@ -41,6 +43,14 @@ module Flexirest
     def _copy_from(result)
       @attributes = result._attributes
       @_status = result._status
+      self._parent = result._parent
+      self._parent_attribute_name = result._parent_attribute_name
+      @attributes.each do |k,v|
+        if v.respond_to?(:_parent) && v._parent.present?
+          @attributes[k]._parent = self
+        end
+      end
+      _clean!
     end
 
     def dirty?
@@ -56,7 +66,7 @@ module Flexirest
       @dirty_attributes.keys
     end
 
-    # Returns hash of old and new vaules for each changed field
+    # Returns hash of old and new values for each changed field
     def changes
       @dirty_attributes
     end
@@ -183,13 +193,20 @@ module Flexirest
       output.to_json
     end
 
+    def _set_dirty(key)
+      @dirty_attributes[key.to_sym] = true
+    end
+
     private
 
     def _set_attribute(key, value)
       old_value = @dirty_attributes[key.to_sym]
       old_value = @attributes[key.to_sym] unless old_value
       old_value = old_value[0] if old_value and old_value.is_a? Array
-      @dirty_attributes[key.to_sym] = [old_value, value]
+      @dirty_attributes[key.to_sym] = [old_value, value] if old_value != value
+      if _parent
+        _parent._set_dirty(_parent_attribute_name)
+      end
       @attributes[key.to_sym] = value
     end
 
@@ -203,7 +220,7 @@ module Flexirest
       if value.is_a?(String) && value.length > 50
         "#{value[0..50]}...".inspect
       elsif value.is_a?(Date) || value.is_a?(Time)
-        %("#{value.to_s(:db)}")
+        %("#{value.respond_to?(:to_fs) ? value.to_fs(:db) : value.to_s(:db)}")
       else
         value.inspect
       end

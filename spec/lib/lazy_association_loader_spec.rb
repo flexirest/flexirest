@@ -12,6 +12,24 @@ class YearExample < Flexirest::Base
   get :find, "/year/:id", lazy: { months: MonthExample }, fake: "{\"months\": [\"http://www.example.com/months/1\"] }"
 end
 
+class CenturyExample < Flexirest::Base
+  base_url "http://www.example.com"
+
+  get :find, "century/:id"
+end
+
+class DecadeExample < Flexirest::Base
+  base_url "http://www.example.com"
+
+  get :find, "/decade/:id", lazy: { years: YearExample, century: CenturyExample }, fake: %Q{
+    {
+      "years": ["http://www.example.com/years/1"],
+      "century": "http://www.example.com/century/1"
+    }
+  }
+end
+
+
 describe Flexirest::LazyAssociationLoader do
   let(:url1) { "http://www.example.com/some/url" }
   let(:url2) { "http://www.example.com/some/other" }
@@ -132,4 +150,13 @@ describe Flexirest::LazyAssociationLoader do
     association = YearExample.find(1)
     expect(association.months.instance_variable_get('@request').instance_variable_get('@object').class).to eq(MonthExample)
   end
+
+  context "has multiple associations" do
+    it "should correctly map each association name to the class specified for that association in the 'lazy' declaration " do
+      association = DecadeExample.find(1)
+      expect(association.years.instance_variable_get('@request').instance_variable_get('@object').class).to eq(YearExample)
+      expect(association.century.instance_variable_get('@request').instance_variable_get('@object').class).to eq(CenturyExample)
+    end
+  end
+
 end

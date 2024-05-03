@@ -14,6 +14,14 @@ class Person < Flexirest::Base
 end
 ```
 
+or per request endpoint with:
+
+```ruby
+class Person < Flexirest::Base
+    get :all, "/people", skip_caching: true
+end
+```
+
 If Rails is defined, it will default to using Rails.cache as the cache store, if not, you'll need to configure one with a `ActiveSupport::Cache::Store` compatible object using:
 
 ```ruby

@@ -20,7 +20,7 @@ module Flexirest
     def self.in_parallel(base_url)
       begin
         require 'typhoeus'
-        require 'typhoeus/adapters/faraday'
+        require 'typhoeus/adapters/faraday' unless Gem.loaded_specs["faraday-typhoeus"].present?
       rescue LoadError
         raise MissingOptionalLibraryError.new("To call '::Flexirest::ConnectionManager.in_parallel' you must include the gem 'Typhoeus' in your Gemfile.")
       end

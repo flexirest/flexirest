@@ -16,6 +16,17 @@ class Person < Flexirest::Base
 end
 ```
 
+Alternatively, you can specify a symbol as the `fake` parameter, and Flexirest will call that method to get a string JSON as if it was the request body:
+
+```ruby
+class Person < Flexirest::Base
+  get :all, '/people', fake: :get_data
+
+  def get_data
+    {result: true}.to_json
+  end
+end
+```
 
 -----
 

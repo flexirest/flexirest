@@ -12,6 +12,11 @@ class TranslatorExample
   end
 end
 
+class NestedExample < Flexirest::BaseWithoutValidation
+  get :all, "/all", fake:"{\"person\":{\"name\": \"Billy\"}}"
+end
+
+
 class AlteringClientExample < Flexirest::BaseWithoutValidation
   translator TranslatorExample
   base_url "http://www.example.com"
@@ -109,12 +114,12 @@ describe Flexirest::BaseWithoutValidation do
     expect(client["test"]).to be_an_instance_of(DateTime)
   end
 
-  it "should allow strings of 4 digits and not intepret them as dates" do
+  it "should allow strings of 4 digits and not interpret them as dates" do
     client = EmptyExample.new(test: "2015")
     expect(client["test"]).to be_an_instance_of(String)
   end
 
-  it "should allow strings of 8 digits and not intepret them as dates" do
+  it "should allow strings of 8 digits and not interpret them as dates" do
     client = EmptyExample.new(test: "1266129")
     expect(client["test"]).to be_an_instance_of(String)
   end
@@ -126,11 +131,43 @@ describe Flexirest::BaseWithoutValidation do
     expect(client).to be_dirty
   end
 
+  it "should not mark attributes that don't change as dirty" do
+    client = EmptyExample.new(test: "Foo")
+    client._clean!
+    client.test = client.test
+    expect(client).to_not be_dirty
+  end
+
   it "should store attribute set using []= array notation and mark them as dirty" do
     client = EmptyExample.new()
     client["test"] = "Something"
     expect(client["test"].to_s).to eq("Something")
     expect(client).to be_dirty
+  end
+
+  it "should store attribute changes on nested objects and mark them as dirty in the parent" do
+    client = NestedExample.all
+    client.person.name = "John"
+    expect(client.person.name.to_s).to eq("John")
+
+    expect(client).to be_dirty
+    expect(client.changes.keys).to include(:person)
+
+    expect(client.person).to be_dirty
+    expect(client.person.changes.keys).to include(:name)
+  end
+
+  it "should store attribute changes on nested objects loaded via instance methods and mark them as dirty in the parent" do
+    client = NestedExample.new()
+    client.all
+    client.person.name = "John"
+    expect(client.person.name.to_s).to eq("John")
+
+    expect(client).to be_dirty
+    expect(client.changes.keys).to include(:person)
+
+    expect(client.person).to be_dirty
+    expect(client.person.changes.keys).to include(:name)
   end
 
   it "should track changed attributes and provide access to previous values (similar to ActiveRecord/Mongoid)" do
@@ -171,6 +208,13 @@ describe Flexirest::BaseWithoutValidation do
     expect(client).to be_dirty
   end
 
+  it "should not mark a freshly retrieved object as changed" do
+    expect_any_instance_of(Flexirest::Connection).to receive(:get).with('/find/1', anything).and_return(::FaradayResponseMock.new(OpenStruct.new(status:200, response_headers:{}, body:"{\"first_name\":\"Billy\"}")))
+    client = AlteringClientExample.find(id: 1)
+    expect(client).to_not be_changed
+    expect(client.changes).to eq({})
+  end
+
   it 'should respond_to? attributes defined in the response' do
     client = EmptyExample.new(hello: "World")
     expect(client.respond_to?(:hello)).to be_truthy
@@ -192,6 +236,8 @@ describe Flexirest::BaseWithoutValidation do
 
     Flexirest::Base.base_url = "https://www.example.com/api/v2"
     expect(OutsideBaseExample.base_url).to eq("https://www.example.com/api/v2")
+  ensure
+    Flexirest::Base.base_url = 'http://www.example.com'
   end
 
   it "should include the Mapping module" do

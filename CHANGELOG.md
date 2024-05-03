@@ -1,5 +1,174 @@
 # Changelog
 
+## 1.12.3
+
+Bugfix:
+
+- Do not raise undefined method error when ignore_root value is null (thanks to jpawlyn for the PR)
+
+## 1.12.2
+
+Bugfix:
+
+- Changing the parameters in a `defaults` option to a mapping shouldn't mutate the parameters, meaning that retries should get the same as the original parameters (thanks to vskbjrn for the bug report)
+
+## 1.12.1
+
+Bugfix:
+
+- Usernames and passwords for simple authentication should be URL-encoded unless they're actually going in the URL (thanks to Scott Duke for the bug report)
+
+## 1.12.0
+
+Bugfix:
+
+- Add compatibility with Ruby on Rails 7.1 (requires a method on the logger)
+
+## 1.11.3
+
+Bugfix:
+
+- Forward all Flexirest::ResultIterator#index arguments to allow for code like `result.index { |i| i == "z" }` (thanks to Stevo-S for the PR)
+
+## 1.11.2
+
+Bugfix:
+
+- When a model had multiple lazy loaders specified, they would all have their object class set to the first object class that was found when iterating over them. (thanks to Joshua Samberg for the PR)
+
+## 1.11.1
+
+Enhancement:
+
+- Add automatic expiry of cached responses based on the Expires header if set (thanks to Romain Gisiger for the issue and PR)
+
+## 1.11.0
+
+Major change:
+
+- Dropped support for Ruby 2.x. Ruby 2.7 will be EOL in 27 days, and anyone can use the previous version 1.10 if they need 2.x support for the last month.
+
+Enhancement:
+
+- Added caching lines to the quiet! feature (thanks to Romain Gisiger for the issue and PR)
+
+## 1.10.12
+
+Enhancement:
+
+- Added a quiet! mode to silence logging (thanks to Mujtaba Saboor for the issue and PR)
+
+## 1.10.11
+
+Bugfix:
+
+- HTTPClientException's instance body was return nil instead of the response. (thanks to @pinifloyd for the issue and PR)
+
+## 1.10.10
+
+Bugfix:
+
+- Specifically requiring a 1.x Faraday. They changed the engine inclusion in 2.x and it's not necessary for Flexirest to need that. If anyone does need it, feel free to raise a PR.
+
+## 1.10.9
+
+Bugfix:
+
+- Correctly handle a 204 response to not wipe an instance's attributes (thanks to @couchbelag for the issue)
+- Add an option to handle a 200 response with an empty body to not wipe an instance's attributes (thanks to @couchbelag for the issue)
+- Fixed a couple of typos in error messages (thanks to Sampat Badhe/@sampatbadhe for the PR)
+
+## 1.10.8
+
+Bugfix:
+
+- Flexirest didn't set DELETE params in the URL if send_request_body was false
+
+## 1.10.7
+
+Bugfix:
+
+- Flexirest didn't find the elements if the specified root wasn't found, e.g. in error conditions (thanks to Jolyon Pawlyn/@jpawlyn for the PR)
+
+## 1.10.6
+
+Bugfix:
+
+- Flexirest was erroring if Rails.logger was defined but was nil (thanks to Alex Oxte for the PR)
+
+## 1.10.5
+
+Enhancement:
+
+- Allow skipping of caching for single endpoints
+
+## 1.10.4
+
+Enhancement:
+
+- Implement support for in-header Basic Auth (thanks to François Ferrandis for the PR)
+
+## 1.10.3
+
+Enhancement:
+
+- Ignore/wrap root functionality available for all routes, rather than just route specifically (thanks to Sampat Badhe for the PR)
+
+## 1.10.2
+
+Bugfix:
+
+- JSON-API calls do not include linked resources when no other parameter is passed (thanks to Stevo-S for the bug report and François Ferrandis for the PR)
+
+## 1.10.1
+
+Enhancement:
+
+- Nested objects now report their dirty/changed status up to the parent (thanks to Matthias Hähnel for the bug report)
+
+## 1.10.0
+
+Enhancement:
+
+- Add specific exceptions for the most common 5xx server-side errors
+
+## 1.9.18
+
+Security:
+
+- Upgrade rest-client development dependency to a CVE-fixed version.
+
+## 1.9.17
+
+Feature:
+
+- Methods can be specified as a symbol for generating fake data (thanks to Niall Duggan for the feature request).
+
+## 1.9.16
+
+Bugfix:
+
+- Cached responses were always returning as `dirty?`/`changed?` (thanks to AKRathore for the bug report).
+
+## 1.9.15
+
+Bugfix:
+
+- Fix not marking unchanged attributes as dirty (thanks to Khairi Adnan for the bug report).
+
+## 1.9.14
+
+Bugfix:
+
+- Remove deprecation warning for `URI.escape` on Ruby 2.7.x.
+
+## 1.9.13
+
+Change:
+
+- Unified the response body to be `body` for all exceptions instead of sometimes being `body` and sometimes being `raw_response`, although both are available as aliases where they were defined before (thanks to Romain Gisiger for the PR).
+- Adjust parsing of attributes to be done in a more unified way and lighten the CPU load (thanks to Romain Gisiger for the PR)
+
 ## 1.9.12
 
 Bugfix:
@@ -91,7 +260,7 @@ Features:
 
 Fix:
 
-- plain requests to URLs that are just the domain e.g. "https://www.example.com" should also work (i.e. without any trailing path, even a '/')
+- plain requests to URLs that are just the domain e.g. "<https://www.example.com>" should also work (i.e. without any trailing path, even a '/')
 
 ## 1.7.7
 

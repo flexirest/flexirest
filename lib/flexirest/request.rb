@@ -32,6 +32,10 @@ module Flexirest
       !@object.respond_to?(:dirty?)
     end
 
+    def model_class
+      object_is_class? ? @object : @object.class
+    end
+
     def class_name
       if object_is_class?
         @object.name
@@ -124,6 +128,22 @@ module Flexirest
       ret
     end
 
+    def inject_basic_auth_in_url(url)
+      u = username
+      u = CGI::escape(u) if u.present? && !u.include?("%")
+      p = password
+      p = CGI::escape(p) if p.present? && !p.include?("%")
+      url.gsub!(%r{//(.)}, "//#{u}:#{p}@\\1") if !url[%r{//[^/]*:[^/]*@}]
+    end
+
+    def using_basic_auth?
+      !!username
+    end
+
+    def basic_auth_digest
+      Base64.strict_encode64("#{username}:#{password}")
+    end
+
     def request_body_type
       if @method[:options][:request_body_type]
         @method[:options][:request_body_type]
@@ -136,11 +156,43 @@ module Flexirest
       end
     end
 
+    def ignore_root
+      if @method[:options][:ignore_root]
+        @method[:options][:ignore_root]
+      elsif @object.nil?
+        nil
+      elsif object_is_class?
+        @object.ignore_root
+      else
+        @object.class.ignore_root
+      end
+    end
+
+    def wrap_root
+      if @method[:options][:wrap_root]
+        @method[:options][:wrap_root]
+      elsif @object.nil?
+        nil
+      elsif object_is_class?
+        @object.wrap_root
+      else
+        @object.class.wrap_root
+      end
+    end
+
     def verbose?
       if object_is_class?
         @object.verbose
       else
         @object.class.verbose
+      end
+    end
+
+    def quiet?
+      if object_is_class?
+        @object.quiet
+      else
+        @object.class.quiet
       end
     end
 
@@ -186,16 +238,25 @@ module Flexirest
       @instrumentation_name = "#{class_name}##{@method[:name]}"
       result = nil
       cached = nil
-      ActiveSupport::Notifications.instrument("request_call.flexirest", :name => @instrumentation_name) do
+      ActiveSupport::Notifications.instrument("request_call.flexirest", :name => @instrumentation_name, quiet: quiet?) do
         @explicit_parameters = explicit_parameters
         @body = nil
         prepare_params
         prepare_url
-        if fake = @method[:options][:fake]
+        fake = @method[:options][:fake]
+        if fake.present?
           if fake.respond_to?(:call)
             fake = fake.call(self)
+          elsif @object.respond_to?(fake)
+            fake = @object.send(fake)
+          elsif @object.class.respond_to?(fake)
+            fake = @object.class.send(fake)
+          elsif @object.new.respond_to?(fake)
+            fake = @object.new.send(fake)
+          elsif @object.class.new.respond_to?(fake)
+            fake = @object.class.new.send(fake)
           end
-          Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest.name}\033[0m #{@instrumentation_name} - Faked response found"
+          Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest.name}\033[0m #{@instrumentation_name} - Faked response found" unless quiet?
           content_type = @method[:options][:fake_content_type] || "application/json"
           return handle_response(OpenStruct.new(status:200, body:fake, response_headers:{"X-ARC-Faked-Response" => "true", "Content-Type" => content_type}))
         end
@@ -211,13 +272,13 @@ module Flexirest
         append_get_parameters
         prepare_request_body
         self.original_url = self.url
-        cached = original_object_class.read_cached_response(self)
+        cached = original_object_class.read_cached_response(self, quiet?)
         if cached && !cached.is_a?(String)
           if cached.expires && cached.expires > Time.now
-            Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest.name}\033[0m #{@instrumentation_name} - Absolutely cached copy found"
+            Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest.name}\033[0m #{@instrumentation_name} - Absolutely cached copy found" unless quiet?
             return handle_cached_response(cached)
           elsif cached.etag.to_s != "" #present? isn't working for some reason
-            Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest.name}\033[0m #{@instrumentation_name} - Etag cached copy found with etag #{cached.etag}"
+            Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest.name}\033[0m #{@instrumentation_name} - Etag cached copy found with etag #{cached.etag}" unless quiet?
             etag = cached.etag
           end
         end
@@ -263,7 +324,7 @@ module Flexirest
 
           result = handle_response(response_env, cached)
           @response_delegate.__setobj__(result)
-          original_object_class.write_cached_response(self, response_env, result)
+          original_object_class.write_cached_response(self, response_env, result, quiet?) unless @method[:options][:skip_caching]
         end
 
         # If this was not a parallel request just return the original result
@@ -283,6 +344,8 @@ module Flexirest
         params = {id:params}
       end
 
+      params = params.dup
+
       # Format includes parameter for jsonapi
       if proxy == :json_api
         JsonAPIProxy::Request::Params.translate(params, @object._include_associations)
@@ -298,7 +361,7 @@ module Flexirest
       if @explicit_parameters
         params = @explicit_parameters
       end
-      if http_method == :get
+      if http_method == :get || (http_method == :delete && !@method[:options][:send_delete_body] && proxy != :json_api)
         @get_params = default_params.merge(params || {})
         @post_params = nil
       elsif http_method == :delete && @method[:options][:send_delete_body]
@@ -355,7 +418,7 @@ module Flexirest
           end
         end
         if missing.any?
-          raise Flexirest::MissingParametersException.new("The following parameters weren't specifed: #{missing.join(", ")}")
+          raise Flexirest::MissingParametersException.new("The following parameters weren't specified: #{missing.join(", ")}")
         end
       end
     end
@@ -380,12 +443,12 @@ module Flexirest
           if target.to_s.blank?
             missing << token
           end
-          @url.gsub!(":#{token}", URI.escape(target.to_s).gsub("/", "%2F").gsub("+", "%2B"))
+          @url.gsub!(":#{token}", URI.encode_www_form_component(target.to_s))
         end
       end
 
       if missing.present?
-        raise Flexirest::MissingParametersException.new("The following parameters weren't specifed: #{missing.join(", ")}")
+        raise Flexirest::MissingParametersException.new("The following parameters weren't specified: #{missing.join(", ")}")
       end
     end
 
@@ -429,8 +492,8 @@ module Flexirest
           @post_params
         else
           p = (params || @post_params || {})
-          if @method[:options][:wrap_root].present?
-            p = {@method[:options][:wrap_root] => p}
+          if wrap_root.present?
+            p = {wrap_root => p}
           end
           p.to_query
         end
@@ -443,8 +506,8 @@ module Flexirest
           @post_params
         else
           p = (params || @post_params || {})
-          if @method[:options][:wrap_root].present?
-            p = {@method[:options][:wrap_root] => p}
+          if wrap_root.present?
+            p = {wrap_root => p}
           end
           data, mp_headers = Flexirest::Multipart::Post.prepare_query(p)
           mp_headers.each do |k,v|
@@ -458,8 +521,8 @@ module Flexirest
         elsif @post_params.is_a?(String)
           @post_params
         else
-          if @method[:options][:wrap_root].present?
-            {@method[:options][:wrap_root] => (params || @post_params || {})}.to_json
+          if wrap_root.present?
+            {wrap_root => (params || @post_params || {})}.to_json
           else
             (params || @post_params || {}).to_json
           end
@@ -474,7 +537,7 @@ module Flexirest
 
     def do_request(etag)
       http_headers = {}
-      http_headers["If-None-Match"] = etag if etag
+      http_headers["If-None-Match"] = etag if etag && !@method[:options][:skip_caching]
       http_headers["Accept"] = "application/hal+json, application/json;q=0.5"
       headers.each do |key,value|
         value = value.join(",") if value.is_a?(Array)
@@ -494,7 +557,9 @@ module Flexirest
           else
             _, @base_url, @url = parts
           end
-          base_url.gsub!(%r{//(.)}, "//#{username}:#{password}@\\1") if username && !base_url[%r{//[^/]*:[^/]*@}]
+          if using_basic_auth? && model_class.basic_auth_method == :url
+            inject_basic_auth_in_url(base_url)
+          end
           connection = Flexirest::ConnectionManager.get_connection(base_url)
         end
       else
@@ -507,13 +572,15 @@ module Flexirest
         else
           base_url = parts[0]
         end
-        base_url.gsub!(%r{//(.)}, "//#{username}:#{password}@\\1") if username && !base_url[%r{//[^/]*:[^/]*@}]
+        if using_basic_auth? && model_class.basic_auth_method == :url
+          inject_basic_auth_in_url(base_url)
+        end
         connection = Flexirest::ConnectionManager.get_connection(base_url)
       end
       if @method[:options][:direct]
-        Flexirest::Logger.info "  \033[1;4;32m#{Flexirest.name}\033[0m #{@instrumentation_name} - Requesting #{@url}"
+        Flexirest::Logger.info "  \033[1;4;32m#{Flexirest.name}\033[0m #{@instrumentation_name} - Requesting #{@url}" unless quiet?
       else
-        Flexirest::Logger.info "  \033[1;4;32m#{Flexirest.name}\033[0m #{@instrumentation_name} - Requesting #{connection.base_url}#{@url}"
+        Flexirest::Logger.info "  \033[1;4;32m#{Flexirest.name}\033[0m #{@instrumentation_name} - Requesting #{connection.base_url}#{@url}" unless quiet?
       end
 
       if verbose?
@@ -533,6 +600,8 @@ module Flexirest
           :api_auth_secret_key => api_auth_secret_key,
           :api_auth_options => api_auth_options
         }
+      elsif using_basic_auth? && model_class.basic_auth_method == :header
+        http_headers["Authorization"] = "Basic #{basic_auth_digest}"
       end
       if @method[:options][:timeout]
         request_options[:timeout] = @method[:options][:timeout]
@@ -572,27 +641,31 @@ module Flexirest
     def handle_response(response, cached = nil)
       @response = response
       status = @response.status || 200
-      if @response.body.blank?
+      if @response.body.blank? && !@method[:options][:ignore_empty_response]
         @response.response_headers['Content-Type'] = "application/json"
         @response.body = "{}"
       end
 
       if cached && response.status == 304
         Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest.name}\033[0m #{@instrumentation_name}" +
-          ' - Etag copy is the same as the server'
+          ' - Etag copy is the same as the server' unless quiet?
         return handle_cached_response(cached)
       end
 
       if (200..399).include?(status)
+        if status == 204 || (@response.body.blank? && @method[:options][:ignore_empty_response])
+          return true
+        end
+
         if @method[:options][:plain]
           return @response = Flexirest::PlainResponse.from_response(@response)
         elsif is_json_response? || is_xml_response?
           if @response.respond_to?(:proxied) && @response.proxied
-            Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest.name}\033[0m #{@instrumentation_name} - Response was proxied, unable to determine size"
+            Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest.name}\033[0m #{@instrumentation_name} - Response was proxied, unable to determine size" unless quiet?
           else
-            Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest.name}\033[0m #{@instrumentation_name} - Response received #{@response.body.size} bytes"
+            Flexirest::Logger.debug "  \033[1;4;32m#{Flexirest.name}\033[0m #{@instrumentation_name} - Response received #{@response.body.size} bytes" unless quiet?
           end
-          result = generate_new_object(ignore_root: @method[:options][:ignore_root], ignore_xml_root: @method[:options][:ignore_xml_root])
+          result = generate_new_object(ignore_root: ignore_root, ignore_xml_root: @method[:options][:ignore_xml_root])
           # TODO: Cleanup when ignore_xml_root is removed
         else
           raise ResponseParseException.new(status:status, body:@response.body, headers: @response.headers)
@@ -621,6 +694,16 @@ module Flexirest
           raise HTTPConflictClientException.new(status:status, result:error_response, raw_response: @response.body, url:@url, method: http_method)
         elsif status == 429
           raise HTTPTooManyRequestsClientException.new(status:status, result:error_response, raw_response: @response.body, url:@url, method: http_method)
+        elsif status == 500
+          raise HTTPInternalServerException.new(status:status, result:error_response, raw_response: @response.body, url:@url, method: http_method)
+        elsif status == 501
+          raise HTTPNotImplementedServerException.new(status:status, result:error_response, raw_response: @response.body, url:@url, method: http_method)
+        elsif status == 502
+          raise HTTPBadGatewayServerException.new(status:status, result:error_response, raw_response: @response.body, url:@url, method: http_method)
+        elsif status == 503
+          raise HTTPServiceUnavailableServerException.new(status:status, result:error_response, raw_response: @response.body, url:@url, method: http_method)
+        elsif status == 504
+          raise HTTPGatewayTimeoutServerException.new(status:status, result:error_response, raw_response: @response.body, url:@url, method: http_method)
         elsif (400..499).include? status
           raise HTTPClientException.new(status:status, result:error_response, raw_response: @response.body, url:@url, method: http_method)
         elsif (500..599).include? status
@@ -632,18 +715,22 @@ module Flexirest
       result
     end
 
-    def new_object(attributes, name = nil)
+    def new_object(attributes, name = nil, parent = nil, parent_attribute_name = nil)
       @method[:options][:has_many] ||= {}
       name = name.to_sym rescue nil
       if @method[:options][:has_many][name]
-        overridden_name = name
+        parent_name = name
         object = @method[:options][:has_many][name].new
       elsif @method[:options][:has_one][name]
-        overridden_name = name
+        parent_name = name
         object = @method[:options][:has_one][name].new
       else
+        parent_name = nil
         object = create_object_instance
       end
+
+      object._parent = parent
+      object._parent_attribute_name = parent_attribute_name
 
       if hal_response? && name.nil?
         attributes = handle_hal_links_embedded(object, attributes)
@@ -655,41 +742,52 @@ module Flexirest
         else
           k = k.to_sym
         end
-        overridden_name = select_name(k, overridden_name)
-        if @method[:options][:lazy].include?(k)
-          object._attributes[k] = Flexirest::LazyAssociationLoader.new(overridden_name, v, self, overridden_name:(overridden_name))
-        elsif v.is_a? Hash
-          object._attributes[k] = new_object(v, overridden_name )
-        elsif v.is_a? Array
-          if @method[:options][:array].include?(k)
-            object._attributes[k] = Array.new
-          else
-            object._attributes[k] = Flexirest::ResultIterator.new
-          end
-          v.each do |item|
-            if item.is_a? Hash
-              object._attributes[k] << new_object(item, overridden_name)
-            else
-              object._attributes[k] << item
-            end
-          end
-        else
-          parse_fields = [ @method[:options][:parse_fields], @object._date_fields ].compact.reduce([], :|)
-          parse_fields = nil if parse_fields.empty?
-          if (parse_fields && parse_fields.include?(k))
-            object._attributes[k] = parse_attribute_value(v)
-          elsif parse_fields
-            object._attributes[k] = v
-          elsif Flexirest::Base.disable_automatic_date_parsing
-            object._attributes[k] = v
-          else
-            object._attributes[k] = parse_attribute_value(v)
-          end
-        end
+        set_corresponding_value(v, k, object, select_name(k, parent_name))
       end
       object.clean! unless object_is_class?
 
       object
+    end
+
+    def set_corresponding_value(value, key = nil, object = nil, overridden_name = nil)
+      optional_args = [key, object, overridden_name]
+      value_from_object = optional_args.all? # trying to parse a JSON Hash value
+      value_from_other_type = optional_args.none? # trying to parse anything else
+      raise Flexirest::InvalidArgumentsException.new("Optional args need all to be filled or none") unless value_from_object || value_from_other_type
+      k = key || :key
+      v = value
+      assignable_hash = value_from_object ? object._attributes : {}
+      if value_from_object && @method[:options][:lazy].include?(k)
+        assignable_hash[k] = Flexirest::LazyAssociationLoader.new(overridden_name, v, self, overridden_name:(overridden_name), parent: object, parent_attribute_name: k)
+      elsif v.is_a? Hash
+        assignable_hash[k] = new_object(v, overridden_name, object, k)
+      elsif v.is_a? Array
+        if @method[:options][:array].include?(k)
+          assignable_hash[k] = Array.new
+        else
+          assignable_hash[k] = Flexirest::ResultIterator.new
+        end
+        v.each do |item|
+          if item.is_a? Hash
+            assignable_hash[k] << new_object(item, overridden_name)
+          else
+            assignable_hash[k] << set_corresponding_value(item)
+          end
+        end
+      else
+        parse_fields = [ @method[:options][:parse_fields], @object._date_fields ].compact.reduce([], :|)
+        parse_fields = nil if parse_fields.empty?
+        if (parse_fields && parse_fields.include?(k))
+          assignable_hash[k] = parse_attribute_value(v)
+        elsif parse_fields
+          assignable_hash[k] = v
+        elsif Flexirest::Base.disable_automatic_date_parsing
+          assignable_hash[k] = v
+        else
+          assignable_hash[k] = parse_attribute_value(v)
+        end
+      end
+      value_from_object ? object : assignable_hash[k]
     end
 
     def hal_response?
@@ -780,16 +878,16 @@ module Flexirest
           body = JsonAPIProxy::Response.parse(body, @object)
         end
 
-        if options[:ignore_root]
-          [options[:ignore_root]].flatten.each do |key|
-            body = body[key.to_s]
+        if ignore_root
+          [ignore_root].flatten.each do |key|
+            body = body[key.to_s] || {} if body.has_key?(key.to_s)
           end
         end
       elsif is_xml_response?
         body = @response.body.blank? ? {} : Crack::XML.parse(@response.body)
-        if options[:ignore_root]
-          [options[:ignore_root]].flatten.each do |key|
-            body = body[key.to_s]
+        if ignore_root
+          [ignore_root].flatten.each do |key|
+            body = body[key.to_s] || {} if body.has_key?(key.to_s)
           end
         elsif options[:ignore_xml_root]
           Flexirest::Logger.warn("Using `ignore_xml_root` is deprecated, please switch to `ignore_root`")
@@ -810,7 +908,7 @@ module Flexirest
         result = new_object(body, @overridden_name)
         result._status = @response.status
         result._headers = @response.response_headers
-        result._etag = @response.response_headers['ETag']
+        result._etag = @response.response_headers['ETag'] unless @method[:options][:skip_caching]
         if !object_is_class? && options[:mutable] != false
           @object._copy_from(result)
           @object._clean!
@@ -822,12 +920,10 @@ module Flexirest
 
     def add_nested_body_to_iterator(result, items)
       items.each do |json_object|
-        if json_object.is_a?(Array)
-          iterator = ResultIterator.new
-          add_nested_body_to_iterator(iterator, json_object)
-          result << iterator
-        else
+        if json_object.is_a? Hash
           result << new_object(json_object, @overridden_name)
+        else
+          result << set_corresponding_value(json_object)
         end
       end
     end
@@ -838,6 +934,7 @@ module Flexirest
   end
 
   class RequestException < StandardError ; end
+  class InvalidArgumentsException < StandardError ; end
 
   class InvalidRequestException < RequestException ; end
   class MissingParametersException < RequestException ; end
@@ -851,18 +948,19 @@ module Flexirest
   end
 
   class HTTPException < RequestException
-    attr_accessor :status, :result, :request_url, :raw_response
+    attr_accessor :status, :result, :request_url, :body
     def initialize(options)
       @status = options[:status]
       @result = options[:result]
       @request_url = options[:url]
-      @raw_response = options[:raw_response]
+      @body = options[:raw_response]
       @method = options[:method]
     end
+    alias_method :raw_response, :body
 
     def message
       method = @method.try(:upcase)
-      "The #{method} to '#{@request_url}' returned a #{@status} status, which raised a #{self.class.to_s} with a body of: #{@raw_response}"
+      "The #{method} to '#{@request_url}' returned a #{@status} status, which raised a #{self.class.to_s} with a body of: #{@body}"
     end
 
     def to_s
@@ -880,5 +978,9 @@ module Flexirest
   class HTTPNotFoundClientException < HTTPClientException ; end
   class HTTPTooManyRequestsClientException < HTTPClientException ; end
   class HTTPServerException < HTTPException ; end
-
+  class HTTPInternalServerException < HTTPServerException ; end
+  class HTTPNotImplementedServerException < HTTPServerException ; end
+  class HTTPBadGatewayServerException < HTTPServerException ; end
+  class HTTPServiceUnavailableServerException < HTTPServerException ; end
+  class HTTPGatewayTimeoutServerException < HTTPServerException ; end
 end

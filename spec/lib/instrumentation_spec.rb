@@ -10,11 +10,14 @@ describe Flexirest::Instrumentation do
   it "should save a load hook to include the instrumentation" do
     hook_tester = double("HookTester")
     expect(hook_tester).to receive(:include).with(Flexirest::ControllerInstrumentation)
+    if Gem.loaded_specs["api-auth"].present? && Gem.loaded_specs["api-auth"].version.to_s >= "2.5.0"
+      require "action_controller"
+    end
     ActiveSupport.run_load_hooks(:action_controller, hook_tester)
   end
 
   it "should call ActiveSupport::Notifications.instrument when making any request" do
-    expect(ActiveSupport::Notifications).to receive(:instrument).with("request_call.flexirest", {:name=>"InstrumentationExampleClient#fake"})
+    expect(ActiveSupport::Notifications).to receive(:instrument).with("request_call.flexirest", {:name=>"InstrumentationExampleClient#fake", :quiet=>false})
     InstrumentationExampleClient.fake
   end
 

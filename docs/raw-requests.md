@@ -1,6 +1,6 @@
 # *Flexirest:* Raw requests
 
-Sometimes you have have a URL that you just want to force through, but have the response handled in the same way as normal objects or you want to have the callbacks run (say for authentication). The easiest way to do that is to call `_request` on the class:
+Sometimes you have a URL that you just want to force through, but have the response handled in the same way as normal objects or you want to have the callbacks run (say for authentication). The easiest way to do that is to call `_request` on the class:
 
 ```ruby
 class Person < Flexirest::Base
@@ -12,7 +12,7 @@ people = Person._request('http://api.example.com/v1/people') # Defaults to get w
 Person._request('http://api.example.com/v1/people', :post, {id:1234,name:"John"}) # Post with parameters
 ```
 
-When you need to specify custom headers (for example for authentication) you can do this with a fourth option to the `_request` method. If you are using the default paramaters you'll need to specify them. For example:
+When you need to specify custom headers (for example for authentication) you can do this with a fourth option to the `_request` method. If you are using the default parameters you'll need to specify them. For example:
 
 ```ruby
 Person._request("http://api.example.com/v1/people", :get, {}, {headers:{"X-Something": "foo/bar"}})

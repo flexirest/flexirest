@@ -50,11 +50,8 @@ module Flexirest
         end
 
         def translate(params, include_associations)
-          # Return to caller if nothing is to be done
-          return params unless params.present? && include_associations.present?
-
           # Format the linked resources array, and assign to include key
-          params[:include] = format_include_params(include_associations)
+          params[:include] = format_include_params(include_associations) if include_associations.present?
         end
 
         private

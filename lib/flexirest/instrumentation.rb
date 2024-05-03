@@ -4,7 +4,7 @@ module Flexirest
       self.class.time_spent += event.duration
       self.class.calls_made += 1
       name = '%s (%.1fms)' % [Flexirest.name, event.duration]
-      Flexirest::Logger.debug "  \033[1;4;32m#{name}\033[0m #{event.payload[:name]}"
+      Flexirest::Logger.debug "  \033[1;4;32m#{name}\033[0m #{event.payload[:name]}" unless event.payload[:quiet]
     end
 
     def self.time_spent=(value)

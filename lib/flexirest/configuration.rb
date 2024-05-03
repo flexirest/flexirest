@@ -13,6 +13,32 @@ module Flexirest
       @api_auth_access_id = nil
       @api_auth_secret_key = nil
       @api_auth_options = {}
+      @ignore_root = nil
+      @wrap_root = nil
+
+      def ignore_root(value=nil)
+        if value.nil?
+          value = if @ignore_root.nil? && superclass.respond_to?(:ignore_root)
+            superclass.ignore_root
+          else
+            @ignore_root
+          end
+        else
+          @ignore_root = value
+        end
+      end
+
+      def wrap_root(value=nil)
+        if value.nil?
+          value = if @wrap_root.nil? && superclass.respond_to?(:wrap_root)
+            superclass.wrap_root
+          else
+            @wrap_root
+          end
+        else
+          @wrap_root = value
+        end
+      end
 
       def base_url(value = nil)
         @base_url ||= nil
@@ -66,7 +92,6 @@ module Flexirest
           if value.respond_to?(:call)
             @username = value
           else
-            value = CGI::escape(value) if value.present? && !value.include?("%")
             @username = value
           end
         end
@@ -74,7 +99,6 @@ module Flexirest
 
       def username=(value)
         Flexirest::Logger.info "\033[1;4;32m#{name}\033[0m Username set to be #{value}"
-        value = CGI::escape(value) if value.present? && !value.include?("%")
         @@username = value
       end
 
@@ -97,7 +121,6 @@ module Flexirest
           if value.respond_to?(:call)
             @password = value
           else
-            value = CGI::escape(value) if value.present? && !value.include?("%")
             @password = value
           end
         end
@@ -105,8 +128,24 @@ module Flexirest
 
       def password=(value)
         Flexirest::Logger.info "\033[1;4;32m#{name}\033[0m Password set..."
-        value = CGI::escape(value) if value.present? && !value.include?("%")
         @@password = value
+      end
+
+      DEFAULT_BASIC_URL_METHOD = :url
+
+      def basic_auth_method(value = nil)
+        if value.nil? # Used as a getter method
+          if @basic_auth_method.nil? && superclass.respond_to?(:basic_auth_method)
+            superclass.basic_auth_method
+          else
+            @basic_auth_method || DEFAULT_BASIC_URL_METHOD
+          end
+        else # Used as a setter method
+          unless [:header, :url].include?(value)
+            raise %(Invalid basic_auth_method #{value.inspect}. Valid methods are :url (default) and :header.)
+          end
+          @basic_auth_method = value
+        end
       end
 
       def alias_type(value = nil)
@@ -256,6 +295,20 @@ module Flexirest
         value ? @verbose = value : @verbose
       end
 
+      def quiet!(options = {})
+        @quiet = true
+        @verbose = false
+      end
+
+      def quiet(value = nil)
+        @quiet ||= false
+        if value == true || value == false
+          @quiet = value
+          @verbose = false if @quiet != false
+        end
+        @quiet
+      end
+
       def translator(value = nil)
         Flexirest::Logger.warn("DEPRECATION: The translator functionality of Flexirest has been replaced with proxy functionality, see https://github.com/andyjeffries/flexirest#proxying-apis for more information") unless value.nil?
         @translator ||= nil
@@ -285,6 +338,7 @@ module Flexirest
         @adapter              = Faraday.default_adapter
         @api_auth_access_id   = nil
         @api_auth_secret_key  = nil
+        @basic_auth_method    = :url
       end
 
       private
