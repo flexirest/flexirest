@@ -109,6 +109,7 @@ describe Flexirest::Caching do
         base_url "http://www.example.com"
         get :all, "/"
         put :save_all, "/"
+        get :plain, "/plain/:id", plain: true
       end
 
       Person.cache_store = CachingExampleCacheStore5.new({ expires_in: 1.day.to_i }) # default cache expiration
@@ -121,7 +122,8 @@ describe Flexirest::Caching do
       cached_response = Flexirest::CachedResponse.new(
         status:200,
         result:@cached_object,
-        etag:@etag)
+        etag:@etag,
+        class_name:Person.name)
       expect_any_instance_of(CachingExampleCacheStore5).to receive(:read).once.with("Person:/").and_return(Marshal.dump(cached_response))
       expect_any_instance_of(Flexirest::Connection).to receive(:get){ |connection, path, options|
         expect(path).to eq('/')
@@ -131,11 +133,23 @@ describe Flexirest::Caching do
       expect(ret.first_name).to eq("Johnny")
     end
 
+    it "should read the response to the cache store if response is a 204 with empty bodies and cache is wanted" do
+      cached_response = Flexirest::CachedResponse.new(
+        status:204,
+        result:true,
+        expires:Time.now + 30,
+        class_name:Person.name)
+      expect_any_instance_of(CachingExampleCacheStore5).to receive(:read).once.with("Person:/").and_return(Marshal.dump(cached_response))
+      expect_any_instance_of(Flexirest::Connection).not_to receive(:get)
+      Person.all
+    end
+
     it "should not read from the cache store to check for an etag unless it's a GET request" do
       cached_response = Flexirest::CachedResponse.new(
         status:200,
         result:@cached_object,
-        etag:@etag)
+        etag:@etag,
+        class_name:Person.name)
       expect_any_instance_of(CachingExampleCacheStore5).to_not receive(:read)
       expect_any_instance_of(Flexirest::Connection).to receive(:put).and_return(::FaradayResponseMock.new(OpenStruct.new(status:200, body: {result: "foo"}.to_json, response_headers:{})))
       ret = Person.save_all
@@ -145,7 +159,8 @@ describe Flexirest::Caching do
       cached_response = Flexirest::CachedResponse.new(
         status: 200,
         result: @cached_object,
-        etag: @etag
+        etag: @etag,
+        class_name:Person.name
       )
       allow_any_instance_of(CachingExampleCacheStore5).to receive(:read).and_return(Marshal.dump(cached_response))
       new_name = 'Pete'
@@ -166,7 +181,8 @@ describe Flexirest::Caching do
       cached_response = Flexirest::CachedResponse.new(
         status:200,
         result:@cached_object,
-        expires:Time.now + 30)
+        expires:Time.now + 30,
+        class_name:Person.name)
       expect_any_instance_of(CachingExampleCacheStore5).to receive(:read).once.with("Person:/").and_return(Marshal.dump(cached_response))
       expect_any_instance_of(Flexirest::Connection).not_to receive(:get)
       ret = Person.all
@@ -177,7 +193,8 @@ describe Flexirest::Caching do
       cached_response = Flexirest::CachedResponse.new(
         status:200,
         result:@cached_object,
-        expires:Time.now + 30)
+        expires:Time.now + 30,
+        class_name:Person.name)
       Timecop.travel(Time.now + 60)
       expect_any_instance_of(CachingExampleCacheStore5).to receive(:read).once.with("Person:/").and_return(nil)
       expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(status:200, body:"{\"result\":true}", response_headers:{})))
@@ -189,7 +206,8 @@ describe Flexirest::Caching do
       cached_response = Flexirest::CachedResponse.new(
         status:200,
         result:@cached_object,
-        expires:Time.now + 30)
+        expires:Time.now + 30,
+        class_name:Person.name)
       expect_any_instance_of(CachingExampleCacheStore5).to receive(:read).once.with("Person:/").and_return(Marshal.dump(cached_response))
       expect_any_instance_of(Flexirest::Connection).not_to receive(:get)
       ret = Person.all
@@ -201,7 +219,8 @@ describe Flexirest::Caching do
       cached_response = Flexirest::CachedResponse.new(
         status:200,
         result:@cached_object,
-        expires:Time.now + 30)
+        expires:Time.now + 30,
+        class_name:Person.name)
       expect_any_instance_of(CachingExampleCacheStore5).to receive(:read).once.with("Person:/").and_return(Marshal.dump(cached_response))
       expect_any_instance_of(Flexirest::Connection).not_to receive(:get)
       p = Person.new(first_name:"Billy")
@@ -219,7 +238,8 @@ describe Flexirest::Caching do
         status:200,
         result:object,
         etag:etag,
-        expires:Time.now + 30)
+        expires:Time.now + 30,
+        class_name:Person.name)
       expect_any_instance_of(CachingExampleCacheStore5).to receive(:read).once.with("Person:/").and_return(Marshal.dump(cached_response))
       expect_any_instance_of(Flexirest::Connection).not_to receive(:get)
       ret = Person.all
@@ -237,7 +257,8 @@ describe Flexirest::Caching do
         status:200,
         result:object,
         etag:etag,
-        expires:Time.now + 30)
+        expires:Time.now + 30,
+        class_name:Person.name)
       Timecop.travel(Time.now + 60)
       expect_any_instance_of(CachingExampleCacheStore5).to receive(:read).once.with("Person:/").and_return(nil)
       expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(status:200, body:"[{\"first_name\":\"Billy\"}]", response_headers:{})))
@@ -245,6 +266,21 @@ describe Flexirest::Caching do
       expect(ret.first.first_name).to eq("Billy")
       expect(ret._status).to eq(200)
       Timecop.return
+    end
+
+    it "should not write the response to the cache if it is a plain request" do
+      response_body = "This is another non-JSON string"
+      expect_any_instance_of(CachingExampleCacheStore5).to receive(:read).once.with("Person:/plain/1234").and_return(nil)
+      expect_any_instance_of(CachingExampleCacheStore5).to receive(:write).once.with("Person:/plain/1234", an_instance_of(String), hash_excluding(:etag))
+      expect_any_instance_of(Flexirest::Connection).to receive(:get).with(any_args).and_return(::FaradayResponseMock.new(OpenStruct.new(status:200, response_headers:{expires:(Time.now + 30).rfc822}, body:response_body)))
+      Person.plain(id:1234)
+    end
+
+    it "should write the response to the cache if response is a 204 with empty bodies and with expires set (or an etag)" do
+      expect_any_instance_of(CachingExampleCacheStore5).to receive(:read).once.with("Person:/").and_return(nil)
+      expect_any_instance_of(CachingExampleCacheStore5).to receive(:write).once.with("Person:/", an_instance_of(String), hash_excluding(:etag))
+      expect_any_instance_of(Flexirest::Connection).to receive(:get).with(any_args).and_return(::FaradayResponseMock.new(OpenStruct.new(status:204, response_headers:{expires:(Time.now + 30).rfc822}, body: nil)))
+      Person.all
     end
 
     it "should not write the response to the cache unless it has caching headers" do
