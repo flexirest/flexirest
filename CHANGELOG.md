@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.12.4
+
+Bugfix:
+
+- 204 responses could not be read from Cache (thanks to rgisiger for the PR)
+
 ## 1.12.3
 
 Bugfix:
