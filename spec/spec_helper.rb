@@ -13,8 +13,6 @@ elsif ENV["TRAVIS"]
   Coveralls.wear!
 end
 
-ActiveSupport::Deprecation.silenced = true
-
 RSpec.configure do |config|
   config.color = true
   # config.formatter     = 'documentation'
