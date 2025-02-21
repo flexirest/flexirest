@@ -361,10 +361,10 @@ module Flexirest
       if @explicit_parameters
         params = @explicit_parameters
       end
-      if http_method == :get || (http_method == :delete && !@method[:options][:send_delete_body] && proxy != :json_api)
+      if (http_method == :get && !@method[:options][:send_get_body]) || (http_method == :delete && !@method[:options][:send_delete_body] && proxy != :json_api)
         @get_params = default_params.merge(params || {})
         @post_params = nil
-      elsif http_method == :delete && @method[:options][:send_delete_body]
+      elsif (http_method == :get && @method[:options][:send_get_body]) || (http_method == :delete && @method[:options][:send_delete_body])
         @post_params = default_params.merge(params || {})
         @get_params = {}
       elsif params.is_a? String
@@ -476,7 +476,7 @@ module Flexirest
 
         headers["Accept"] ||= "application/vnd.api+json"
         JsonAPIProxy::Headers.save(headers)
-      elsif http_method == :get || (http_method == :delete && !@method[:options][:send_delete_body])
+      elsif (http_method == :get && !@method[:options][:send_get_body]) || (http_method == :delete && !@method[:options][:send_delete_body])
         if request_body_type == :form_encoded
           headers["Content-Type"] ||= "application/x-www-form-urlencoded; charset=utf-8"
         elsif request_body_type == :form_multipart
@@ -607,16 +607,17 @@ module Flexirest
         request_options[:timeout] = @method[:options][:timeout]
       end
 
-      case http_method
-      when :get
+      if http_method == :get && !@method[:options][:send_get_body]
         response = connection.get(@url, request_options)
-      when :put
+      elsif http_method == :get
+          response = connection.get(@url, @body, request_options)
+      elsif http_method == :put
         response = connection.put(@url, @body, request_options)
-      when :post
+      elsif http_method == :post
         response = connection.post(@url, @body, request_options)
-      when :patch
+      elsif http_method == :patch
         response = connection.patch(@url, @body, request_options)
-      when :delete
+      elsif http_method == :delete
         response = connection.delete(@url, @body, request_options)
       else
         raise InvalidRequestException.new("Invalid method #{http_method}")

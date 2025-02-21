@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.12.5
+
+Feature:
+
+- Some broken APIs require a GET body, even though this is against HTTP spec. Added a `send_get_body` parameter like we already have for DELETE requests (thanks to Jan Schroeder for the request)
+
 ## 1.12.4
 
 Bugfix:

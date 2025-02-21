@@ -54,6 +54,7 @@ describe Flexirest::Request do
       put :conversion_child, "/put/:id", parse_fields: [:converted_child]
       delete :remove, "/remove/:id"
       delete :remove_body, "/remove/:id", send_delete_body: true
+      get :get_body, "/get-body", send_get_body: true
       get :hal, "/hal", fake:"{\"_links\":{\"child\": {\"href\": \"/child/1\"}, \"other\": {\"href\": \"/other/1\"}, \"cars\":[{\"href\": \"/car/1\", \"name\":\"car1\"}, {\"href\": \"/car/2\", \"name\":\"car2\"}, {\"href\": \"/car/not-embed\", \"name\":\"car_not_embed\"} ], \"lazy\": {\"href\": \"/lazy/load\"}, \"invalid\": [{\"href\": \"/invalid/1\"}]}, \"_embedded\":{\"other\":{\"name\":\"Jane\"},\"child\":{\"name\":\"Billy\"}, \"cars\":[{\"_links\": {\"self\": {\"href\": \"/car/1\"} }, \"make\": \"Bugatti\", \"model\": \"Veyron\"}, {\"_links\": {\"self\": {\"href\": \"/car/2\"} }, \"make\": \"Ferrari\", \"model\": \"F458 Italia\"} ], \"invalid\": [{\"present\":true, \"_links\": {} } ] } }", has_many:{other:ExampleOtherClient}
       get :fake_object, "/fake", fake:"{\"result\":true, \"list\":[1,2,3,{\"test\":true}], \"child\":{\"grandchild\":{\"test\":true}}}"
       get :fake_proc_object, "/fake", fake:->(request) { "{\"result\":#{request.get_params[:id]}}" }
@@ -449,6 +450,11 @@ describe Flexirest::Request do
   it "should get an HTTP connection when called and call get on it" do
     expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:'{"result":true}', response_headers:{})))
     ExampleClient.all
+  end
+
+  it "should get an HTTP connection when called and call get with a body if send_get_body is specified" do
+    expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/get-body", "something=else", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:'{"result":true}', response_headers:{})))
+    ExampleClient.get_body(something: "else")
   end
 
   it "should get an HTTP connection when called and call delete on it" do

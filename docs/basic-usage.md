@@ -52,6 +52,12 @@ For `delete` requests whether an API can handle a body or not is undefined. The 
   delete :remove, "/people/:id", send_delete_body: true
 ```
 
+In a similar way, although it's against the HTTP specification, you can force a GET request to send a request body if your API requires that:
+
+```
+  get :people_search, "/people/search", send_get_body: true
+```
+
 If an API returns an array of results and you have [will_paginate](https://rubygems.org/gems/will_paginate) installed then you can call the paginate method to return a particular page of the results (note: this doesn't reduce the load on the server, but it can help with pagination if you have a cached response).
 
 ```ruby
