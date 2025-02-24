@@ -610,7 +610,7 @@ module Flexirest
       if http_method == :get && !@method[:options][:send_get_body]
         response = connection.get(@url, request_options)
       elsif http_method == :get
-          response = connection.get(@url, @body, request_options)
+        response = connection.get_with_body(@url, @body, request_options)
       elsif http_method == :put
         response = connection.put(@url, @body, request_options)
       elsif http_method == :post

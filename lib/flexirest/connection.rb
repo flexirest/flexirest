@@ -41,13 +41,24 @@ module Flexirest
       end
     end
 
-    def get(path, data = nil, options={})
+    def get_with_body(path, data, options={})
       set_defaults(options)
       make_safe_request(path) do
         @session.get(path) do |req|
           set_per_request_timeout(req, options) if options[:timeout]
           req.headers = req.headers.merge(options[:headers])
-          req.body = data unless data.nil?
+          req.body = data
+          sign_request(req, options[:api_auth])
+        end
+      end
+    end
+
+    def get(path, options={})
+      set_defaults(options)
+      make_safe_request(path) do
+        @session.get(path) do |req|
+          set_per_request_timeout(req, options) if options[:timeout]
+          req.headers = req.headers.merge(options[:headers])
           sign_request(req, options[:api_auth])
         end
       end

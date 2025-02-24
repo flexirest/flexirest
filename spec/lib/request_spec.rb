@@ -453,7 +453,7 @@ describe Flexirest::Request do
   end
 
   it "should get an HTTP connection when called and call get with a body if send_get_body is specified" do
-    expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/get-body", "something=else", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:'{"result":true}', response_headers:{})))
+    expect_any_instance_of(Flexirest::Connection).to receive(:get_with_body).with("/get-body", "something=else", an_instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:'{"result":true}', response_headers:{})))
     ExampleClient.get_body(something: "else")
   end
 
