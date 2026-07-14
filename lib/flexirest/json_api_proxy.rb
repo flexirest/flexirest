@@ -172,10 +172,18 @@ module Flexirest
     # Creating JSON API header
     module Headers
       extend self
+      # `extend self` makes this module a single process-wide object, so the
+      # headers used while building a request must not be stashed in an ivar
+      # here — concurrent requests would overwrite each other's (and leak
+      # authentication headers across requests). Hold them per-thread instead.
       def save(headers)
         # Save headers used in a request for building lazy association
         # loaders when parsing the response
-        @headers = headers
+        Thread.current[:flexirest_jsonapi_headers] = headers
+      end
+
+      def headers
+        Thread.current[:flexirest_jsonapi_headers]
       end
     end
 
@@ -185,8 +193,16 @@ module Flexirest
       extend Flexirest::JsonAPIProxy::Helpers
       ID_PFIX = '_id_'
 
+      # `extend self` makes Response a single shared object too. The resource
+      # class saved here is read again while building lazy association loaders
+      # during the same parse, so it must be per-thread: otherwise a concurrent
+      # parse of a different model would corrupt association resolution.
       def save_resource_class(object)
-        @resource_class = object.is_a?(Class) ? object : object.class
+        Thread.current[:flexirest_jsonapi_resource_class] = object.is_a?(Class) ? object : object.class
+      end
+
+      def resource_class
+        Thread.current[:flexirest_jsonapi_resource_class]
       end
 
       def parse(body, object)
@@ -387,7 +403,7 @@ module Flexirest
 
       def find_association_class(base, name)
         stack = base + [name]
-        klass = @resource_class
+        klass = resource_class
 
         until stack.empty?
           shift = stack.shift
@@ -424,7 +440,7 @@ module Flexirest
 
         # Also add the previous request's header, which may contain
         # crucial authentication headers (or so), to connect with the service
-        request.headers = @headers
+        request.headers = Flexirest::JsonAPIProxy::Headers.headers
         request.url = request.forced_url = url
 
         Flexirest::LazyAssociationLoader.new(name, url, request)

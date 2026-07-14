@@ -7,25 +7,28 @@ module Flexirest
       Flexirest::Logger.debug "  \033[1;4;32m#{name}\033[0m #{event.payload[:name]}" unless event.payload[:quiet]
     end
 
+    # These counters accumulate per request and are reported/reset per
+    # controller action. Held per-thread so concurrent requests each track their
+    # own totals instead of sharing (and losing updates to) one class variable.
     def self.time_spent=(value)
-      @@time_spent = value
+      Thread.current[:flexirest_time_spent] = value
     end
 
     def self.time_spent
-      @@time_spent ||= 0
+      Thread.current[:flexirest_time_spent] ||= 0
     end
 
     def self.calls_made=(value)
-      @@calls_made = value
+      Thread.current[:flexirest_calls_made] = value
     end
 
     def self.calls_made
-      @@calls_made ||= 0
+      Thread.current[:flexirest_calls_made] ||= 0
     end
 
     def self.reset
-      @@time_spent = 0
-      @@calls_made = 0
+      Thread.current[:flexirest_time_spent] = 0
+      Thread.current[:flexirest_calls_made] = 0
     end
 
     def logger

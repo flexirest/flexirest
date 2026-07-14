@@ -1,10 +1,16 @@
 # Changelog
 
+## 1.13.0
+
+Bugfix:
+
+- Major changes to internals to better support thread-safe usage. Thanks to Kurtis for the bug report
+
 ## 1.12.5
 
 Feature:
 
-- Some broken APIs require a GET body, even though this is against HTTP spec. Added a `send_get_body` parameter like we already have for DELETE requests (thanks to Jan Schroeder for the request)
+- Some broken APIs require a GET body, even though this is against HTTP spec. Added a `send_get_body` parameter like we already have for DELETE requests (thanks to Jan Schroeder for the request)
 
 ## 1.12.4
 

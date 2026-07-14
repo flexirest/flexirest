@@ -2,6 +2,29 @@ require 'spec_helper'
 require 'active_support/core_ext/hash'
 require 'base64'
 
+# A simple N-party rendezvous used to force concurrent proxy requests to be
+# interleaved inside `handle` at the same time, deterministically reproducing
+# the thread-safety bug where per-request state was stored on the class.
+class ProxyTestBarrier
+  def initialize(parties)
+    @parties = parties
+    @count = 0
+    @mutex = Mutex.new
+    @cond = ConditionVariable.new
+  end
+
+  def wait
+    @mutex.synchronize do
+      @count += 1
+      if @count >= @parties
+        @cond.broadcast
+      else
+        @cond.wait(@mutex) while @count < @parties
+      end
+    end
+  end
+end
+
 class ProxyExample < Flexirest::ProxyBase
   get "/all" do
     url.gsub!("/all", "/getAll")
@@ -72,6 +95,22 @@ class ProxyExample < Flexirest::ProxyBase
   get "/fake" do
     render "{\"id\":1234}"
   end
+
+  def self.thread_barrier=(barrier)
+    @thread_barrier = barrier
+  end
+
+  def self.thread_barrier
+    @thread_barrier
+  end
+
+  get "/thread_test/:marker" do
+    url "/thread_result/#{params[:marker]}"
+    # Pause every concurrent request here, after it has set its own URL but
+    # before it is sent, so all threads are inside `handle` simultaneously.
+    ProxyExample.thread_barrier.wait
+    passthrough
+  end
 end
 
 class ProxyClientExample < Flexirest::Base
@@ -91,6 +130,7 @@ class ProxyClientExample < Flexirest::Base
   get :not_proxied, "/not_proxied"
   delete :remove, "/remove"
   get :hal_test, "/hal_test/:id"
+  get :thread_test, "/thread_test/:marker"
 end
 
 describe Flexirest::Base do
@@ -198,6 +238,31 @@ describe Flexirest::Base do
     expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/hal_test/1", instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"result\":true}", status:200, response_headers:{})))
     expect_any_instance_of(Flexirest::Connection).to receive(:get).with("/this/is/a/test", instance_of(Hash)).and_return(::FaradayResponseMock.new(OpenStruct.new(body:"{\"result\":true}", status:200, response_headers:{})))
     expect(ProxyClientExample.hal_test(id:1).test.result).to eq(true)
+  end
+
+  it "keeps proxied request data isolated across concurrent threads" do
+    thread_count = 10
+    ProxyExample.thread_barrier = ProxyTestBarrier.new(thread_count)
+
+    requested_paths = Queue.new
+    allow_any_instance_of(Flexirest::Connection).to receive(:get) do |_connection, path, _options|
+      requested_paths << path
+      ::FaradayResponseMock.new(OpenStruct.new(body: "{\"result\":true}", status: 200, response_headers: {}))
+    end
+
+    threads = thread_count.times.map do |i|
+      Thread.new { ProxyClientExample.thread_test(marker: i) }
+    end
+    threads.each { |t| t.join(5) }
+
+    paths = []
+    paths << requested_paths.pop until requested_paths.empty?
+
+    # Each thread must reach the server with its own marker. Before the fix the
+    # shared class-level state meant every thread sent whichever URL was written
+    # last, so the paths collided instead of covering 0..9.
+    expected = (0...thread_count).map { |i| "/thread_result/#{i}" }
+    expect(paths.sort).to eq(expected.sort)
   end
 
   it "properly passes basic HTTP auth credentials" do

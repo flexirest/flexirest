@@ -84,6 +84,37 @@ describe "Has Many Associations" do
   end
 end
 
+describe "includes association thread safety" do
+  it "keeps .includes state isolated across concurrent threads" do
+    thread_count = 10
+
+    # All threads set their own includes, then wait until every thread has done
+    # so before reading it back. Before the fix, the shared class instance
+    # variable meant each thread read whichever value was written last.
+    count = 0
+    mutex = Mutex.new
+    cond = ConditionVariable.new
+    results = {}
+
+    threads = thread_count.times.map do |i|
+      Thread.new do
+        AssociationExampleBase.includes(:"assoc_#{i}")
+        mutex.synchronize do
+          count += 1
+          cond.broadcast
+          cond.wait(mutex) while count < thread_count
+        end
+        results[i] = AssociationExampleBase._include_associations
+      end
+    end
+    threads.each { |t| t.join(5) }
+
+    thread_count.times do |i|
+      expect(results[i]).to eq([:"assoc_#{i}"])
+    end
+  end
+end
+
 describe "Has One Associations" do
   let(:subject) {AssociationExampleBase.new}
 

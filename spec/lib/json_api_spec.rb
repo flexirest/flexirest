@@ -567,3 +567,64 @@ describe 'JSON API' do
     end
   end
 end
+
+# A simple N-party rendezvous forcing concurrent parses to interleave, so the
+# per-request state the JSON:API proxy stashes (resource class + headers) is
+# provably isolated per thread rather than shared on the singleton modules.
+class JsonAPIThreadBarrier
+  def initialize(parties)
+    @parties = parties
+    @count = 0
+    @mutex = Mutex.new
+    @cond = ConditionVariable.new
+  end
+
+  def wait
+    @mutex.synchronize do
+      @count += 1
+      if @count >= @parties
+        @cond.broadcast
+      else
+        @cond.wait(@mutex) while @count < @parties
+      end
+    end
+  end
+end
+
+describe Flexirest::JsonAPIProxy do
+  it 'keeps the parsed resource class isolated across concurrent threads' do
+    classes = [JsonAPIExampleArticle, JsonAPIAssociationExampleTag, JsonAPIAssociationExampleAuthor]
+    thread_count = 9
+    barrier = JsonAPIThreadBarrier.new(thread_count)
+
+    threads = thread_count.times.map do |i|
+      klass = classes[i % classes.size]
+      Thread.new do
+        Flexirest::JsonAPIProxy::Response.save_resource_class(klass)
+        # All threads have now saved a class; if it were shared they'd all read
+        # whichever was written last.
+        barrier.wait
+        [i, Flexirest::JsonAPIProxy::Response.resource_class]
+      end
+    end
+    results = threads.to_h(&:value)
+
+    thread_count.times { |i| expect(results[i]).to eq(classes[i % classes.size]) }
+  end
+
+  it 'keeps the saved request headers isolated across concurrent threads' do
+    thread_count = 10
+    barrier = JsonAPIThreadBarrier.new(thread_count)
+
+    threads = thread_count.times.map do |i|
+      Thread.new do
+        Flexirest::JsonAPIProxy::Headers.save('X-Marker' => i.to_s)
+        barrier.wait
+        [i, Flexirest::JsonAPIProxy::Headers.headers]
+      end
+    end
+    results = threads.to_h(&:value)
+
+    thread_count.times { |i| expect(results[i]).to eq('X-Marker' => i.to_s) }
+  end
+end

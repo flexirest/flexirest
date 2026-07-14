@@ -2,10 +2,19 @@ require "uri"
 
 module Flexirest
   class ProxyBase
-    cattr_accessor :mappings, :request, :original_handler
-    cattr_accessor :original_body, :original_get_params, :original_post_params, :original_url
-
     module ClassMethods
+      # Per-request state used while handling a proxied request is stored in
+      # thread-local storage (keyed by the proxy class) rather than on the
+      # class itself. The DSL is implemented as class methods run via
+      # class_eval, so historically "the current request" was stored in class
+      # instance variables/class variables, which are shared across every
+      # thread calling through the same proxy class. That caused request data
+      # to be dropped or corrupted under concurrency. Keeping it per-thread
+      # isolates concurrent requests while preserving the existing DSL.
+      def _proxy_state
+        states = (Thread.current[:flexirest_proxy_state] ||= {})
+        states[self] ||= {}
+      end
       def get(match, &block)
         add_mapping(:get, match, block)
       end
@@ -41,33 +50,34 @@ module Flexirest
       end
 
       def body(value = nil)
-        @body = value if value
-        @body
+        _proxy_state[:body] = value if value
+        _proxy_state[:body]
       end
 
       def url(value = nil)
-        @url = value if value
-        @url
+        _proxy_state[:url] = value if value
+        _proxy_state[:url]
       end
 
       def get_params(value = nil)
-        @get_params = value if value
-        @get_params
+        _proxy_state[:get_params] = value if value
+        _proxy_state[:get_params]
       end
 
       def post_params(value = nil)
-        @post_params = value if value
-        @post_params
+        _proxy_state[:post_params] = value if value
+        _proxy_state[:post_params]
       end
 
       def params(value = nil)
-        @params = value if value
-        @params
+        _proxy_state[:params] = value if value
+        _proxy_state[:params]
       end
 
       def passthrough
         rebuild_request
-        @original_handler.call(@request)
+        state = _proxy_state
+        state[:original_handler].call(state[:request])
       end
 
       def result_is_json_or_unspecified?(result)
@@ -93,56 +103,73 @@ module Flexirest
       end
 
       def rebuild_request
-        if @url != @original_url
-          @request.forced_url = @request.url = @url
+        state = _proxy_state
+        request = state[:request]
+        if state[:url] != state[:original_url]
+          request.forced_url = request.url = state[:url]
         end
-        if @body != @original_body
-          @request.body = @body
-        elsif @post_params != @original_post_params
-          @request.body = nil
-          @request.prepare_request_body(@post_params)
+        if state[:body] != state[:original_body]
+          request.body = state[:body]
+        elsif state[:post_params] != state[:original_post_params]
+          request.body = nil
+          request.prepare_request_body(state[:post_params])
         end
-        if @get_params != @original_get_params
-          @request.get_params = @get_params
-          @request.prepare_url
-          @request.append_get_parameters
+        if state[:get_params] != state[:original_get_params]
+          request.get_params = state[:get_params]
+          request.prepare_url
+          request.append_get_parameters
         end
       end
 
       def handle(request, &block)
-        @request = request
-        @original_handler = block
+        # Preserve any state already in flight on this thread (e.g. a proxied
+        # request that itself triggers another request through the same proxy
+        # class) and restore it when we're done, so nested calls can't clobber
+        # each other.
+        states = (Thread.current[:flexirest_proxy_state] ||= {})
+        previous_state = states[self]
 
-        @original_body = request.body
-        @body = @original_body.dup
+        state = states[self] = {}
+        state[:request] = request
+        state[:original_handler] = block
 
-        @original_get_params = request.get_params
-        @get_params = @original_get_params.dup
+        state[:original_body] = request.body
+        state[:body] = state[:original_body].dup
 
-        @original_post_params = request.post_params
-        @post_params = (@original_post_params || {}).dup
+        state[:original_get_params] = request.get_params
+        state[:get_params] = state[:original_get_params].dup
 
-        @original_url = request.url
-        @url = @original_url.dup
+        state[:original_post_params] = request.post_params
+        state[:post_params] = (state[:original_post_params] || {}).dup
+
+        state[:original_url] = request.url
+        state[:url] = state[:original_url].dup
 
         if mapping = find_mapping_for_current_request
           self.class_eval(&mapping.block)
         else
           passthrough
         end
+      ensure
+        if previous_state
+          states[self] = previous_state
+        else
+          states.delete(self)
+        end
       end
 
       def find_mapping_for_current_request
-        uri = URI.parse(@original_url)
+        state = _proxy_state
+        uri = URI.parse(state[:original_url])
         @mappings ||= []
-        @params = {}
+        state[:params] = {}
         @mappings.each do |mapping|
           match = mapping.match
-          if (match_data = uri.path.match(match)) && @request.http_method.to_sym == mapping.http_method
+          if (match_data = uri.path.match(match)) && state[:request].http_method.to_sym == mapping.http_method
             matches = match_data.to_a
             matches.shift
             matches.each_with_index do |value, index|
-              @params[mapping.param_keys[index]] = value
+              state[:params][mapping.param_keys[index]] = value
             end
             return mapping
           end

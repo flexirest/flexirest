@@ -51,17 +51,22 @@ module Flexirest
         end
       end
 
+      # The keys passed to `.includes(...)` travel from this class-method call
+      # into the Request built by the subsequent finder call. Storing them in a
+      # class instance variable meant concurrent threads calling `.includes` on
+      # the same model shared (and corrupted) one slot, so they're held in
+      # thread-local storage keyed by the class instead.
       def includes(*keys)
-        @_include_associations = keys
+        (Thread.current[:flexirest_include_associations] ||= {})[self] = keys
         self
       end
 
       def _include_associations
-        @_include_associations
+        (Thread.current[:flexirest_include_associations] ||= {})[self] || []
       end
 
       def _reset_include_associations!
-        @_include_associations = []
+        (Thread.current[:flexirest_include_associations] ||= {}).delete(self)
       end
 
       def parse_date(*keys)
@@ -80,7 +85,6 @@ module Flexirest
       def inherited(subclass)
         subclass.instance_variable_set(:@_date_fields, [])
         subclass.instance_variable_set(:@_associations, {})
-        subclass.instance_variable_set(:@_include_associations, [])
         super
       end
     end
