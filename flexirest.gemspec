@@ -38,6 +38,9 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'rest-client'
   spec.add_development_dependency 'timecop'
 
+  # A default gem up to Ruby 3.4 and dropped from the stdlib in 4.0, so declare it
+  # rather than assume the host application provides it.
+  spec.add_runtime_dependency "ostruct"
   spec.add_runtime_dependency "mime-types"
   spec.add_runtime_dependency "multi_json"
   spec.add_runtime_dependency "crack"

@@ -39,11 +39,14 @@ module Flexirest
         @mappings ||= []
 
         if match.is_a?(String) && (param_keys = match.scan(/:\w+/)) && param_keys.any?
-          param_keys.each do |key|
-            match.gsub!(key, "([^/]+)")
-          end
+          # Build the pattern from a copy rather than mutating the caller's string. A
+          # route is almost always declared with a string literal, and under Ruby 3.4+
+          # those are chilled (mutating one warns); with frozen string literals enabled
+          # - Ruby 4.0's --enable=frozen-string-literal, or a magic comment - the same
+          # mutation raises FrozenError and the proxy class fails to load.
+          pattern = param_keys.reduce(match.dup) { |acc, key| acc.gsub(key, "([^/]+)") }
           param_keys = param_keys.map {|k| k.gsub(":", "").to_sym}
-          match = Regexp.new(match)
+          match = Regexp.new(pattern)
         end
 
         @mappings << OpenStruct.new(http_method:method_type, match:match, block:block, param_keys:param_keys)

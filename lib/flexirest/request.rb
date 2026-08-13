@@ -426,7 +426,10 @@ module Flexirest
     def prepare_url
       missing = []
       if @forced_url && @forced_url.present?
-        @url = @forced_url
+        # dup for the same reason as the branch below: before_request callbacks are
+        # documented to rewrite the URL in place with gsub!, and a forced URL is
+        # usually a string literal from the caller.
+        @url = @forced_url.dup
       else
         @url = @method[:url].dup
         matches = @url.scan(/(:[a-z_-]+)/)

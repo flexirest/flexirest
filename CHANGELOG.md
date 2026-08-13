@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.13.1
+
+Bugfix:
+
+- Ruby 4.0 removed `ostruct` from the standard library, and Flexirest builds OpenStructs internally, so it is now required explicitly and declared as a runtime dependency rather than relying on the host application to provide it
+- Proxy routes with parameters (e.g. `get "/things/:id"`) no longer mutate the string they are given, so declaring one with a frozen string literal works. Previously `ProxyBase.add_mapping` built the regex with `gsub!` on the caller's string, which warns under Ruby 3.4+ chilled string literals and raises `FrozenError` under `--enable=frozen-string-literal`
+- A forced URL is now duplicated before `before_request` callbacks run, so the documented `request.url.gsub!` pattern works when the URL passed to `_request` is a frozen string literal
+
 ## 1.13.0
 
 Bugfix:

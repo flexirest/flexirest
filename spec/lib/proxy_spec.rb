@@ -265,6 +265,18 @@ describe Flexirest::Base do
     expect(paths.sort).to eq(expected.sort)
   end
 
+  it "builds a parameterised route without mutating the string it was given" do
+    route = "/frozen/:id/:name".freeze
+    proxy = Class.new(Flexirest::ProxyBase)
+
+    expect { proxy.get(route) { passthrough } }.to_not raise_error
+    expect(route).to eq("/frozen/:id/:name")
+
+    mapping = proxy.instance_variable_get(:@mappings).last
+    expect(mapping.param_keys).to eq(%i[id name])
+    expect("/frozen/12/john").to match(mapping.match)
+  end
+
   it "properly passes basic HTTP auth credentials" do
     host, credentials, url_path = 'www.example.com', 'user:pass', '/getAll?id=1'
     ProxyClientExample.base_url "http://#{credentials}@#{host}"

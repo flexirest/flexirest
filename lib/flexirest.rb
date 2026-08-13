@@ -1,3 +1,7 @@
+# ostruct stopped being a default gem in Ruby 4.0, and Flexirest builds OpenStructs in
+# Request and ProxyBase, so require it explicitly rather than relying on the host
+# application having pulled it in.
+require "ostruct"
 require 'active_support/all'
 require "flexirest/version"
 require "flexirest/attribute_parsing"

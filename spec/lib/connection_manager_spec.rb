@@ -5,6 +5,27 @@ describe Flexirest::ConnectionManager do
     Flexirest::ConnectionManager.reset!
   end
 
+  # IMPORTANT: The two typhoeus examples below set a *global* adapter. Reset it in an
+  # after hook rather than on the last line of each example: if the example raises
+  # first that line never runs, every later spec in the suite inherits
+  # adapter = :typhoeus, and they all fail with ":typhoeus is not registered on
+  # Faraday::Adapter". Specs run in random order, so that turns one local failure into
+  # a suite-wide cascade whose size depends on the seed.
+  after(:each) do
+    Flexirest::Base._reset_configuration!
+  end
+
+  # Gem.loaded_specs only lists gems that have been *activated*, not every gem in the
+  # bundle, so it is not a reliable way to ask whether faraday-typhoeus is installed -
+  # when it reads as absent the require is skipped and :typhoeus is never registered.
+  # Just attempt the require and let the older typhoeus-provided adapter be the
+  # fallback.
+  def require_typhoeus_adapter
+    require 'faraday/typhoeus'
+  rescue LoadError
+    require 'typhoeus/adapters/faraday'
+  end
+
   it "should have a get_connection method" do
     expect(Flexirest::ConnectionManager).to respond_to("get_connection")
   end
@@ -35,19 +56,17 @@ describe Flexirest::ConnectionManager do
   end
 
   it "should call 'in_parallel' for a session and yield procedure inside that block" do
-    require 'faraday/typhoeus' if Gem.loaded_specs["faraday-typhoeus"].present?
+    require_typhoeus_adapter
     Flexirest::Base.adapter = :typhoeus
     Flexirest::ConnectionManager.get_connection("http://www.example.com").session
     expect { |b| Flexirest::ConnectionManager.in_parallel("http://www.example.com", &b)}.to yield_control
-    Flexirest::Base._reset_configuration!
   end
 
   it "should raise Flexirest::MissingOptionalLibraryError if Typhoeus isn't available" do
-    require 'faraday/typhoeus' if Gem.loaded_specs["faraday-typhoeus"].present?
+    require_typhoeus_adapter
     Flexirest::Base.adapter = :typhoeus
     Flexirest::ConnectionManager.get_connection("http://www.example.com").session
     expect(Flexirest::ConnectionManager).to receive(:require).and_raise(LoadError)
     expect { Flexirest::ConnectionManager.in_parallel("http://www.example.com")}.to raise_error(Flexirest::MissingOptionalLibraryError)
-    Flexirest::Base._reset_configuration!
   end
 end

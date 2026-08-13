@@ -42,7 +42,11 @@ class SubClassedCallbacksExample < CallbacksExample
 end
 
 describe Flexirest::Callbacks do
-  let(:request) { OpenStruct.new(get_params:{}, post_params:{}, url:"http://www.example.com", headers:Flexirest::HeadersList.new) }
+  # The unary + matters: these examples exercise callbacks rewriting the URL in place
+  # with gsub!, which is the documented API (docs/using-callbacks.md). A real request
+  # hands callbacks a mutable String, so the double has to as well - a frozen literal
+  # here would fail under frozen string literals for a reason the library doesn't have.
+  let(:request) { OpenStruct.new(get_params:{}, post_params:{}, url:+"http://www.example.com", headers:Flexirest::HeadersList.new) }
   let(:response) { OpenStruct.new(body:"") }
 
   it "should call through to adjust the parameters" do
