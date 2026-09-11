@@ -99,7 +99,7 @@ module Flexirest
           if incoming_content_type && incoming_content_type["xml"]
             result.body = yield Crack::XML.parse(result.body)
           else
-            result.body = yield MultiJson.load(result.body)
+            result.body = yield MultiJSON.parse(result.body)
           end
         end
         result

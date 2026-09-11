@@ -206,7 +206,7 @@ describe Flexirest::Request do
     class CallbackBodyExampleClient < ExampleClient
       base_url "http://www.example.com"
       before_request do |name, request|
-        request.body = MultiJson.dump(request.post_params)
+        request.body = MultiJSON.generate(request.post_params)
       end
 
       post :save, "/save"

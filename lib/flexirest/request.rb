@@ -872,9 +872,9 @@ module Flexirest
         body = @response.body
       elsif is_json_response?
         begin
-          body = @response.body.blank? ? {} : MultiJson.load(@response.body)
+          body = @response.body.blank? ? {} : MultiJSON.parse(@response.body)
           body = {} if body.nil?
-        rescue MultiJson::ParseError
+        rescue MultiJSON::ParseError
           raise ResponseParseException.new(status:@response.status, body:@response.body, headers:@response.headers)
         end
 

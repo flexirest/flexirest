@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.13.2
+
+Bugfix:
+
+- multi_json 1.21 renamed its module to `MultiJSON` and replaced `load`/`dump` with `parse`/`generate`, deprecating the old names with one-time warnings that appeared in host applications' test output. Flexirest now calls the current API (and `symbolize_names` rather than the deprecated `symbolize_keys`), so it requires multi_json >= 1.21
+
 ## 1.13.1
 
 Bugfix:

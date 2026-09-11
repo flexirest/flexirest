@@ -42,7 +42,7 @@ Gem::Specification.new do |spec|
   # rather than assume the host application provides it.
   spec.add_runtime_dependency "ostruct"
   spec.add_runtime_dependency "mime-types"
-  spec.add_runtime_dependency "multi_json"
+  spec.add_runtime_dependency "multi_json", ">= 1.21"
   spec.add_runtime_dependency "crack"
   spec.add_runtime_dependency "faraday", "~> 2.7"
 

@@ -479,7 +479,7 @@ describe 'JSON API' do
 
     it 'should be able to call #.create on class' do
       expect_any_instance_of(Flexirest::Connection).to receive(:post) { |_, path, data|
-        hash = MultiJson.load(data)
+        hash = MultiJSON.parse(data)
         expect(path).to eq('/articles')
         expect(hash['data']).to_not be_nil
         expect(hash['data']['id']).to be_nil
@@ -490,7 +490,7 @@ describe 'JSON API' do
 
     it 'should be able to call #.create with params on class' do
       expect_any_instance_of(Flexirest::Connection).to receive(:post) { |_, path, data|
-        hash = MultiJson.load(data)
+        hash = MultiJSON.parse(data)
         expect(path).to eq('/articles')
         expect(hash['data']).to_not be_nil
         expect(hash['data']['id']).to be_nil
@@ -505,7 +505,7 @@ describe 'JSON API' do
 
     it 'should perform a post request in proper json api format' do
       expect_any_instance_of(Flexirest::Connection).to receive(:post) { |_, path, data|
-        hash = MultiJson.load(data)
+        hash = MultiJSON.parse(data)
         expect(path).to eq('/articles')
         expect(hash['data']).to_not be_nil
         expect(hash['data']['id']).to be_nil
@@ -533,7 +533,7 @@ describe 'JSON API' do
 
     it 'should perform a patch request in proper json api format' do
       expect_any_instance_of(Flexirest::Connection).to receive(:patch) { |_, path, data|
-        hash = MultiJson.load(data)
+        hash = MultiJSON.parse(data)
         expect(path).to eq('/articles/1')
         expect(hash['data']).to_not be_nil
         expect(hash['data']['id']).to_not be_nil
@@ -554,7 +554,7 @@ describe 'JSON API' do
 
     it 'should have placed the right type value in the request' do
       expect_any_instance_of(Flexirest::Connection).to receive(:patch) { |_, _, data|
-        hash = MultiJson.load(data)
+        hash = MultiJSON.parse(data)
         expect(hash['data']['type']).to eq(JsonAPIExample::ArticleAlias.alias_type.to_s)
         expect(hash['data']['relationships']['author']['data']['type']).to eq(JsonAPIExample::AuthorAlias.alias_type.to_s)
       }.and_return(::FaradayResponseMock.new(OpenStruct.new(body: '{}', response_headers: {})))

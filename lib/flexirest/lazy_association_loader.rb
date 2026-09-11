@@ -87,7 +87,7 @@ module Flexirest
 
     def ensure_lazy_loaded
       if @object.nil?
-        method = MultiJson.load(MultiJson.dump(@request.method),:symbolize_keys => true)
+        method = MultiJSON.parse(MultiJSON.generate(@request.method), symbolize_names: true)
         method[:method] = :get
         method[:options][:url] = @url
         method[:options][:overridden_name] = @options[:overridden_name]
